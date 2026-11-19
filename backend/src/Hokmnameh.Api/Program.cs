@@ -1,0 +1,153 @@
+using Microsoft.AspNetCore.RateLimiting;
+using System.Net;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net.WebSockets;
+using Hokmnameh.Api;
+using Hokmnameh.Core;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton<RoomDirectory>();
+builder.Services.AddHostedService<MatchTicker>();
+builder.Services.AddHealthChecks();
+builder.Services.ConfigureHttpJsonOptions(opts => opts.SerializerOptions.IncludeFields = true);
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Only proxy traffic from the local Nginx frontend. Never trust arbitrary client XFF.
+    options.KnownProxies.Add(IPAddress.Loopback);
+});
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("auth-guest", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10, Window = TimeSpan.FromMinutes(5), QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+var app = builder.Build();
+app.UseForwardedHeaders();
+app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(20) });
+app.UseRateLimiter();
+var api = app.MapGroup("/hokmnameh");
+api.MapGet("/", () => Results.Redirect("/hokmnameh/health/live"));
+api.MapGet("/health/live", () => Results.Ok(new { status = "live", service = "hokmnameh-api", version = "0.1.0" }));
+api.MapGet("/health/ready", async (AuthService auth, CancellationToken ct) =>
+    await auth.ReadyAsync(ct) ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503));
+
+api.MapPost("/api/v1/identity/guest", async (AuthService auth, CancellationToken ct) =>
+{
+    var guest = await auth.CreateGuestAsync(ct);
+    return Results.Created("/hokmnameh/api/v1/identity/me", guest);
+}).RequireRateLimiting("auth-guest");
+
+api.MapGet("/api/v1/identity/me", async (HttpRequest req, AuthService auth, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(req, ct);
+    return identity == null ? Results.Unauthorized() : Results.Ok(identity);
+});
+
+api.MapPost("/api/v1/rooms", async (HttpRequest req, CreateRoomRequest body, AuthService auth,
+    RoomDirectory rooms, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(req, ct);
+    if (identity == null) return Results.Unauthorized();
+    var room = rooms.Create(identity.AccountId, (body.Mode ?? "free").ToLowerInvariant());
+    return Results.Created($"/hokmnameh/api/v1/rooms/{room.Id}", new JoinRoomResponse(room.View(), 0));
+});
+
+api.MapPost("/api/v1/rooms/join/{code}", async (string code, HttpRequest req, AuthService auth,
+    RoomDirectory rooms, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(req, ct);
+    if (identity == null) return Results.Unauthorized();
+    var room = rooms.GetByCode(code);
+    var joined = room.Join(identity.AccountId);
+    await room.BroadcastAsync(ct);
+    return Results.Ok(joined);
+});
+
+api.MapGet("/api/v1/rooms/{roomId:guid}", async (Guid roomId, HttpRequest req, AuthService auth,
+    RoomDirectory rooms, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(req, ct);
+    return identity == null ? Results.Unauthorized() : Results.Ok(rooms.Get(roomId).State(identity.AccountId));
+});
+
+api.MapPost("/api/v1/rooms/{roomId:guid}/trump", async (Guid roomId, SetTrumpRequest body,
+    HttpRequest req, AuthService auth, RoomDirectory rooms, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(req, ct);
+    if (identity == null) return Results.Unauthorized();
+    var room = rooms.Get(roomId);
+    room.ChooseTrump(identity.AccountId, body.Suit);
+    await room.BroadcastAsync(ct);
+    return Results.Ok(room.State(identity.AccountId));
+});
+
+api.MapPost("/api/v1/rooms/{roomId:guid}/play", async (Guid roomId, PlayCardRequest body,
+    HttpRequest req, AuthService auth, RoomDirectory rooms, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(req, ct);
+    if (identity == null) return Results.Unauthorized();
+    var room = rooms.Get(roomId);
+    room.Play(identity.AccountId, body.Card);
+    await room.BroadcastAsync(ct);
+    return Results.Ok(room.State(identity.AccountId));
+});
+
+api.MapGet("/ws/rooms/{roomId:guid}", async (Guid roomId, HttpContext context, AuthService auth,
+    RoomDirectory rooms, CancellationToken ct) =>
+{
+    if (!context.WebSockets.IsWebSocketRequest) { context.Response.StatusCode = 400; return; }
+    var identity = await auth.ValidateAsync(context.Request, ct);
+    if (identity == null) { context.Response.StatusCode = 401; return; }
+    GameRoom room;
+    try { room = rooms.Get(roomId); }
+    catch (KeyNotFoundException) { context.Response.StatusCode = 404; return; }
+    var seat = room.SeatOf(identity.AccountId);
+    if (!seat.HasValue) { context.Response.StatusCode = 403; return; }
+    using var socket = await context.WebSockets.AcceptWebSocketAsync();
+    var connectionId = Guid.NewGuid();
+    room.RegisterSocket(connectionId, socket, seat.Value);
+    try
+    {
+        await room.BroadcastAsync(ct);
+        // Mutations only via authenticated HTTP commands; WS transport is state push only.
+        var buffer = new byte[1024];
+        while (socket.State == WebSocketState.Open)
+        {
+            var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), ct);
+            if (result.MessageType == WebSocketMessageType.Close) break;
+            if (result.Count > 1024) break;
+        }
+    }
+    catch (WebSocketException) { }
+    catch (OperationCanceledException) { }
+    finally
+    {
+        room.RemoveSocket(connectionId);
+        if (socket.State == WebSocketState.Open)
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None);
+    }
+});
+
+// Explicit problem responses without leaking stack traces.
+app.Use(async (ctx, next) =>
+{
+    try { await next(); }
+    catch (GameRuleException e)
+    {
+        if (!ctx.Response.HasStarted) { ctx.Response.StatusCode = 400; await ctx.Response.WriteAsJsonAsync(new { error = e.Message }); }
+    }
+    catch (KeyNotFoundException)
+    {
+        if (!ctx.Response.HasStarted) { ctx.Response.StatusCode = 404; await ctx.Response.WriteAsJsonAsync(new { error = "Not found" }); }
+    }
+});
+app.Run();

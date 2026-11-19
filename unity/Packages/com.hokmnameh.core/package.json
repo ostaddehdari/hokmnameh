@@ -1,0 +1,8 @@
+{
+  "name": "com.hokmnameh.core",
+  "version": "0.1.0",
+  "displayName": "Hokmnameh Pure C# Rules Engine",
+  "description": "Deterministic card state transitions used by ASP.NET and Unity LAN host. No UnityEngine dependency.",
+  "unity": "6000.3",
+  "author": {"name": "Hokmnameh"}
+}

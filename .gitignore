@@ -1,0 +1,34 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+*.pfx
+*.key
+*.pem
+id_rsa*
+# Unity
+unity/Library/
+unity/Temp/
+unity/Obj/
+unity/Build/
+unity/Builds/
+unity/Logs/
+unity/UserSettings/
+unity/MemoryCaptures/
+unity/.vs/
+# .NET
+**/bin/
+**/obj/
+.vs/
+# IDE
+.idea/
+.vscode/
+.DS_Store
+*.user
+*.suo
+# Coverage
+coverage/
+TestResults/
+# Archives
+*.zip
+*.tar.gz

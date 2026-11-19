@@ -1,0 +1,10 @@
+.git
+**/bin
+**/obj
+unity/Library
+unity/Temp
+unity/Build
+**/*.zip
+**/*.pdf
+**/*.docx
+.env

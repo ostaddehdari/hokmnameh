@@ -1,0 +1,17 @@
+name: Backend smoke tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  core-and-api:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build backend/src/Hokmnameh.Api/Hokmnameh.Api.csproj -c Release
+      - run: dotnet run --project backend/tests/Hokmnameh.SmokeTests/Hokmnameh.SmokeTests.csproj -c Release
