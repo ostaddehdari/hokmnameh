@@ -47,3 +47,9 @@ Open `unity/` with a Unity **6.3 LTS** Editor with Android Build Support. Click 
 ## Roadmap and limitations
 
 **Not yet implemented:** user login via SMS, ranked ladders, coins, sponsorship billing, social systems, durable match event log, full rejoin, strong bots/ISMCTS, production hosting telemetry, Redis/Valkey orchestration, 1000+ player load certification, LAN cryptographic authentication, and final UI/UX. This is an honest v0.1 bootstrap, not a completed game.
+
+## Development plan and current scope (2026-11-19)
+
+The staged roadmap is in [docs/planning/STAGES_WORKS_TASKS.md](docs/planning/STAGES_WORKS_TASKS.md) (15 Stages / 45 Works / 135 Tasks), with a [Word edition](docs/planning/Hokmnameh_Stage_Work_Task_Development_Plan.docx), [CSV backlog](docs/planning/backlog.csv) and [JSON backlog](docs/planning/backlog.json).
+
+See [change-impact register](docs/planning/CHANGE_IMPACT.md), [decisions awaiting confirmation](docs/planning/DECISIONS_TO_CONFIRM.md), and [AGENTS.md](AGENTS.md) for the development contract. The owner-edited Master Document in a private ChatGPT conversation could not be read directly during the comparison; the roadmap is based on corroborated project decisions and the repository baseline. This planning commit **does not implement the listed features**.
