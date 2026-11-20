@@ -32,3 +32,8 @@ TestResults/
 # Archives
 *.zip
 *.tar.gz
+
+.migration.lock
+*.dump
+*.dump.age
+*.dump.age.sha256

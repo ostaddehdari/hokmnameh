@@ -1,0 +1,10 @@
+[Unit]
+Description=Hokmnameh health probe
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/hokmnameh/deploy/scripts/watch-health.sh
+User=hokmdeploy
+Group=hokmdeploy

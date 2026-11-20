@@ -1,0 +1,15 @@
+# PostgreSQL backup & restore verification — S01-W03-T02
+
+**Storage policy:** backups are encrypted with `age` during streaming; neither raw dumps nor identities are committed to git. The `HOKM_BACKUP_AGE_RECIPIENT` is a public age recipient set in the server's protected environment. Backups must also be copied off-host over a verified secure channel and tested regularly.
+
+```bash
+# On the authorized host, with Compose database up:
+export HOKM_BACKUP_AGE_RECIPIENT='age1...'
+./deploy/scripts/backup.sh
+
+# Restore verification runs in a temporary isolated container only:
+export AGE_IDENTITY_FILE=/secure/off-host/age-identity.txt
+./deploy/scripts/restore-drill.sh /var/backups/hokmnameh/pg-YYYYmmddTHHMMSSZ.dump.age
+```
+
+Restore drill checks that at least five public tables were restored, NOT every application invariant; add checksums of selected records, RPO/RTO timings and disaster recovery drills before public launch. Confirm backup retention, encryption recipient rotation and independent off-host access. Never test restore against the live `hokmnameh` DB. If you cannot run a restore, mark the gate BLOCKED rather than declaring completion.

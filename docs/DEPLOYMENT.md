@@ -5,7 +5,7 @@ Target supplied by project owner:
 - HTTPS path `https://srun.ir/hokmnameh` (requires DNS, TLS and existing web server config verification).
 - Repo `https://github.com/ostaddehdari/hokmnameh`.
 
-**Status when generated:** This execution environment could not reach host port 2233 (`Connection refused`) and cannot access GitHub over `git` (`github.com` DNS resolution failure). No code has been deployed or pushed. Do NOT assume that any existing server site has been modified.
+**Current operator note:** GitHub source has been committed using the connected GitHub integration. Direct SSH from this execution environment to port `2233` still returns `Connection refused`; the VPS has NOT been modified. Direct `git` clone from this environment has DNS restrictions, but cloning from the VPS may work. Do NOT assume any existing server site has been modified.
 
 ## Prerequisites — on a trusted admin workstation
 
@@ -40,9 +40,15 @@ curl -fsS https://srun.ir/hokmnameh/health/ready
 
 Proxy must preserve `/hokmnameh` prefix because ASP.NET maps route group there. HTTP-to-HTTPS redirects and valid TLS certificates must already be in place. WebSocket upgrade headers are included in the snippet.
 
-## Database migrations
+## Versioned database migrations — S01
 
-Migration `001_core.sql` is executed by the official PostgreSQL image only on first initialization of an empty named data volume. On a preexisting cluster, use an approved SQL migration tool (Flyway/DbUp) or, for development only, explicitly review and apply `001_core.sql` using psql. Never clear production PGDATA to reapply migrations.
+`deploy/scripts/migrate.sh` applies `backend/db/migrations/NNN_name.sql` through an advisory-locked transaction and records the SHA-256 in `public.schema_migrations`. It refuses a modified previously applied migration; add the next numbered file instead. `001_core.sql` is additive and idempotent for compatibility with earlier prototype volumes. A PostgreSQL 18 volume must not be deleted to rerun migrations. The old Docker `docker-entrypoint-initdb.d` mount has been removed.
+
+`DEPLOY_ENV=staging ./deploy/scripts/deploy.sh` is operator-initiated. Production additionally requires `CONFIRM_PRODUCTION_DEPLOY=YES` and `HOKM_BACKUP_AGE_RECIPIENT`, performing an encrypted database backup before migrations. Image rollback does **not** roll back the DB. See `docs/operations/RESTORE_DRILL.md` and `docs/stages/S01_EXECUTION.md`.
+
+## Stage S01 deployment state
+
+This repository contains implementation scripts and CI tests, but the VPS has **not** been accessed or modified by the source-authoring environment. Existing Nginx virtual-host config, TLS and SSH must be inspected on the actual server. See `docs/operations/S01_SERVER_RUNBOOK.md`.
 
 ## After boot
 

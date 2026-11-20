@@ -8,30 +8,46 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-hokm_app}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
+      # PostgreSQL 18 requires mounting the *parent* of the versioned PGDATA directory.
       - pgdata:/var/lib/postgresql
-      - ./backend/db/migrations/001_core.sql:/docker-entrypoint-initdb.d/001_core.sql:ro
+      - ./backend/db/migrations:/migrations:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 3s
       retries: 20
+    security_opt: ["no-new-privileges:true"]
     networks: [internal]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
   api:
+    image: ${HOKM_API_IMAGE:-hokmnameh-api:local}
     build:
       context: .
       dockerfile: backend/Dockerfile
     restart: unless-stopped
+    init: true
     depends_on:
       postgres: { condition: service_healthy }
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-hokmnameh};Username=${POSTGRES_USER:-hokm_app};Password=${POSTGRES_PASSWORD}"
       Hokm__TurnSeconds: "30"
-    ports:
-      - "127.0.0.1:5080:8080"
-    security_opt:
-      - no-new-privileges:true
+    ports: ["127.0.0.1:5080:8080"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,noexec,size=64m
     networks: [internal]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 networks:
   internal:
 volumes:

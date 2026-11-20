@@ -1,17 +1,89 @@
-name: Backend smoke tests
+name: Hokmnameh CI
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: hokm-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  validate-repo:
+    name: Static validation
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate shell syntax and JSON
+        run: |
+          set -euo pipefail
+          find deploy/scripts -maxdepth 1 -name '*.sh' -print0 | xargs -0 -r -n1 bash -n
+          python3 -m json.tool global.json >/dev/null
+          python3 -m json.tool docs/ruleset_hokm_classic_v1.json >/dev/null
+          python3 -m json.tool docs/planning/backlog.json >/dev/null
+          git diff --check
+      - name: Confirm no tracked local env file
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -E '(^|/)(\.env|id_rsa|.*\.pem|.*\.pfx)$'; then
+            echo 'Sensitive local file is tracked' >&2
+            exit 1
+          fi
+
   core-and-api:
+    name: .NET 10 build and shared rules smoke
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
-      - run: dotnet build backend/src/Hokmnameh.Api/Hokmnameh.Api.csproj -c Release
-      - run: dotnet run --project backend/tests/Hokmnameh.SmokeTests/Hokmnameh.SmokeTests.csproj -c Release
+          global-json-file: global.json
+      - name: Build ASP.NET Core API
+        run: dotnet build backend/src/Hokmnameh.Api/Hokmnameh.Api.csproj -c Release -p:ContinuousIntegrationBuild=true
+      - name: Shared rules smoke
+        run: dotnet run --project backend/tests/Hokmnameh.SmokeTests/Hokmnameh.SmokeTests.csproj -c Release
+
+  database-migrations:
+    name: PostgreSQL migration contract
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start isolated PostgreSQL (no API)
+        run: |
+          set -euo pipefail
+          printf 'POSTGRES_DB=hokmnameh_ci\nPOSTGRES_USER=hokm_ci\nPOSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)" > .env
+          chmod 600 .env
+          docker compose up -d postgres
+          for i in $(seq 1 60); do
+            if docker compose exec -T postgres sh -c 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"' >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+      - name: Apply migration then verify idempotency
+        run: |
+          set -euo pipefail
+          ./deploy/scripts/migrate.sh
+          ./deploy/scripts/migrate.sh
+          docker compose exec -T postgres sh -c \
+            'psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT count(*) FROM public.schema_migrations"' | grep -qx '1'
+          docker compose exec -T postgres sh -c \
+            'psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT count(*) FROM public.accounts"' | grep -qx '0'
+      - name: Clean up
+        if: always()
+        run: |
+          docker compose down --remove-orphans || true
+          rm -f .env
+
+  docker-build:
+    name: Build deployable API image
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker build
+        run: docker build -f backend/Dockerfile -t hokmnameh-api:ci .
+
+# Deployment is deliberately NOT triggered by push or pull_request.
+# Production requires a separately authorized operator, backup, and verified VPS access.

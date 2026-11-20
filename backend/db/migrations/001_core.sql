@@ -1,6 +1,5 @@
--- Hokmnameh MVP, intentionally SMALL. Extend with docs/extended_schema_74_tables_REFERENCE_ONLY.sql
--- only via individually reviewed migrations, never run the entire reference blindly.
-BEGIN;
+-- S01 versioned migration: transaction and serialization lock are owned by migrate.sh.
+-- If previously initialized by the earlier Docker entrypoint, all CREATE statements are idempotent.
 CREATE TABLE IF NOT EXISTS accounts (
   id UUID PRIMARY KEY,
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','restricted','banned','deleted')),
@@ -42,4 +41,3 @@ CREATE TABLE IF NOT EXISTS match_participants (
   seat SMALLINT NOT NULL CHECK (seat BETWEEN 0 AND 3),
   PRIMARY KEY (match_id, seat)
 );
-COMMIT;
