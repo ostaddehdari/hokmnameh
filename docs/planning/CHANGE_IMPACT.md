@@ -1,72 +1,36 @@
-# Hokmnameh — Product Change Impact Register
+# گزارش تطبیق سه الحاقیه با برنامه ساخت قبلی
 
-> Baseline: GitHub main `46364593b083` (v0.1). Source caveat: private ChatGPT conversation link inaccessible, so owner edits cannot be directly diffed. Facts below are recoverable prior decisions, NOT a statement that every late edit was viewed.
+نسخه: v2.0، تاریخ ۲۰۲۶-۱۱-۱۹
 
-## Scope reconciliation
+## نتیجه و وضعیت
 
-### Approved / project-recorded constraints
-- **سیاست محصول ثبت‌شده:** ۴ زمین: آکادمی، آزاد، رنک، جام اسپانسر
-- **اقتصاد و دسترسی:** ورود آزاد و رنک رایگان و نامحدود
-- **اقتصاد:** بازی با بات فقط XP؛ منبع تولید سکه نیست
-- **همتاسازی:** رنک Solo و Duo، ترجیح مسابقه هم‌نوع
-- **لیگ و فصل:** ۶ لیگ و فصل سه‌ماهه تقویمی
-- **اقتصاد:** VIP حذف و هیچ خریدی مزیت رقابتی ندارد
-- **Trust & Safety:** روی میز چت آزاد ممنوع؛ پیام آماده تحت کنترل
-- **مدیریت مسابقه:** ترک بازیکن: ربات جایگزین + پیامد متناسب
-- **روایت و حفظ بازیکن:** تاج شکسته و تالار پادشاهان فراموش‌شده
-- **Unity UI:** لابی الهام‌گرفته از چیدمان Mobile Legends با هویت مستقل
-- **Unity UI:** داشبورد مجزا و شیشه‌ای روی لابی؛ پروفایل/Level/آواتار/اعتبار مستقل
-- **Rulesets:** حکم آرنا در فاز دوم، جدا از کلاسیک
-- **AI-01:** هوش کیفیت بازی نباید با اطلاعات مخفی یا در مسابقه زنده تقلب کند
+برنامه مبنا 45 ورک و 135 تسک داشت؛ نسخه جدید 69 ورک و 239 تسک دارد.
+24 ورک، 104 تسک افزوده و 7 تسک قدیمی صریحاً اصلاح شد. وضعیت اجرایی همه موارد جدید `BACKLOG` است.
 
-### Needs owner confirmation / not inferred as approval
-- **Ruleset v1:** گردش حاکم و فرمول دقیق کُت/امتیاز در همه نوع بازی
-- **Trust & Safety:** دقیق‌ترین سیاست اعتراض و تنبیه قطع غیرعمدی
-- **Source-of-truth:** ثبت تاریخ و متن نهایی نسخه ویرایش‌شده صاحبکار
+## تحلیل افزوده‌ها
 
-## Feature delta against current GitHub source
+| سند | Work جدید | Task جدید | شکافِ قبلی |
+|---|---:|---:|---|
+| E-04 v2.3 | 10 | 42 | یک Cut واقعی، HKDF/HMAC Seed و ممیزی/بازیابی و ۵+۴+۴ و پروتکل خصوصی وجود نداشت؛ فقط Shuffle ساده و ۵+۸ مطرح بود. |
+| MM-01 v1.1 | 7 | 31 | Party consent، دقیقاً ۴ Ready، ترکیب‌ها، رزرو اتمیک، Policy و Acceptance ۲۵ مورد به تفصیل وجود نداشت. |
+| RL-01 v1.0 | 7 | 31 | Registry ثابت، قفل Focus در MatchStart، اعطای قطعه دقیقاً یک‌بار، ۱۲ Screen و Claim/Outbox به تفصیل وجود نداشت. |
 
-| Capability | Repo now | Work plan | Layer |
-|---|---|---|---|
-| موتور اصلی حکم و توزیع امن | موجود پایه؛ چند قاعده نیازمند تأیید | S00/S02 | Core C# |
-| ثبت ماندگار رخداد، replay و checkpoint | فاقد پیاده‌سازی کامل | S02/S04 | Backend+DB |
-| WebSocket مطمئن، reconnect و resume | سرویس push اولیه؛ Unity polling | S04 | Backend+Unity |
-| LAN چهار گوشی و میزبان اندرویدی | نمونه اولیه؛ فاقد تست واقعی دستگاه | S05 | Unity+Core |
-| ربات چندسطحی و انصاف دانش | ربات heuristic پایه | S05/S11 | Core/AI |
-| هویت تلفنی/امنیت نشست | حساب مهمان پایه | S03 | Backend+DB |
-| آکادمی و بازی بدون سکه با بات | تمرین پایه؛ پاداش پیاده نشده | S03/S05 | Backend+Unity |
-| لابی و داشبورد شیشه‌ای | UI placeholder IMGUI | S06 | Unity |
-| کامپوننت‌های مستقل پروفایل/لول/آواتار/اعتبار | در UI فعلی پیاده نشده | S03/S06 | Unity+API |
-| میز ۷۵ درجه و انیمیشن‌های کارت | در UI فعلی پیاده نشده | S06 | Unity |
-| رنک Solo/Duo و هم‌نوع سازی | پیاده نشده | S07 | Backend+DB+Unity |
-| شش لیگ و فصل سه‌ماهه | پیاده نشده | S07 | Backend+DB+Unity |
-| اعتبار رفتاری/ربات جانشین و مجازات | timeout bot پایه؛ رسیدگی ناقص | S04/S07 | Backend+Moderation |
-| Economy Ledger/سکه/الماس/فروشگاه | پیاده نشده | S08 | Backend+DB+Unity |
-| کارت شانسی روزانه و آیتم زمان‌دار | پیاده نشده | S08 | Backend+DB+Unity |
-| تاج شکسته و تالار پادشاهان | پیاده نشده | S08 | Backend+Unity |
-| دوستان/باشگاه/لیدربورد محلی | پیاده نشده | S09 | Backend+Unity |
-| چت اجتماعی ایمن و استیکر میز | پیاده نشده | S09 | Backend+Unity |
-| کارت تبلیغی و سیستم اسپانسر | پیاده نشده | S10 | Backend+Admin+Unity |
-| تورنمنت اسپانسری | پیاده نشده | S10 | Backend+Admin+Unity |
-| AI-01 ارزیابی کیفیت تصمیم | پیاده نشده | S11 | AI+Backend+Unity |
-| مقیاس هزاران اتصال/Valkey/Workers | فاقد benchmark و شاردینگ | S12 | Backend+OPS |
-| حکم آرنا مستقل | پیاده نشده؛ فاز دوم | S14 | Core+Backend+Unity |
+## تسک‌های قبلی اصلاح‌شده
 
-## Implementation notes
+- `S02-W01-T02`: **قبل:** بازبینی توزیع ۵ + ۸ و انتخاب حکم — **بعد:** توزیع مرحله‌ای E-04: پنج کارت، انتخاب حکم، چهار کارت، چهار کارت (E-04 v2.3)
+- `S02-W01-T01`: **قبل:** بازبینی برزدن CSPRNG و Fisher–Yates — **بعد:** برزدن امن نسخه‌دار با Seed قابل ممیزی و Fisher–Yates (E-04 v2.3)
+- `S07-W01-T01`: **قبل:** صف‌های Solo و Duo به شکل مستقل — **بعد:** تیکت‌های Solo و Duo در یک رنک با اولویت مسابقات هم‌نوع (MM-01 v1.1)
+- `S07-W01-T03`: **قبل:** شبیه‌سازی صف، latency و انتظار — **بعد:** شبیه‌سازی صف، عدالت برد، RTT و زمان انتظار در ترکیب‌های مجاز (MM-01 v1.1)
+- `S08-W03-T01`: **قبل:** مدل shard/puzzle/claim و مأموریت — **بعد:** تعریف مدل مستقل RL-01، قطعات یکتا و اعطای فقط از برد معتبر رنک (RL-01 v1.0)
+- `S08-W03-T02`: **قبل:** نمایش تاج شکسته و گالری پادشاهان — **بعد:** نمایش تاج شکسته، تالار پادشاهان و دریافت جایزه در Unity (RL-01 v1.0)
+- `S06-W03-T02`: **قبل:** انیمیشن برزدن، توزیع، حکم و برد — **بعد:** همگام‌سازی انیمیشن برزدن، Cut، توزیع ۵+۴+۴ و انتخاب حکم (E-04 v2.3)
 
-- Prioritize deterministic rules and event log before ranked economy/AI reports; match worker remains authoritative.
-- Preserve no-cost free/ranked entry, no VIP, no coin grants from repeated bot play, no free text at the table.
-- AI-01 Ex-Ante analysis only from the legal observation at the decision instant; post-hoc replay must not pollute decision score.
-- Do not merge Arena abilities into classic rules; independent versioned ruleset.
-- LAN host mode must not mint authoritative online progress and needs true four-device testing.
-- Avoid adding ORM/networking framework until benchmark/test justifies operational complexity.
+## جداسازی منطق
+- Core: Rules, Shuffle, Cut, DealPlanner, Audit؛ بدون وابستگی به تبلیغات، اقتصاد و MMR.
+- Rank: Queue, Party, Candidate, Reservation, ReadyCheck؛ MatchStarted بعد از چهار Ready؛ نتیجه رسمی Idempotent.
+- Royal: رویداد RankedMatchAdjudicated، ثبت در Ledger، Claim و Inventory؛ پاداش فقط Cosmetic.
+- Unity: دریافت public/seat-private، انیمیشن مستقل از state و صفحه‌های RL/Ranked؛ کلاینت مرجع نتیجه نیست.
 
-## Repo changes made in this planning update
+## مرز انجام‌شده/نشده
 
-- Added `docs/planning/STAGES_WORKS_TASKS.md` (full 15-stage / 45-work / 135-task backlog).
-- Added `docs/planning/CHANGE_IMPACT.md` (traceability and caveats).
-- Added `docs/planning/backlog.csv` and `docs/planning/backlog.json` (machine-readable ticket import).
-- Added `AGENTS.md` (development contract).
-- Added `docs/planning/DECISIONS_TO_CONFIRM.md` (blocking decision checklist).
-- Added the Word plan `docs/planning/Hokmnameh_Stage_Work_Task_Development_Plan.docx` if binary upload succeeds.
-- No unreviewed game/runtime behavior is changed in this planning commit.
+**انجام‌شده:** تحلیل اسناد، به‌روزرسانی بک‌لاگ، سند Word و قراردادهای تسک. **انجام‌نشده:** پیاده‌سازی کد و Migration و انتشار یا تست دستگاه.

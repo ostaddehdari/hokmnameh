@@ -1,11 +1,22 @@
-# Decisions to confirm before coding beyond bootstrap
+# تصمیم‌های باز برای تایید مدیر — v2.0
 
-1. Exact exported/versioned text of the owner-edited Master Document; current private ChatGPT URL is not directly accessible.
-2. Hakem rotation after each hand, kot/cut/rubicon values, clock and forfeit rules, exact target points and variant support.
-3. Ranked confidence calibration, tie breakers, mixed solo/duo fallback boundary, abandon penalties and appeal SLA.
-4. One-time onboarding/academy XP and coin amounts; daily reward caps, lucky-card odds, timed item expiry.
-5. Sponsor tournament monetary rules under applicable local law; sponsorship impression definition and privacy consent.
-6. AI-01 quality scale, confidence reporting, exclusion of live assistance, post-match report visibility and retention.
-7. Offline LAN behavior when host battery dies: terminate vs controlled migration; security and LAN platform support.
-8. UX sign-off on 75-degree table, Mobile Legends-inspired (not copied) lobby, safe area, RTL typography, ads safety.
-9. Production target CCU, beta region, budget/SLO, deployment/release authority and emergency kill switch.
+این موارد قبل از انتشار P0/P1 باید به RuleSet/Policy/Content Registry تبدیل شوند؛ هیچ مقدار آزمایشی به صورت silently approved نیست.
+
+1. **E-04:** نقش توزیع‌کننده و بازیکن برش‌دهنده، جهت حرکت، first receiver، pack size — `PENDING_APPROVAL`.
+2. **E-04:** Cut مجاز در حالت‌های بازی و محدوده CutIndex (۱..۵۱ یا محدود) — `PENDING_APPROVAL`.
+3. **E-04:** Deadline بریدن (۳ ثانیه فقط پیشنهاد)، انتخاب حکم و سیاست Timeout — `PENDING_APPROVAL`.
+4. **E-04:** Reveal راند زودتمام‌شده/ابطالی و مدت نگهداری Seed/Deck/Log — `PENDING_APPROVAL`.
+5. **E-04:** نسخه نهایی Canonical Encoding و شدت ممیزی رنک/جام؛ Client Entropy/Beacon فاز بعد — `PENDING_APPROVAL`.
+6. **E-04:** مدت و سبک انیمیشن Fast/Normal/Cinematic و نقطه شروع منطقی بازی — `PENDING_APPROVAL`.
+7. **MM-01:** ارقام ۲۰/۴۵/۹۰ ثانیه و حدود برد ۴۵–۵۵٪ / ۴۰–۶۰٪ به‌عنوان آزمایشی — `PENDING_APPROVAL`.
+8. **MM-01:** Ready Check timeout و Cooldown بعد از Ready Check Dodging — `PENDING_APPROVAL`.
+9. **MM-01:** RTT/Jitter/Packet Loss و قیود شبکه برای ایران و هر منطقه — `PENDING_APPROVAL`.
+10. **MM-01:** اختلاف مهارت Duo؛ ۴۰۰ واحد بدون تعریف مقیاس معتبر نیست — `PENDING_APPROVAL`.
+11. **MM-01:** اطلاع‌رسانی Mixed، رده اسطوره و سیاست Duo پس از Decline — `PENDING_APPROVAL`.
+12. **MM-01:** Synergy بازیکنان Duo بعد از کالیبراسیون واقعی، نه ضریب ساختگی — `PENDING_APPROVAL`.
+13. **RL-01:** عدد قطعات سه پرتره ۶/۸/۱۰ و Focus پیش‌فرض تاج زرین — `PENDING_APPROVAL`.
+14. **RL-01:** آستانه مشارکت انسانی ۸۵٪ و حداقل بازی واقعی هنگام Forfeit — `PENDING_APPROVAL`.
+15. **RL-01:** پاداش اولیه سکه‌ای صفر؛ Overflow Record پس از تکمیل مجموعه‌ها — `PENDING_APPROVAL`.
+16. **RL-01:** معمای Root→Wave→Wind، متن سرنخ‌ها و جایزه نهایی P2 — `PENDING_APPROVAL`.
+17. **RL-01:** آرشیو فصلی قابل ادامه و ویترین عمومی انتخابی — `PENDING_APPROVAL`.
+18. **RL-01:** گسترش باشگاهی اختیاری P3 — `PENDING_APPROVAL`.

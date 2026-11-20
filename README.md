@@ -53,3 +53,7 @@ Open `unity/` with a Unity **6.3 LTS** Editor with Android Build Support. Click 
 The staged roadmap is in [docs/planning/STAGES_WORKS_TASKS.md](docs/planning/STAGES_WORKS_TASKS.md) (15 Stages / 45 Works / 135 Tasks), with a [Word edition](docs/planning/Hokmnameh_Stage_Work_Task_Development_Plan.docx), [CSV backlog](docs/planning/backlog.csv) and [JSON backlog](docs/planning/backlog.json).
 
 See [change-impact register](docs/planning/CHANGE_IMPACT.md), [decisions awaiting confirmation](docs/planning/DECISIONS_TO_CONFIRM.md), and [AGENTS.md](AGENTS.md) for the development contract. The owner-edited Master Document in a private ChatGPT conversation could not be read directly during the comparison; the roadmap is based on corroborated project decisions and the repository baseline. This planning commit **does not implement the listed features**.
+
+## Roadmap v2.0 — integration of E-04, MM-01 and RL-01
+
+The current [development plan](docs/planning/STAGES_WORKS_TASKS.md) now has **15 Stages / 69 Works / 239 Tasks**, including 24 new Works, 104 new Tasks and 7 revised Tasks. See [change impact](docs/planning/CHANGE_IMPACT.md), [decision approval register](docs/planning/DECISIONS_TO_CONFIRM.md), [JSON backlog](docs/planning/backlog.json), [CSV backlog](docs/planning/backlog.csv), and [Word plan v2.0](docs/planning/Hokmnameh_Development_MasterPlan_v2.0.docx). **This is planning only; features have not been implemented.**
