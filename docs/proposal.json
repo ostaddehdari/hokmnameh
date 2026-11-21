@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0",
+  "title": "بازی حکم آنلاین حکمنامه",
+  "project_slug": "hokmnameh",
+  "source_repo": "ostaddehdari/hokmnameh",
+  "control_repo": "ostaddehdari/deployment-center",
+  "sources_reviewed": [
+    {"type":"chat_project","description":"گفت‌وگوها و تصمیم‌های قابل دسترس Project بازی حکم تا 2026-11-21"},
+    {"type":"github","description":"README، معماری، API، برنامه v2.0، تصمیم‌های باز و اجرای S01 در main@0867050103efd6e8aec40b6c2c61290ca6bd332f"}
+  ],
+  "facts": [
+    "هسته Pure C#، API نمونه ASP.NET Core، PostgreSQL، Unity/LAN و CI در مخزن موجودند",
+    "CI run 44692067992 سبز گزارش شده اما استقرار VPS اثبات نشده است",
+    "مقصد درخواستی https://srun.ir/hokmnameh و Swagger زیر همان base path است",
+    "ورود آزاد و رنک رایگان و تمرین فاقد پاداش تکرارشونده سکه است"
+  ],
+  "assumptions": ["اعداد SLO/ظرفیت پس از baseline تصویب می‌شوند","ASP.NET Core/PostgreSQL/Unity baseline فعلی حفظ می‌شود"],
+  "open_questions": ["تصویب نهایی Ruleset و تعارض 5+8 با 5+4+4","ارائه‌دهنده SMS و سیاست retention","SLO/RPO/RTO و بودجه عملیات"],
+  "problem": "ساخت یک بازی حکم فارسی منصفانه، پایدار و غیر Pay-to-Win با آنلاین، LAN، رنک و تحلیل مهارت.",
+  "objectives": [
+    {"id":"OBJ-001","description":"مسابقه authoritative و بدون نشت اطلاعات","measure":"Golden/contract/security tests"},
+    {"id":"OBJ-002","description":"مسیر امن استقرار و عملیات","measure":"health, backup, restore and rollback evidence"},
+    {"id":"OBJ-003","description":"رنک و اقتصاد عادلانه","measure":"audit ledgers and policy dashboards"}
+  ],
+  "actors": [
+    {"id":"ACT-001","name":"بازیکن","permissions":["practice","casual","ranked when eligible"]},
+    {"id":"ACT-002","name":"مدیر عملیات","permissions":["release","rollback","monitor without game manipulation"]},
+    {"id":"ACT-003","name":"ناظر ایمنی","permissions":["review reports","moderate","appeals"]}
+  ],
+  "scope": {
+    "mvp":["Classic rules","practice/free rooms","durable match and reconnect","identity","Persian Unity UX","Swagger/OpenAPI","safe staging deployment"],
+    "later":["ranked","economy","royal legacy","sponsors","social","AI coach","scale"],
+    "out_of_scope":["betting","pay-to-win","live ranked AI advice","rank/currency from offline LAN","free text in match"]
+  },
+  "requirements": [
+    {"id":"FR-001","title":"Ruleset کلاسیک نسخه‌دار","priority":"Must","description":"قواعد deterministic و golden-tested","acceptance_criteria":["Golden fixtures pass"]},
+    {"id":"FR-002","title":"Shuffle/Cut/Deal عادلانه","priority":"Must","description":"commit/replay و عدم اثر اقتصاد/MMR","acceptance_criteria":["Official vectors pass","no hidden data leak"]},
+    {"id":"FR-003","title":"هویت مهمان و موبایل","priority":"Must","description":"session امن و قابل revoke","acceptance_criteria":["rotation, revoke and abuse tests pass"]},
+    {"id":"FR-004","title":"تمرین با ربات","priority":"Must","description":"1+3 bots; XP only","acceptance_criteria":["repeatable coin delta equals zero"]},
+    {"id":"FR-005","title":"اتاق آزاد durable","priority":"Must","description":"room, ready, command, reconnect, bot replacement","acceptance_criteria":["four-client restart scenario passes"]},
+    {"id":"FR-006","title":"عدم نشت دست","priority":"Must","description":"seat-private snapshots","acceptance_criteria":["adversarial contract suite detects no foreign hand or seed"]},
+    {"id":"FR-007","title":"Ranked Solo/Duo","priority":"Must","description":"same-type preference and four-human ready","acceptance_criteria":["policy simulation and atomic reservation pass"]},
+    {"id":"FR-008","title":"فصل و لیگ","priority":"Must","description":"three-month seasons and six leagues","acceptance_criteria":["idempotent adjudication and season rollover pass"]},
+    {"id":"FR-009","title":"ترک و جایگزینی","priority":"Must","description":"evidence, bot completion and appeal","acceptance_criteria":["disconnect matrix passes without false intentional label"]},
+    {"id":"FR-010","title":"اقتصاد غیر P2W","priority":"Must","description":"free entry, double-entry cosmetics","acceptance_criteria":["no gameplay advantage and no practice coin mint"]},
+    {"id":"FR-011","title":"کارت شانس","priority":"Should","description":"bounded transparent reward claim","acceptance_criteria":["limits and idempotency pass"]},
+    {"id":"FR-012","title":"Royal Legacy","priority":"Should","description":"unique ranked-win shards and recoverable claim","acceptance_criteria":["duplicate match cannot grant duplicate shard"]},
+    {"id":"FR-013","title":"اسپانسر/تورنمنت","priority":"Should","description":"audited cosmetics and impressions","acceptance_criteria":["sponsor state cannot affect RNG/MMR"]},
+    {"id":"FR-014","title":"ارتباطات امن","priority":"Must","description":"preset in-match and moderated out-of-match","acceptance_criteria":["report/appeal workflow passes"]},
+    {"id":"FR-015","title":"AI-01","priority":"Should","description":"ex-ante post-match decision analysis","acceptance_criteria":["hidden-information and ex-ante golden tests pass"]},
+    {"id":"FR-016","title":"ربات پنج‌سطحی","priority":"Should","description":"legal information only","acceptance_criteria":["no omniscient features in observation"]},
+    {"id":"FR-017","title":"LAN بدون اینترنت","priority":"Must","description":"four devices; no online authority rewards","acceptance_criteria":["offline device test and reward isolation pass"]},
+    {"id":"FR-018","title":"Swagger/OpenAPI","priority":"Must","description":"versioned API documentation under base path","acceptance_criteria":["Swagger UI 200 and OpenAPI JSON validates at public target"]},
+    {"id":"FR-019","title":"UX فارسی","priority":"Must","description":"RTL mobile accessible low-distraction table","acceptance_criteria":["device matrix and accessibility checklist pass"]},
+    {"id":"FR-020","title":"Feature controls","priority":"Must","description":"version, flags and kill switches","acceptance_criteria":["rollback/disable drill passes"]}
+  ],
+  "nonfunctional_requirements": [
+    {"id":"NFR-001","priority":"Must","description":"capacity targets evidence-based","acceptance_criteria":["100/500/1000/4000 synthetic reports"]},
+    {"id":"NFR-002","priority":"Must","description":"private data services and TLS gateway","acceptance_criteria":["no public DB/API bind"]},
+    {"id":"NFR-003","priority":"Must","description":"UTC, typed errors, bounded pagination","acceptance_criteria":["contract tests pass"]},
+    {"id":"NFR-004","priority":"Must","description":"mobile accessibility","acceptance_criteria":["contrast/reduced-motion/non-color checks pass"]},
+    {"id":"NFR-005","priority":"Must","description":"redacted observability","acceptance_criteria":["dashboards and secret/PII redaction tests pass"]},
+    {"id":"SEC-001","priority":"Must","description":"auth/authz/rate-limit/security scans","acceptance_criteria":["security suite pass"]},
+    {"id":"SEC-002","priority":"Must","description":"secret/hand/seed/PII exclusion","acceptance_criteria":["payload and log leak tests pass"]},
+    {"id":"SEC-003","priority":"Must","description":"cheating and abuse threat model","acceptance_criteria":["controls traced to tests"]},
+    {"id":"DATA-001","priority":"Must","description":"versioned safe PostgreSQL migrations","acceptance_criteria":["apply twice and isolated restore pass"]},
+    {"id":"DATA-002","priority":"Must","description":"auditable idempotent ledgers","acceptance_criteria":["race/duplicate tests pass"]},
+    {"id":"OPS-001","priority":"Must","description":"separate environments and recovery","acceptance_criteria":["real restore drill evidence"]},
+    {"id":"OPS-002","priority":"Must","description":"safe immutable deployment","acceptance_criteria":["preflight, nginx test, health and rollback pass"]},
+    {"id":"OPS-003","priority":"Must","description":"quality CI pipeline","acceptance_criteria":["required checks green"]}
+  ],
+  "data_entities": [
+    {"name":"Account/Profile/Session","fields":["id","status","token_hash","expires_at"],"constraints":["hashed tokens","unique active session identifiers"],"relationships":["Account owns Profile and Sessions"]},
+    {"name":"Match/Participant/Event","fields":["match_id","seat","sequence","action_id","state_version","payload_version"],"constraints":["single writer","unique sequence/action"],"relationships":["Match has participants and events"]},
+    {"name":"Ledger/Inventory","fields":["entry_id","account_id","correlation_id","amount","asset"],"constraints":["append-only","idempotency unique","balanced transaction"],"relationships":["Account owns inventory"]},
+    {"name":"Season/RankEntry","fields":["season_id","account_id","mmr","league"],"constraints":["versioned policy"],"relationships":["Season has rank entries"]},
+    {"name":"AiReport","fields":["match_id","account_id","model_version","confidence","metrics"],"constraints":["post-match","legal information only"],"relationships":["Match produces reports"]}
+  ],
+  "api_contracts": [
+    {"base":"/hokmnameh/api/v1","operations":["identity guest/me/upgrade","rooms create/join/state/trump/play","rank queue/ready","economy inventory/claim"],"auth":"Bearer plus object authorization","errors":[400,401,403,404,409,422,429,503],"idempotency":"required for mutations","pagination":"cursor bounded","versioning":"URL v1 and schema versions"},
+    {"base":"/hokmnameh/swagger","operations":["Swagger UI"],"auth":"public docs for public contract; privileged operations excluded/redacted","errors":[404,503],"idempotency":"n/a","pagination":"n/a","versioning":"v1 OpenAPI"}
+  ],
+  "architecture": {"style":"modular-authoritative-game-server","rationale":"حفظ سادگی فعلی و جداسازی worker فقط بر اساس load evidence","modules":["identity","rules-match","realtime","rank","economy","royal","sponsor","social-safety","analytics-ai","operations"],"adrs":["Pure C# shared core","PostgreSQL truth","single-writer match","offline AI worker"]},
+  "security": {"threats":["cheating","hidden information leak","replay","double reward","OTP abuse","collusion","admin misuse"],"controls":["authoritative server","object auth","idempotency","state version","rate limit","seed commitment","audit","redaction","least privilege"],"data_classification":"PII/session high; hands/seeds confidential; public profile configurable"},
+  "engineering": {"code_quality":["nullable/format/static analysis","small domain modules","versioned contracts"],"testing":["unit","property/golden","integration","contract","E2E/device","chaos/load","security","restore/rollback"],"ci_cd":["format","static","build","unit","integration/migration","scan","image","review","controlled deploy"]},
+  "deployment": {"server":null,"domain":"srun.ir","base_path":"/hokmnameh","environment":"production target; staging required","notes":["User supplied target URL","Actual VPS route and Swagger remain unverified","API and DB bind privately"]},
+  "risks":["5+8 vs 5+4+4 conflict","unfrozen rules","in-memory match loss","missing VPS evidence","economy inflation","collusion","SMS dependency","premature scale/AI complexity"],
+  "definition_of_done":["acceptance criteria pass","source/control commits recorded","tests and logs have real evidence","docs/OpenAPI/migrations updated","security/telemetry/rollback reviewed","no critical blocker"]
+}
