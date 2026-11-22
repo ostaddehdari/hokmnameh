@@ -36,12 +36,37 @@ namespace Hokmnameh.Core
         public int lastTrickWinner = -1;
         public int winnerTeam = -1;
         public int ledSuit = -1;
-        public string ruleset = "iranian-hokm-classic-v1";
+        public string ruleset = ClassicRules.ImmutableId;
     }
 
     public sealed class GameRuleException : Exception
     {
         public GameRuleException(string message) : base(message) { }
+    }
+
+    public static class ClassicRules
+    {
+        public const string ImmutableId = "iranian-hokm-classic-v1";
+        public const int PreliminaryCardsPerSeat = 5;
+        public const int CardsPerSeat = 13;
+        public const int TricksToWinRound = 7;
+        public const int MatchTargetPoints = 7;
+
+        public static int RoundPoints(int winningTeam, int hakemTeam, int losingTeamTricks)
+        {
+            if (winningTeam < 0 || winningTeam > 1) throw new ArgumentOutOfRangeException("winningTeam");
+            if (hakemTeam < 0 || hakemTeam > 1) throw new ArgumentOutOfRangeException("hakemTeam");
+            if (losingTeamTricks < 0 || losingTeamTricks > 6) throw new ArgumentOutOfRangeException("losingTeamTricks");
+            if (losingTeamTricks != 0) return 1;
+            return winningTeam == hakemTeam ? 2 : 3;
+        }
+
+        public static int NextHakem(int currentHakem, int winningTeam)
+        {
+            if (currentHakem < 0 || currentHakem > 3) throw new ArgumentOutOfRangeException("currentHakem");
+            if (winningTeam < 0 || winningTeam > 1) throw new ArgumentOutOfRangeException("winningTeam");
+            return currentHakem % 2 == winningTeam ? currentHakem : (currentHakem + 1) % 4;
+        }
     }
 
     public sealed class HokmGame
@@ -145,19 +170,16 @@ namespace Hokmnameh.Core
             foreach (var move in trick) lastTrick.Add(new CardPlayed(move.seat, move.card));
             trick.Clear();
             tricksWon[TeamOf(winner)]++;
-            if (tricksWon[TeamOf(winner)] >= 7)
+            if (tricksWon[TeamOf(winner)] >= ClassicRules.TricksToWinRound)
             {
                 int winningTeam = TeamOf(winner);
-                bool sweep = tricksWon[1 - winningTeam] == 0;
-                // RuleSet v1 provisional: 2 for hakim's sweep, 3 for opponent's sweep.
-                int increment = sweep ? (TeamOf(Hakem) == winningTeam ? 2 : 3) : 1;
+                int increment = ClassicRules.RoundPoints(winningTeam, TeamOf(Hakem), tricksWon[1 - winningTeam]);
                 points[winningTeam] += increment;
-                if (points[winningTeam] >= 7) { WinnerTeam = winningTeam; Phase = GamePhase.Finished; }
+                if (points[winningTeam] >= ClassicRules.MatchTargetPoints) { WinnerTeam = winningTeam; Phase = GamePhase.Finished; }
                 else
                 {
                     Phase = GamePhase.Waiting;
-                    // House rule for v1: successful hakem stays; otherwise next clockwise seat is hakem.
-                    Hakem = TeamOf(Hakem) == winningTeam ? Hakem : (Hakem + 1) % 4;
+                    Hakem = ClassicRules.NextHakem(Hakem, winningTeam);
                 }
             }
             else Turn = winner;
