@@ -1,0 +1,704 @@
+{
+  "schema_version": "1.0",
+  "task_id": "S00-W01-T02",
+  "project_slug": "hokmnameh",
+  "source_commit": "e8c91a31ce347d423d7402dd51e05b9938be18bc",
+  "generated_at": "2026-11-22",
+  "allowed_statuses": [
+    "implemented",
+    "partial",
+    "planned",
+    "pending_decision",
+    "operational_unverified"
+  ],
+  "summary": {
+    "implemented": 0,
+    "partial": 15,
+    "planned": 15,
+    "pending_decision": 0,
+    "operational_unverified": 3
+  },
+  "entries": [
+    {
+      "id": "FR-001",
+      "title": "Ruleset کلاسیک نسخه‌دار",
+      "status": "partial",
+      "decision_status": "Pending",
+      "code_paths": [
+        "unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs",
+        "docs/ruleset_hokm_classic_v1.json",
+        "backend/tests/Hokmnameh.SmokeTests/Program.cs"
+      ],
+      "evidence": "قواعد پایه و smoke test موجود است؛ قرارداد فعلی هنوز 5+8 و برخی امتیازها provisional است.",
+      "gaps": [
+        "تصویب و freeze قواعد",
+        "Golden/property tests کامل"
+      ],
+      "dependencies": [
+        "S00-W02",
+        "S02-W01"
+      ]
+    },
+    {
+      "id": "FR-002",
+      "title": "Shuffle/Cut/Deal عادلانه",
+      "status": "planned",
+      "decision_status": "Pending",
+      "code_paths": [
+        "unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs",
+        "docs/planning/CHANGE_IMPACT.md"
+      ],
+      "evidence": "Shuffle فعلی CSPRNG است اما Commit/Cut/HKDF/HMAC و Deal 5+4+4 اجرا نشده‌اند.",
+      "gaps": [
+        "پیاده‌سازی E-04",
+        "test vector و audit/reveal"
+      ],
+      "dependencies": [
+        "S00-W04",
+        "S02-W04",
+        "S02-W05",
+        "S02-W06"
+      ]
+    },
+    {
+      "id": "FR-003",
+      "title": "هویت مهمان و موبایل",
+      "status": "partial",
+      "decision_status": "Pending",
+      "code_paths": [
+        "backend/src/Hokmnameh.Api/AuthService.cs",
+        "backend/db/migrations/001_core.sql",
+        "docs/API.md"
+      ],
+      "evidence": "هویت مهمان، token hash و session پایه وجود دارد.",
+      "gaps": [
+        "OTP موبایل",
+        "rotation/recovery/revocation API",
+        "abuse controls کامل"
+      ],
+      "dependencies": [
+        "S03-W01"
+      ]
+    },
+    {
+      "id": "FR-004",
+      "title": "تمرین با ربات",
+      "status": "partial",
+      "decision_status": "Approved",
+      "code_paths": [
+        "backend/src/Hokmnameh.Api/Rooms.cs",
+        "unity/Packages/com.hokmnameh.core/Runtime/HokmBot.cs",
+        "unity/Assets/Hokmnameh/Runtime/Launcher.cs"
+      ],
+      "evidence": "practice با سه بات heuristic موجود است.",
+      "gaps": [
+        "XP ledger idempotent",
+        "اثبات coin delta=0",
+        "انتخاب پنج سطح سختی"
+      ],
+      "dependencies": [
+        "S03-W02",
+        "S05-W02"
+      ]
+    },
+    {
+      "id": "FR-005",
+      "title": "اتاق آزاد durable",
+      "status": "partial",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "backend/src/Hokmnameh.Api/Rooms.cs",
+        "backend/src/Hokmnameh.Api/Program.cs"
+      ],
+      "evidence": "اتاق آزاد، join code و فرمان‌های HTTP موجودند؛ state حافظه‌ای است.",
+      "gaps": [
+        "ready check",
+        "event log پایدار",
+        "reconnect پس از restart",
+        "bot replacement کامل"
+      ],
+      "dependencies": [
+        "S04-W01",
+        "S04-W02",
+        "S04-W03"
+      ]
+    },
+    {
+      "id": "FR-006",
+      "title": "عدم نشت دست",
+      "status": "partial",
+      "decision_status": "Approved",
+      "code_paths": [
+        "unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs",
+        "backend/src/Hokmnameh.Api/Rooms.cs",
+        "docs/API.md"
+      ],
+      "evidence": "Snapshot صندلی‌محور فقط hand خود بازیکن را هدف می‌گیرد.",
+      "gaps": [
+        "contract/security test خصمانه",
+        "redaction سراسری log/analytics"
+      ],
+      "dependencies": [
+        "S02-W02",
+        "S12-W02"
+      ]
+    },
+    {
+      "id": "FR-007",
+      "title": "Ranked Solo/Duo",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "docs/planning/STAGES_WORKS_TASKS.md"
+      ],
+      "evidence": "کد matchmaking/ranked در runtime وجود ندارد.",
+      "gaps": [
+        "party consent",
+        "queue policy",
+        "atomic reservation",
+        "چهار Ready انسانی"
+      ],
+      "dependencies": [
+        "S07-W01",
+        "S07-W04",
+        "S07-W05"
+      ]
+    },
+    {
+      "id": "FR-008",
+      "title": "فصل و لیگ",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "docs/planning/STAGES_WORKS_TASKS.md"
+      ],
+      "evidence": "فصل، لیگ و MMR فقط در برنامه هستند.",
+      "gaps": [
+        "season ledger",
+        "شش لیگ",
+        "rollover سه‌ماهه",
+        "idempotent adjudication"
+      ],
+      "dependencies": [
+        "S07-W02",
+        "S07-W03"
+      ]
+    },
+    {
+      "id": "FR-009",
+      "title": "ترک و جایگزینی",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "backend/src/Hokmnameh.Api/Rooms.cs",
+        "docs/NEXT_STEPS.md"
+      ],
+      "evidence": "timeout ساده وجود دارد؛ تشخیص ترک، sanction و appeal وجود ندارد.",
+      "gaps": [
+        "disconnect evidence",
+        "bot completion",
+        "penalty escalation",
+        "appeal"
+      ],
+      "dependencies": [
+        "S04-W03",
+        "S07-W06",
+        "S09-W03"
+      ]
+    },
+    {
+      "id": "FR-010",
+      "title": "اقتصاد غیر P2W",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "docs/ARCHITECTURE.md",
+        "docs/planning/STAGES_WORKS_TASKS.md"
+      ],
+      "evidence": "قید non-P2W مستند است؛ ledger اقتصادی runtime وجود ندارد.",
+      "gaps": [
+        "double-entry ledger",
+        "inventory",
+        "free-entry invariant",
+        "anti-inflation tests"
+      ],
+      "dependencies": [
+        "S08-W01",
+        "S08-W02"
+      ]
+    },
+    {
+      "id": "FR-011",
+      "title": "کارت شانس",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "docs/planning/STAGES_WORKS_TASKS.md"
+      ],
+      "evidence": "کارت شانس runtime ندارد.",
+      "gaps": [
+        "charge policy",
+        "daily pool",
+        "bounded claim",
+        "idempotency"
+      ],
+      "dependencies": [
+        "S08-W02"
+      ]
+    },
+    {
+      "id": "FR-012",
+      "title": "Royal Legacy",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "docs/planning/CHANGE_IMPACT.md"
+      ],
+      "evidence": "Royal Legacy فقط blueprint/backlog است.",
+      "gaps": [
+        "registry/focus lock",
+        "ranked win grant",
+        "outbox/claim",
+        "Unity screens"
+      ],
+      "dependencies": [
+        "S08-W03",
+        "S08-W04",
+        "S08-W05",
+        "S08-W06"
+      ]
+    },
+    {
+      "id": "FR-013",
+      "title": "اسپانسر/تورنمنت",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "docs/ARCHITECTURE.md",
+        "docs/planning/STAGES_WORKS_TASKS.md"
+      ],
+      "evidence": "اصل عدم اثر اسپانسر بر قواعد مستند است؛ سرویس sponsor وجود ندارد.",
+      "gaps": [
+        "campaign/tournament model",
+        "impression audit",
+        "billing/reporting"
+      ],
+      "dependencies": [
+        "S10-W01",
+        "S10-W02",
+        "S10-W03"
+      ]
+    },
+    {
+      "id": "FR-014",
+      "title": "ارتباطات امن",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "AGENTS.md",
+        "docs/ARCHITECTURE.md"
+      ],
+      "evidence": "ممنوعیت free-text داخل match مستند است؛ moderation runtime وجود ندارد.",
+      "gaps": [
+        "preset emotes",
+        "Persian moderation",
+        "report/appeal/audit"
+      ],
+      "dependencies": [
+        "S09-W01",
+        "S09-W02",
+        "S09-W03"
+      ]
+    },
+    {
+      "id": "FR-015",
+      "title": "AI-01",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "docs/planning/STAGES_WORKS_TASKS.md"
+      ],
+      "evidence": "AI-01 در backlog است و worker/feature store وجود ندارد.",
+      "gaps": [
+        "legal feature store",
+        "ex-ante evaluator",
+        "CI/confidence",
+        "post-match report"
+      ],
+      "dependencies": [
+        "S11-W01",
+        "S11-W02"
+      ]
+    },
+    {
+      "id": "FR-016",
+      "title": "ربات پنج‌سطحی",
+      "status": "partial",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "unity/Packages/com.hokmnameh.core/Runtime/HokmBot.cs"
+      ],
+      "evidence": "یک heuristic bot وجود دارد؛ پنج سطح و ISMCTS وجود ندارد.",
+      "gaps": [
+        "difficulty contract",
+        "belief sampling/ISMCTS",
+        "no-omniscience tests"
+      ],
+      "dependencies": [
+        "S05-W02",
+        "S11-W03"
+      ]
+    },
+    {
+      "id": "FR-017",
+      "title": "LAN بدون اینترنت",
+      "status": "partial",
+      "decision_status": "Approved",
+      "code_paths": [
+        "unity/Assets/Hokmnameh/Runtime/LanHost.cs",
+        "unity/Assets/Hokmnameh/Runtime/LanClient.cs",
+        "docs/UNITY_LAN.md"
+      ],
+      "evidence": "prototype میزبان/کلاینت LAN موجود است.",
+      "gaps": [
+        "تست واقعی چهار دستگاه",
+        "auth/integrity LAN",
+        "reward isolation evidence"
+      ],
+      "dependencies": [
+        "S05-W01",
+        "S05-W03",
+        "S13-W02"
+      ]
+    },
+    {
+      "id": "FR-018",
+      "title": "Swagger/OpenAPI",
+      "status": "planned",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "backend/src/Hokmnameh.Api/Program.cs",
+        "backend/src/Hokmnameh.Api/Hokmnameh.Api.csproj",
+        "docs/API.md"
+      ],
+      "evidence": "API دستی مستند است؛ Swagger/OpenAPI middleware/package فعال نیست.",
+      "gaps": [
+        "OpenAPI generation",
+        "Swagger UI زیر base path",
+        "public HTTP verification"
+      ],
+      "dependencies": [
+        "S01-W02",
+        "S12-W04"
+      ]
+    },
+    {
+      "id": "FR-019",
+      "title": "UX فارسی",
+      "status": "partial",
+      "decision_status": "Approved",
+      "code_paths": [
+        "unity/Assets/Hokmnameh/Runtime/Launcher.cs",
+        "docs/NEXT_STEPS.md"
+      ],
+      "evidence": "UI prototype عملکردی است و design system نهایی نیست.",
+      "gaps": [
+        "RTL/design system",
+        "responsive device matrix",
+        "accessibility/reduced motion"
+      ],
+      "dependencies": [
+        "S06-W01",
+        "S06-W02",
+        "S06-W03",
+        "S06-W04"
+      ]
+    },
+    {
+      "id": "FR-020",
+      "title": "Feature controls",
+      "status": "planned",
+      "decision_status": "Approved",
+      "code_paths": [
+        "docs/ARCHITECTURE.md",
+        "docs/planning/STAGES_WORKS_TASKS.md"
+      ],
+      "evidence": "versioning محدود موجود است؛ feature flag/kill switch runtime کامل نیست.",
+      "gaps": [
+        "config registry",
+        "audited flags",
+        "kill-switch drill"
+      ],
+      "dependencies": [
+        "S00-W01",
+        "S12-W05"
+      ]
+    },
+    {
+      "id": "NFR-001",
+      "title": "capacity targets evidence-based",
+      "status": "operational_unverified",
+      "decision_status": "Pending",
+      "code_paths": [
+        "docs/ARCHITECTURE.md",
+        "docs/NEXT_STEPS.md"
+      ],
+      "evidence": "هدف بار و مراحل تست مستندند؛ benchmark واقعی وجود ندارد.",
+      "gaps": [
+        "load harness",
+        "100/500/1000/4000 reports",
+        "chaos profile"
+      ],
+      "dependencies": [
+        "S12-W03",
+        "S13-W01"
+      ]
+    },
+    {
+      "id": "NFR-002",
+      "title": "private data services and TLS gateway",
+      "status": "partial",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "docker-compose.yml",
+        "deploy/nginx/hokmnameh-location.conf",
+        "docs/DEPLOYMENT.md"
+      ],
+      "evidence": "localhost/private-network intent در config وجود دارد.",
+      "gaps": [
+        "VPS socket/firewall evidence",
+        "TLS/public route verification"
+      ],
+      "dependencies": [
+        "S01-W02",
+        "S12-W02"
+      ]
+    },
+    {
+      "id": "NFR-003",
+      "title": "UTC, typed errors, bounded pagination",
+      "status": "partial",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "backend/src/Hokmnameh.Api/Program.cs",
+        "backend/db/migrations/001_core.sql"
+      ],
+      "evidence": "UTC timestamps و برخی statusها وجود دارند.",
+      "gaps": [
+        "ProblemDetails typed errors",
+        "bounded pagination",
+        "contract consistency tests"
+      ],
+      "dependencies": [
+        "S04-W04",
+        "S12-W04"
+      ]
+    },
+    {
+      "id": "NFR-004",
+      "title": "mobile accessibility",
+      "status": "planned",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "docs/proposal.md",
+        "docs/NEXT_STEPS.md"
+      ],
+      "evidence": "الزامات accessibility ثبت شده‌اند ولی UI نهایی/تست وجود ندارد.",
+      "gaps": [
+        "contrast/safe-area/reduced-motion/non-color tests"
+      ],
+      "dependencies": [
+        "S06-W04",
+        "S13-W02"
+      ]
+    },
+    {
+      "id": "NFR-005",
+      "title": "redacted observability",
+      "status": "partial",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "deploy/scripts/watch-health.sh",
+        "deploy/systemd/hokmnameh-health.service",
+        "docs/operations/MONITORING.md"
+      ],
+      "evidence": "health watcher پایه موجود است.",
+      "gaps": [
+        "structured logs",
+        "metrics/traces",
+        "dashboard/alerts",
+        "redaction tests"
+      ],
+      "dependencies": [
+        "S01-W03",
+        "S12-W01"
+      ]
+    },
+    {
+      "id": "SEC-001",
+      "title": "auth/authz/rate-limit/security scans",
+      "status": "partial",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "backend/src/Hokmnameh.Api/AuthService.cs",
+        "backend/src/Hokmnameh.Api/Program.cs",
+        ".github/workflows/backend.yml"
+      ],
+      "evidence": "bearer validation و rate limit پایه موجود است.",
+      "gaps": [
+        "object auth suite",
+        "CORS/security headers",
+        "SAST/dependency policy",
+        "session rotation"
+      ],
+      "dependencies": [
+        "S03-W01",
+        "S12-W02"
+      ]
+    },
+    {
+      "id": "SEC-002",
+      "title": "secret/hand/seed/PII exclusion",
+      "status": "partial",
+      "decision_status": "Approved",
+      "code_paths": [
+        "backend/src/Hokmnameh.Api/Rooms.cs",
+        "AGENTS.md"
+      ],
+      "evidence": "اصل محرمانگی و snapshot صندلی‌محور موجود است.",
+      "gaps": [
+        "automated leak tests برای payload/log/analytics",
+        "seed retention policy"
+      ],
+      "dependencies": [
+        "S02-W02",
+        "S12-W02"
+      ]
+    },
+    {
+      "id": "SEC-003",
+      "title": "cheating and abuse threat model",
+      "status": "planned",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "docs/proposal.md",
+        "docs/planning/DECISIONS_TO_CONFIRM.md"
+      ],
+      "evidence": "فهرست تهدید در proposal هست؛ threat model اجرایی و trace کنترل‌ها ناقص است.",
+      "gaps": [
+        "cheating/replay/collusion/admin-abuse model",
+        "control-to-test trace"
+      ],
+      "dependencies": [
+        "S00-W01",
+        "S12-W02"
+      ]
+    },
+    {
+      "id": "DATA-001",
+      "title": "versioned safe PostgreSQL migrations",
+      "status": "partial",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "backend/db/migrations/001_core.sql",
+        "deploy/scripts/migrate.sh",
+        "docs/adr/0002-deployment-safety-and-migrations.md"
+      ],
+      "evidence": "migration checksum/lock tooling ایجاد شده است.",
+      "gaps": [
+        "production apply evidence",
+        "backfill/rollback per migration",
+        "isolated restore proof"
+      ],
+      "dependencies": [
+        "S01-W03",
+        "S12-W06"
+      ]
+    },
+    {
+      "id": "DATA-002",
+      "title": "auditable idempotent ledgers",
+      "status": "planned",
+      "decision_status": "Assumed",
+      "code_paths": [
+        "backend/db/migrations/001_core.sql",
+        "docs/planning/STAGES_WORKS_TASKS.md"
+      ],
+      "evidence": "recorded match پایه هست؛ event/reward ledgers کامل نیستند.",
+      "gaps": [
+        "append-only event ledger",
+        "idempotency/optimistic concurrency",
+        "race tests"
+      ],
+      "dependencies": [
+        "S02-W02",
+        "S04-W02",
+        "S08-W01"
+      ]
+    },
+    {
+      "id": "OPS-001",
+      "title": "separate environments and recovery",
+      "status": "operational_unverified",
+      "decision_status": "Pending",
+      "code_paths": [
+        "deploy/scripts/backup.sh",
+        "deploy/scripts/restore-drill.sh",
+        "docs/operations/RESTORE_DRILL.md"
+      ],
+      "evidence": "ابزار backup/restore نوشته شده ولی اجرای واقعی خارج‌میزبان اثبات نشده است.",
+      "gaps": [
+        "separate staging",
+        "encrypted off-host backup",
+        "real restore evidence"
+      ],
+      "dependencies": [
+        "S01-W03",
+        "S12-W06"
+      ]
+    },
+    {
+      "id": "OPS-002",
+      "title": "safe immutable deployment",
+      "status": "operational_unverified",
+      "decision_status": "Pending",
+      "code_paths": [
+        "deploy/scripts/deploy.sh",
+        "deploy/scripts/check.sh",
+        "deploy/nginx/hokmnameh-location.conf"
+      ],
+      "evidence": "preflight/health/rollback tooling موجود است؛ نصب VPS تأیید نشده است.",
+      "gaps": [
+        "server inventory",
+        "nginx backup/test/reload",
+        "immutable release and measured rollback"
+      ],
+      "dependencies": [
+        "S01-W02",
+        "S13-W03"
+      ]
+    },
+    {
+      "id": "OPS-003",
+      "title": "quality CI pipeline",
+      "status": "partial",
+      "decision_status": "Assumed",
+      "code_paths": [
+        ".github/workflows/backend.yml",
+        ".github/CODEOWNERS",
+        ".github/pull_request_template.md"
+      ],
+      "evidence": "build/smoke/migration/docker CI قبلاً سبز شده است.",
+      "gaps": [
+        "required branch checks",
+        "SAST/dependency scan",
+        "Unity build/device lane"
+      ],
+      "dependencies": [
+        "S01-W01",
+        "S12-W02",
+        "S13-W02"
+      ]
+    }
+  ]
+}
