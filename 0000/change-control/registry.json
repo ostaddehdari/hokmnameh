@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "project_slug": "hokmnameh",
+  "entries": [
+    {
+      "id": "CR-2026-0001",
+      "decision_id": "DEC-2026-0001",
+      "title": "ایجاد کنترل رسمی تغییرات حکمنامه",
+      "status": "VERIFIED",
+      "category": ["rules", "economy", "api", "database", "ux"],
+      "requester": "project-owner",
+      "created_at": "2026-11-22T19:37:15Z",
+      "source_refs": ["S00-W01-T03 accepted task", "ChatGPT Project owner request 2026-11-22"],
+      "affected_paths": ["0000/change-control/"],
+      "requirement_ids": ["FR-001", "FR-020", "SEC-003"],
+      "impact": {"player": "بدون تغییر runtime", "compatibility": "افزودن قرارداد governance نسخه 1", "data": "بدون migration", "operations": "افزودن verifier پیش از merge"},
+      "risk_flags": [],
+      "approvals": [
+        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "درخواست صریح کاربر برای اجرای S00-W01-T03"},
+        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "قواعد محافظت مسیر و عدم تغییر runtime"},
+        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "self-test و registry validation"},
+        {"role": "economy_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "کنترل تغییرات currency/non-P2W"},
+        {"role": "security_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام بررسی ریسک و PII"},
+        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "کنترل API و compatibility"},
+        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام contract impact"},
+        {"role": "data_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام migration و rollback"},
+        {"role": "operations_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام deployment approval"},
+        {"role": "ux_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "کنترل تغییر journey/page"},
+        {"role": "accessibility_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام accessibility impact"}
+      ],
+      "acceptance_criteria": ["تغییر protected بدون CR واجد شرایط رد شود", "CR ناقص یا بدون تأیید نقش‌های لازم رد شود"],
+      "test_plan": ["registry validation", "self-test protected/exempt/approved changes"],
+      "rollback_plan": "Revert governance commit; no runtime or data rollback is required.",
+      "migration_plan": "No database change; this bootstrap CR adds governance artifacts only.",
+      "security_review": "No secrets or PII; validation is local and deterministic.",
+      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "supersedes": null
+    }
+  ]
+}

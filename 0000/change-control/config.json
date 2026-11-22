@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "task_id": "S00-W01-T03",
+  "id_pattern": "^CR-[0-9]{4}-[0-9]{4}$",
+  "decision_id_pattern": "^DEC-[0-9]{4}-[0-9]{4}$",
+  "protected_domains": {
+    "rules": ["unity/Packages/com.hokmnameh.core/", "docs/ruleset_"],
+    "economy": ["backend/src/", "backend/db/migrations/", "docs/economy/"],
+    "api": ["backend/src/Hokmnameh.Api/", "docs/API.md"],
+    "database": ["backend/db/migrations/", "docs/extended_schema_"],
+    "ux": ["unity/Assets/Hokmnameh/Runtime/", "unity/Assets/Hokmnameh/Editor/"]
+  },
+  "exempt_prefixes": ["0000/change-control/", "docs/proposal.", "docs/planning/"],
+  "merge_eligible_statuses": ["APPROVED", "IMPLEMENTING", "VERIFIED"],
+  "terminal_statuses": ["RELEASED", "REJECTED", "SUPERSEDED"],
+  "required_approvals": {
+    "rules": ["product_owner", "game_architect", "qa_owner"],
+    "economy": ["product_owner", "economy_owner", "security_owner"],
+    "api": ["architecture_owner", "api_consumer_owner"],
+    "database": ["data_owner", "operations_owner"],
+    "ux": ["product_owner", "ux_owner", "accessibility_owner"]
+  },
+  "high_risk_flags": ["ranked_integrity", "hidden_information", "currency", "pii", "destructive_migration", "production_gateway"],
+  "emergency_post_review_hours": 24
+}
