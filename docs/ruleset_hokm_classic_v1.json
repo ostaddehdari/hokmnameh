@@ -1,18 +1,22 @@
 {
   "code": "iranian-hokm-classic",
   "version": 1,
+  "immutableId": "iranian-hokm-classic-v1",
+  "status": "approved",
   "playerCount": 4,
   "teamSeats": [[0, 2], [1, 3]],
   "deck": { "suits": ["spades", "hearts", "diamonds", "clubs"], "ranks": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], "jokers": 0 },
   "deal": { "beforeTrumpSelect": 5, "afterTrumpSelect": 8, "cardsPerPlayer": 13 },
   "lead": { "firstSeat": "hakem", "mustFollowSuit": true },
   "trick": { "cards": 4, "winnerLeadsNext": true, "tricksNeededToWinRound": 7 },
-  "roundScoring": { "normal": 1, "shutoutByNonHakem": 2, "shutoutAgainstHakem": 3 },
-  "match": { "targetPoints": 7, "rankedEligible": true },
+  "hakemRotation": { "hakemTeamWins": "same-seat", "hakemTeamLoses": "next-clockwise-seat" },
+  "roundScoring": { "normal": 1, "hakemTeamSweep": 2, "nonHakemTeamSweep": 3 },
+  "match": { "targetPoints": 7, "endCondition": "first-team-at-or-above-target", "rankedEligible": true },
   "timer": { "turnSeconds": 30, "disconnectGraceSeconds": 45, "fallback": "legal_auto_play" },
   "notes": [
-    "اعداد و قواعد سور/کوت نسخه پیشنهادی برای تصویب مدیر محصول‌اند، نه استاندارد یگانه حکم.",
-    "حکم و مسیر حاکم با state machine مشخص و با RuleSet version قفل می‌شود.",
+    "این قواعد برای Classic v1 تصویب و immutable شده‌اند؛ تغییر رفتاری نیازمند RuleSet ID جدید و Change Request است.",
+    "حکم پس از پنج کارت اولیه هر بازیکن و فقط توسط حاکم انتخاب می‌شود.",
+    "راند با رسیدن نخستین تیم به هفت دست خاتمه می‌یابد؛ کوت ۷-۰ تیم حاکم دو امتیاز و کوت ۷-۰ تیم غیرحاکم سه امتیاز دارد.",
     "تورنمنت، آرنا و LAN می‌توانند RuleSet مستقلی داشته باشند."
   ]
 }
