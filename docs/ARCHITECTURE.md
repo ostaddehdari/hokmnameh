@@ -43,7 +43,7 @@ No Redis/Valkey dependency is needed until a service actually uses it. Avoids op
 
 ## Rules specifics
 
-Classic 4-player Hokm, seats (0,2) vs (1,3), 52 cards, 5 dealt before Hakem selects trump, 8 remaining each, must follow suit, first to 7 tricks scores, target match points 7. A swept round awards 2/3 depending on whether the Hakem's team sweeps; these sweep values and Hakem rotation are **provisional rule-set choices** requiring acceptance by the game owner. Before ranked mode, freeze an immutable ruleset version and record it with each match.
+Classic 4-player Hokm is frozen as `iranian-hokm-classic-v1`: seats (0,2) vs (1,3), 52 cards, five cards per seat before Hakem selects trump, eight remaining each, must follow suit, first to seven tricks ends the round, and first team at or above seven match points wins. A normal round awards one point; a 7–0 sweep by Hakem's team awards two; a 7–0 sweep by the non-Hakem team awards three. Hakem stays when Hakem's team wins; otherwise authority rotates to the next clockwise seat. Every match records the immutable ruleset ID. Any behavioral change requires a new ruleset ID and Change Request.
 
 ## Product constraints preserved
 
