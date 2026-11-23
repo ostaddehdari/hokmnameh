@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "ruleset": "iranian-hokm-classic-v1",
+  "scoring": [
+    {"id": "normal-hakem-win", "winningTeam": 0, "hakemTeam": 0, "losingTeamTricks": 3, "expectedPoints": 1},
+    {"id": "normal-non-hakem-win", "winningTeam": 1, "hakemTeam": 0, "losingTeamTricks": 2, "expectedPoints": 1},
+    {"id": "kot-by-hakem-team", "winningTeam": 0, "hakemTeam": 0, "losingTeamTricks": 0, "expectedPoints": 2},
+    {"id": "hakem-kot-by-opponent", "winningTeam": 1, "hakemTeam": 0, "losingTeamTricks": 0, "expectedPoints": 3}
+  ],
+  "hakemRotation": [
+    {"id": "hakem-team-wins", "currentHakem": 0, "winningTeam": 0, "expectedHakem": 0},
+    {"id": "hakem-team-loses", "currentHakem": 0, "winningTeam": 1, "expectedHakem": 1},
+    {"id": "clockwise-wrap", "currentHakem": 3, "winningTeam": 0, "expectedHakem": 0}
+  ],
+  "termination": [
+    {"id": "round-normal", "winnerTricks": 7, "loserTricks": 3, "roundEnds": true, "expectedPoints": 1},
+    {"id": "round-sweep", "winnerTricks": 7, "loserTricks": 0, "roundEnds": true},
+    {"id": "match-before-target", "points": [6, 4], "finished": false},
+    {"id": "match-at-target", "points": [7, 4], "finished": true},
+    {"id": "match-over-target-after-kot", "points": [8, 4], "finished": true}
+  ]
+}
