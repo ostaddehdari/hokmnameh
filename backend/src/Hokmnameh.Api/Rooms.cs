@@ -3,11 +3,14 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using Hokmnameh.Core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Hokmnameh.Api;
 
 public sealed record CreateRoomRequest(string? Mode);
-public sealed record RoomView(Guid Id, string Code, string Mode, int PlayerCount, int Phase, bool Started);
+public sealed record RoomView(Guid Id, string Code, string Mode, string RulesetVersion, int PlayerCount, int Phase, bool Started);
 public sealed record JoinRoomResponse(RoomView Room, int Seat);
 public sealed record SetTrumpRequest(int Suit);
 public sealed record PlayCardRequest(int Card);
@@ -31,11 +34,14 @@ public sealed class GameRoom
     public Guid Id { get; }
     public string Code { get; }
     public string Mode { get; }
+    public string RulesetVersion { get; }
     public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
 
-    public GameRoom(Guid id, string code, string mode, Guid owner, int turnSeconds)
+    public GameRoom(Guid id, string code, string mode, Guid owner, int turnSeconds, string rulesetVersion)
     {
+        if (string.IsNullOrWhiteSpace(rulesetVersion)) throw new ArgumentException("Ruleset version is required", nameof(rulesetVersion));
         Id = id; Code = code; Mode = mode; _players[0] = owner;
+        RulesetVersion = rulesetVersion;
         _turnSeconds = Math.Clamp(turnSeconds, 10, 120);
         if (mode == "practice")
         {
@@ -46,7 +52,7 @@ public sealed class GameRoom
 
     public RoomView View()
     {
-        lock (_lock) return new RoomView(Id, Code, Mode, _players.Count(p => p.HasValue) + _bots.Count(b => b), (int)_game.Phase, _game.Round > 0);
+        lock (_lock) return new RoomView(Id, Code, Mode, RulesetVersion, _players.Count(p => p.HasValue) + _bots.Count(b => b), (int)_game.Phase, _game.Round > 0);
     }
     public int? SeatOf(Guid identity)
     {
@@ -151,13 +157,24 @@ public sealed class RoomDirectory(IConfiguration config)
     private readonly ConcurrentDictionary<Guid, GameRoom> _rooms = new();
     private readonly ConcurrentDictionary<string, Guid> _codes = new(StringComparer.OrdinalIgnoreCase);
     private readonly int _turnSeconds = config.GetValue<int?>("Hokm:TurnSeconds") ?? 30;
+    private readonly string _rulesetVersion = ResolveRulesetVersion(config);
+
+    private static string ResolveRulesetVersion(IConfiguration config)
+    {
+        var configured = config.GetValue<string>("Hokm:RulesetVersion") ?? ClassicRules.ImmutableId;
+        if (!string.Equals(configured, ClassicRules.ImmutableId, StringComparison.Ordinal))
+            throw new InvalidOperationException($"Unsupported ruleset version: {configured}");
+        return configured;
+    }
+
     public GameRoom Create(Guid owner, string mode)
     {
         if (mode != "free" && mode != "practice") throw new GameRuleException("Supported modes: free, practice");
         var id = Guid.NewGuid();
         // Human readable invites are intentionally not credentials.
         var code = id.ToString("N")[..8].ToUpperInvariant();
-        var room = new GameRoom(id, code, mode, owner, _turnSeconds);
+        // Capture once at match creation. Later configuration/default changes cannot alter an active match.
+        var room = new GameRoom(id, code, mode, owner, _turnSeconds, _rulesetVersion);
         if (!_rooms.TryAdd(id, room)) throw new InvalidOperationException("Failed to register room");
         _codes[code] = id;
         return room;
