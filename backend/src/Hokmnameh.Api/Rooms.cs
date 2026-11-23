@@ -3,6 +3,9 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using Hokmnameh.Core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Hokmnameh.Api;
 
