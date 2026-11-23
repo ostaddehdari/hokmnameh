@@ -1,4 +1,5 @@
 using Hokmnameh.Core;
+using System.Text.Json;
 
 void Assert(bool condition, string name) { if (!condition) throw new Exception("FAILED: " + name); Console.WriteLine("PASS: " + name); }
 var game = new HokmGame();
@@ -27,4 +28,24 @@ for (int moves = 0; moves < 52 && game.Phase == GamePhase.Playing; ++moves)
 Assert(game.Phase == GamePhase.Waiting || game.Phase == GamePhase.Finished, "round terminates");
 Assert(game.Score[0] + game.Score[1] >= 1, "points scored");
 Assert(HokmGame.DetermineTrickWinner(new[] { new CardPlayed(0,0),new CardPlayed(1,12),new CardPlayed(2,13),new CardPlayed(3,26) },3) == 1, "lead high ace wins when no trump played");
+Assert(ClassicRules.ImmutableId == "iranian-hokm-classic-v1", "immutable ruleset ID");
+Assert(ClassicRules.RoundPoints(0, 0, 2) == 1, "normal round scores one");
+Assert(ClassicRules.RoundPoints(0, 0, 0) == 2, "hakem team sweep scores two");
+Assert(ClassicRules.RoundPoints(1, 0, 0) == 3, "non-hakem sweep scores three");
+Assert(ClassicRules.NextHakem(0, 0) == 0, "winning hakem stays");
+Assert(ClassicRules.NextHakem(0, 1) == 1, "losing hakem rotates clockwise");
+Assert(ClassicRules.NextHakem(3, 0) == 0, "hakem rotation wraps seat three to zero");
+
+var fixturePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../../docs/ruleset_hokm_classic_v1.golden.json"));
+using var fixture = JsonDocument.Parse(File.ReadAllText(fixturePath));
+foreach (var sample in fixture.RootElement.GetProperty("scoring").EnumerateArray())
+{
+    var actual = ClassicRules.RoundPoints(sample.GetProperty("winningTeam").GetInt32(), sample.GetProperty("hakemTeam").GetInt32(), sample.GetProperty("losingTeamTricks").GetInt32());
+    Assert(actual == sample.GetProperty("expectedPoints").GetInt32(), "golden score " + sample.GetProperty("id").GetString());
+}
+foreach (var sample in fixture.RootElement.GetProperty("hakemRotation").EnumerateArray())
+{
+    var actual = ClassicRules.NextHakem(sample.GetProperty("currentHakem").GetInt32(), sample.GetProperty("winningTeam").GetInt32());
+    Assert(actual == sample.GetProperty("expectedHakem").GetInt32(), "golden hakem " + sample.GetProperty("id").GetString());
+}
 Console.WriteLine("All core smoke tests passed");
