@@ -10,7 +10,7 @@ Public base path: `/hokmnameh` (`https://srun.ir/hokmnameh` AFTER server deploym
 
 ## Rooms
 
-- `POST /api/v1/rooms`, header `Authorization: Bearer <token>`, JSON `{ "mode": "free" }` -> `{ room, seat }` (seat 0). Other supported mode: `practice` automatically assigns three heuristic bots.
+- `POST /api/v1/rooms`, header `Authorization: Bearer <token>`, JSON `{ "mode": "free" }` -> `{ room, seat }` (seat 0). Every room includes immutable `rulesetVersion`; it is captured at match creation and cannot change for that active match. Other supported mode: `practice` automatically assigns three heuristic bots.
 - `POST /api/v1/rooms/join/{8-char-room-code}`, bearer -> `{ room, seat }`. Guest may rejoin while server process remains active.
 - `GET /api/v1/rooms/{uuid}`, bearer -> seat-specific `{ room, game, turnDeadline, isYourTurn }`.
 - `POST /api/v1/rooms/{uuid}/trump`, bearer + JSON `{ "suit": 0 }` (Spades=0 Hearts=1 Diamonds=2 Clubs=3). Only hakem can call.
