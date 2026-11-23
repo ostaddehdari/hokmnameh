@@ -1,4 +1,5 @@
 using Hokmnameh.Core;
+using Hokmnameh.Api;
 using System.Text.Json;
 
 void Assert(bool condition, string name) { if (!condition) throw new Exception("FAILED: " + name); Console.WriteLine("PASS: " + name); }
@@ -48,4 +49,9 @@ foreach (var sample in fixture.RootElement.GetProperty("hakemRotation").Enumerat
     var actual = ClassicRules.NextHakem(sample.GetProperty("currentHakem").GetInt32(), sample.GetProperty("winningTeam").GetInt32());
     Assert(actual == sample.GetProperty("expectedHakem").GetInt32(), "golden hakem " + sample.GetProperty("id").GetString());
 }
+var selectedVersion = ClassicRules.ImmutableId;
+var versionedRoom = new GameRoom(Guid.NewGuid(), "VERSION1", "free", Guid.NewGuid(), 30, selectedVersion);
+selectedVersion = "iranian-hokm-classic-v2";
+Assert(versionedRoom.RulesetVersion == ClassicRules.ImmutableId, "active match keeps captured ruleset version");
+Assert(versionedRoom.View().RulesetVersion == ClassicRules.ImmutableId, "room API records ruleset version");
 Console.WriteLine("All core smoke tests passed");
