@@ -29,19 +29,22 @@ public sealed class GameRoom
     private readonly bool[] _bots = new bool[4];
     private readonly ConcurrentDictionary<Guid, ClientSocket> _clients = new();
     private readonly HokmGame _game = new();
+    private readonly TimeProvider _timeProvider;
     private DateTimeOffset _turnDeadline;
     private int _turnSeconds;
     public Guid Id { get; }
     public string Code { get; }
     public string Mode { get; }
     public string RulesetVersion { get; }
-    public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedAt { get; }
 
-    public GameRoom(Guid id, string code, string mode, Guid owner, int turnSeconds, string rulesetVersion)
+    public GameRoom(Guid id, string code, string mode, Guid owner, int turnSeconds, string rulesetVersion, TimeProvider? timeProvider = null)
     {
         if (string.IsNullOrWhiteSpace(rulesetVersion)) throw new ArgumentException("Ruleset version is required", nameof(rulesetVersion));
         Id = id; Code = code; Mode = mode; _players[0] = owner;
         RulesetVersion = rulesetVersion;
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        CreatedAt = _timeProvider.GetUtcNow();
         _turnSeconds = Math.Clamp(turnSeconds, 10, 120);
         if (mode == "practice")
         {
@@ -103,7 +106,7 @@ public sealed class GameRoom
             _game.Play(seat, card); ResetDeadline();
         }
     }
-    private void ResetDeadline() => _turnDeadline = DateTimeOffset.UtcNow.AddSeconds(_turnSeconds);
+    private void ResetDeadline() => _turnDeadline = _timeProvider.GetUtcNow().AddSeconds(_turnSeconds);
 
     public bool Tick()
     {
@@ -115,7 +118,7 @@ public sealed class GameRoom
                 _game.StartRound(_game.Hakem); ResetDeadline(); return true;
             }
             int seat = _game.Phase == GamePhase.ChoosingTrump ? _game.Hakem : _game.Turn;
-            bool timerExpired = DateTimeOffset.UtcNow >= _turnDeadline;
+            bool timerExpired = _timeProvider.GetUtcNow() >= _turnDeadline;
             if (!_bots[seat] && !timerExpired) return false;
             if (_game.Phase == GamePhase.ChoosingTrump) _game.ChooseTrump(seat, HokmBot.PickTrump(_game, seat));
             else _game.Play(seat, HokmBot.ChooseCard(_game, seat, 1));
