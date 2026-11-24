@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "contractId": "hokmnameh-product-domains-v1",
+  "status": "approved",
+  "decisionId": "DEC-2026-0005",
+  "classicRuleset": "iranian-hokm-classic-v1",
+  "mainGrounds": [
+    {
+      "id": "academy", "runtimeMode": "practice", "phase": 1, "availability": "implemented-foundation",
+      "permission": { "authenticated": true, "minimumLevel": 0, "eligibility": "all-players" },
+      "conditions": { "opponents": "three-bots", "entryCoin": 0, "playLimit": null, "xpAwarded": true, "coinAwarded": false, "affectsMmr": false },
+      "inScope": ["classic-rules-training", "bot-difficulty-progression", "rules-and-moves-guidance"],
+      "outOfScope": ["coin-farming", "ranked-rating", "cash-prizes", "arena-tactical-commands"]
+    },
+    {
+      "id": "free", "runtimeMode": "free", "phase": 1, "availability": "implemented-foundation",
+      "permission": { "authenticated": true, "minimumLevel": 0, "eligibility": "all-players" },
+      "conditions": { "opponents": "human-match", "entryCoin": 0, "playLimit": null, "xpAwarded": true, "coinAwarded": "economy-policy", "affectsMmr": false },
+      "inScope": ["unlimited-classic-play", "social-and-invite-play"],
+      "outOfScope": ["paid-entry", "ranked-rating", "cash-wager", "arena-tactical-commands"]
+    },
+    {
+      "id": "ranked", "runtimeMode": "ranked", "phase": 1, "availability": "contract-locked-planned",
+      "permission": { "authenticated": true, "minimumLevel": "configurable-eligibility-threshold", "eligibility": "fair-play-and-connection-check" },
+      "conditions": { "opponents": "matchmaking", "entryCoin": 0, "playLimit": null, "xpAwarded": true, "coinAwarded": "economy-policy", "affectsMmr": true },
+      "inScope": ["unlimited-free-entry", "solo-and-duo-matchmaking", "mmr-and-stars", "server-authoritative-classic-play"],
+      "outOfScope": ["paid-entry", "buyable-competitive-advantage", "live-decision-assistance", "arena-tactical-commands"]
+    },
+    {
+      "id": "sponsored_tournament", "runtimeMode": "sponsored_tournament", "phase": 1, "availability": "contract-locked-planned",
+      "permission": { "authenticated": true, "minimumLevel": "event-policy", "eligibility": "published-event-rules-and-region-age-compliance" },
+      "conditions": { "opponents": "tournament-bracket", "entryCoin": 0, "playLimit": "event-schedule", "xpAwarded": true, "coinAwarded": "published-sponsor-prize-policy", "affectsMmr": false },
+      "inScope": ["sponsor-funded-prizes", "published-eligibility", "auditable-brackets-and-results"],
+      "outOfScope": ["player-funded-prize-pool", "wager", "paid-competitive-advantage", "arena-tactical-commands"]
+    }
+  ],
+  "arena": {
+    "isMainGround": false, "phase": 2, "rulesetId": "hokm-arena-v1", "status": "future-separate-ruleset", "classicCompatibility": "forbidden",
+    "capabilities": ["trump-veto", "suit-break", "turn-transfer", "trump-delegation"]
+  },
+  "fairCompetition": {
+    "freeEntryModes": ["free", "ranked"],
+    "unlimitedModes": ["academy", "free", "ranked"],
+    "vipCompetitivePrivilege": false,
+    "paidCompetitiveAdvantage": false,
+    "buyableMmrOrStars": false,
+    "coinPurpose": ["rewards", "non-competitive-cosmetics"],
+    "forbidden": ["paid-free-mode-entry", "paid-ranked-entry", "pay-to-win", "cash-wager", "player-funded-prize-pool"]
+  }
+}
