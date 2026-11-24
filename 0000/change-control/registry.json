@@ -173,6 +173,34 @@
       "security_review": "Seed/Deck/Hand در لاگ عمومی ممنوع؛ Reveal فقط پس از بسته‌شدن غیرقابل Resume، Secret رمزگذاری‌شده 30 روز و hash غیرمحرمانه 365 روز؛ RNG مستقل از MMR/پرداخت/اسکین است.",
       "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0007",
+      "decision_id": "DEC-2026-0007",
+      "title": "تثبیت قرارداد Monorepo، گیت CI و نسخه‌بندی",
+      "status": "VERIFIED",
+      "category": ["rules", "api"],
+      "requester": "project-owner",
+      "created_at": "2026-11-24T18:33:34Z",
+      "source_refs": ["S01-W01-T01", "S01-W01-T02", "S01-W01-T03", "Project owner continuation request 2026-11-24"],
+      "affected_paths": ["repository.contract.json", "version-contract.json", "Directory.Build.props", "Hokmnameh.sln", "tools/verify-repository-contract.mjs", "docs/adr/0003-versioning-and-breaking-changes.md", ".github/CODEOWNERS", ".github/workflows/backend.yml", ".github/pull_request_template.md", "README.md"],
+      "requirement_ids": ["FR-018", "NFR-002", "NFR-005", "DATA-001", "OPS-001", "OPS-002", "OPS-003"],
+      "impact": {"player": "بدون تغییر رفتار بازی", "compatibility": "قواعد breaking change برای API/Core/Rules/DB/Event صریح و ماشین‌خوان می‌شود", "data": "بدون migration", "operations": "PR با contract/lint/build/smoke ناموفق قابل ادغام تلقی نمی‌شود"},
+      "risk_flags": [],
+      "approvals": [
+        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "درخواست صریح ادامه پروژه و اجرای Work بعدی"},
+        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "Core مشترک یک‌منبع و immutable RuleSet IDs"},
+        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "repository verifier و CI چهاربخشی"},
+        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "API major، package SemVer و forward-only migration"},
+        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "API ناسازگار نیازمند major route جدید و contract tests است"}
+      ],
+      "acceptance_criteria": ["ماژول‌ها مسیر و مالک صریح داشته باشند", "فایل حساس یا build artifact در Git نباشد", "CI contract/lint/build/smoke را اجرا کند", "Breaking change در ADR و قرارداد نسخه ثبت شود"],
+      "test_plan": ["repository contract verifier", "solution build with warnings as errors", "shared smoke tests", "full repository CI"],
+      "rollback_plan": "Revert the reviewed source commit; no runtime, production or database mutation is included.",
+      "migration_plan": null,
+      "security_review": "Verifier فایل‌های secret و artifactهای تولیدی tracked را رد می‌کند؛ CI فقط contents:read دارد و deployment خودکار ندارد.",
+      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "supersedes": null
     }
   ]
 }
