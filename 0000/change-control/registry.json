@@ -117,6 +117,36 @@
       "security_review": "تست‌ها به دست مخفی سایر بازیکنان در API دسترسی نمی‌دهند؛ authority-only helper موجود صرفاً داخل engine باقی می‌ماند.",
       "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0005",
+      "decision_id": "DEC-2026-0005",
+      "title": "تثبیت دامنه چهار زمین، جداسازی Arena و رقابت بدون ورود پولی",
+      "status": "VERIFIED",
+      "category": ["rules", "economy", "ux"],
+      "requester": "project-owner",
+      "created_at": "2026-11-24T16:47:34Z",
+      "source_refs": ["S00-W03-T01", "S00-W03-T02", "S00-W03-T03", "Project owner request 2026-11-24"],
+      "affected_paths": ["docs/product_domains_v1.json", "docs/PRODUCT_DOMAINS_V1.md", "docs/verify-product-domains-v1.mjs", ".github/workflows/backend.yml"],
+      "requirement_ids": ["FR-001", "FR-020", "SEC-003"],
+      "impact": {"player": "چهار زمین و شرایط ورود شفاف می‌شوند", "compatibility": "runtime موجود free/practice تغییر نمی‌کند و حالت‌های برنامه‌ریزی‌شده زودهنگام فعال نمی‌شوند", "data": "بدون migration", "operations": "قرارداد محصول در CI به‌صورت fail-closed آزموده می‌شود"},
+      "risk_flags": ["ranked_integrity", "currency"],
+      "approvals": [
+        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "درخواست صریح مالک برای اجرای تمام Work S00-W03"},
+        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "جداسازی Classic v1 از Ruleset مستقل Arena"},
+        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "verifier دوحالته برای چهار زمین، Arena و اقتصاد سالم"},
+        {"role": "economy_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "ورود صفر سکه، بازی نامحدود و منع P2W"},
+        {"role": "security_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "عدم ایجاد پول واقعی، wager، secret یا PII"},
+        {"role": "ux_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "نام، دسترسی و شرایط هر زمین به‌صورت متمایز"},
+        {"role": "accessibility_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "قرارداد متنی و ماشین‌خوان بدون وابستگی به رنگ یا تصویر"}
+      ],
+      "acceptance_criteria": ["چهار زمین با مجوز و شرایط مستقل ثبت شوند", "قابلیت‌های Arena فقط در Ruleset فاز دوم باشند", "آزاد و رنک ورود صفر سکه و نامحدود داشته باشند", "VIP و مزیت رقابتی پولی ممنوع باشد"],
+      "test_plan": ["product-domain contract verifier", "Change Control registry/self-test", "full repository CI"],
+      "rollback_plan": "Revert the reviewed source commit; no runtime, database or production mutation is included.",
+      "migration_plan": null,
+      "security_review": "این تغییر سیاست fail-closed منع P2W و ورود پولی را تثبیت می‌کند؛ دست مخفی، RNG، اطلاعات شخصی و production تغییر نمی‌کنند.",
+      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "supersedes": null
     }
   ]
 }
