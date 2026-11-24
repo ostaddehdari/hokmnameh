@@ -26,6 +26,9 @@ jobs:
           python3 -m json.tool docs/ruleset_hokm_classic_v1.json >/dev/null
           python3 -m json.tool docs/ruleset_hokm_classic_v1.golden.json >/dev/null
           node docs/verify-ruleset-classic-v1.mjs
+          python3 -m json.tool docs/product_domains_v1.json >/dev/null
+          node docs/verify-product-domains-v1.mjs
+          node 0000/change-control/verify-change-control.mjs --self-test
           python3 -m json.tool docs/planning/backlog.json >/dev/null
           git diff --check
       - name: Confirm no tracked local env file

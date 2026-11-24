@@ -7,6 +7,7 @@
 - `generate-gap-matrix.mjs`: تولید deterministic دو خروجی بالا از پروپوزال و ارزیابی مخزن.
 - `verify-gap-matrix.mjs`: کنترل پوشش کامل الزام‌ها، یکتایی IDها، وضعیت‌ها و وجود مسیرهای شاهد.
 - `change-control/`: فرایند رسمی Change Request، schema، template، registry و verifier برای Rules/Economy/API/Database/UX.
+- `../docs/product_domains_v1.json`: قرارداد ماشین‌خوان چهار زمین، مرز Arena و سیاست عدم فروش برتری.
 
 اجرا:
 
