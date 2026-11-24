@@ -147,6 +147,32 @@
       "security_review": "این تغییر سیاست fail-closed منع P2W و ورود پولی را تثبیت می‌کند؛ دست مخفی، RNG، اطلاعات شخصی و production تغییر نمی‌کنند.",
       "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0006",
+      "decision_id": "DEC-2026-0006",
+      "title": "تصویب قرارداد فنی و امنیتی E-04 v1",
+      "status": "VERIFIED",
+      "category": ["rules"],
+      "requester": "project-owner",
+      "created_at": "2026-11-24T17:43:38Z",
+      "source_refs": ["S00-W04-T01", "S00-W04-T02", "S00-W04-T03", "S00-W04-T04", "Project owner approval 2026-11-24"],
+      "affected_paths": ["docs/e04_decision_set_v1.json", "docs/E04_DECISION_SET_V1.md", "docs/e04_test_vector_v1.json", "docs/verify-e04-decision-v1.mjs", "docs/planning/DECISIONS_TO_CONFIRM.md", ".github/workflows/backend.yml"],
+      "requirement_ids": ["FR-001", "FR-020", "SEC-003"],
+      "impact": {"player": "توزیع، Cut، Timeout و Audit رنک قرارداد دقیق و قابل ممیزی دارند", "compatibility": "پیاده‌سازی runtime به S02 موکول است و قرارداد ناشناخته ایجاد رنک را رد می‌کند", "data": "بدون migration", "operations": "بردار رسمی E04-TV-001 در CI بازتولید می‌شود"},
+      "risk_flags": ["ranked_integrity", "hidden_information"],
+      "approvals": [
+        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-24T17:43:38Z", "evidence": "مالک پروژه صریحاً انتخاب مقادیر امن، قابل ممیزی و fail-closed و بستن S00-W04 را تصویب کرد"},
+        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-24T17:43:38Z", "evidence": "server authority، یک Cut، توزیع 5+4+4 و عدم reshuffle"},
+        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-24T17:43:38Z", "evidence": "verifier مستقل و بردار رسمی شامل deck، commit، cut و first 12"}
+      ],
+      "acceptance_criteria": ["Dealer/Cutter/Direction/FirstReceiver نسخه‌دار باشند", "Cut و deadline/fallback مصوب باشند", "Algorithm ID و Canonical Encoding و Endianness ثابت باشند", "E04-TV-001 بازتولید شود", "Reveal قبل از ROUND_CLOSED ممنوع و retention مصوب باشد"],
+      "test_plan": ["E-04 decision verifier", "official cryptographic vector reproduction", "Change Control verifier", "full repository CI"],
+      "rollback_plan": "Revert the reviewed source commit; Ranked must remain disabled for unknown/missing E-04 contract IDs. No production or data mutation is included.",
+      "migration_plan": null,
+      "security_review": "Seed/Deck/Hand در لاگ عمومی ممنوع؛ Reveal فقط پس از بسته‌شدن غیرقابل Resume، Secret رمزگذاری‌شده 30 روز و hash غیرمحرمانه 365 روز؛ RNG مستقل از MMR/پرداخت/اسکین است.",
+      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "supersedes": null
     }
   ]
 }
