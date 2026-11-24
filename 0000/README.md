@@ -8,6 +8,7 @@
 - `verify-gap-matrix.mjs`: کنترل پوشش کامل الزام‌ها، یکتایی IDها، وضعیت‌ها و وجود مسیرهای شاهد.
 - `change-control/`: فرایند رسمی Change Request، schema، template، registry و verifier برای Rules/Economy/API/Database/UX.
 - `../docs/product_domains_v1.json`: قرارداد ماشین‌خوان چهار زمین، مرز Arena و سیاست عدم فروش برتری.
+- `../docs/e04_decision_set_v1.json`: قرارداد مصوب Dealer/Cutter/Deal/Hokm/Crypto/Reveal و گیت fail-closed رنک.
 
 اجرا:
 
