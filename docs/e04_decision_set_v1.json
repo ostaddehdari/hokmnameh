@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0",
+  "decisionId": "DEC-2026-0006",
+  "contractId": "hokmnameh-e04-v1",
+  "status": "approved",
+  "approvedAt": "2026-11-24T17:43:38Z",
+  "owner": "project-owner",
+  "rankedActivation": {
+    "requiredContractId": "hokmnameh-e04-v1",
+    "requiredShuffleAlgorithmId": "E04-HKDF-SHA256-HMACCTR-RS-FY-v1",
+    "unknownOrMissingPolicy": "reject-match-creation"
+  },
+  "seats": {
+    "index": { "0": "north", "1": "east", "2": "south", "3": "west" },
+    "counterClockwiseDelta": -1
+  },
+  "dealer": {
+    "authority": "server-game-authority",
+    "playerSeatDealer": false,
+    "reason": "No player-controlled shuffle/deal state or client entropy in v1"
+  },
+  "cutter": {
+    "seatRule": "(hakemSeat + 3) % 4",
+    "relationship": "next-counter-clockwise-opponent-from-hakem",
+    "mayInspectDeck": false,
+    "singleSubmission": true
+  },
+  "cut": {
+    "operation": "deck[k:] + deck[:k]",
+    "minimumInclusive": 1,
+    "maximumInclusive": 51,
+    "deadlineMilliseconds": 8000,
+    "timeoutOrDisconnectFallback": "uniform-index-from-cut-fallback-hmac-domain",
+    "deadlineExtensionOnDisconnect": false,
+    "lateOrDuplicateAction": "reject-with-typed-error"
+  },
+  "deal": {
+    "direction": "counter-clockwise",
+    "seatDelta": -1,
+    "firstReceiver": "hakem",
+    "stagesPerSeat": [5, 4, 4],
+    "cursorAfterStage": [20, 36, 52],
+    "reshuffleBetweenStages": false,
+    "firstTrickLeader": "hakem"
+  },
+  "hokmSelection": {
+    "afterCardsPerSeat": 5,
+    "deadlineMilliseconds": 20000,
+    "deadlineExtensionOnDisconnect": false,
+    "timeoutOrDisconnectFallback": {
+      "strategy": "maximum-suit-count-in-hakem-initial-five",
+      "tieBreakOrder": ["spades", "hearts", "diamonds", "clubs"]
+    },
+    "invalidOrLateAction": "reject-with-typed-error"
+  },
+  "cryptography": {
+    "shuffleAlgorithmId": "E04-HKDF-SHA256-HMACCTR-RS-FY-v1",
+    "seed": { "bytes": 32, "source": "operating-system-csprng", "failure": "abort-round-before-commit" },
+    "nonce": { "bytes": 16, "source": "operating-system-csprng", "uniquePerRound": true },
+    "hkdf": {
+      "standard": "RFC5869",
+      "hash": "SHA-256",
+      "salt": "SHA256(UTF8('hokmnameh/e04/hkdf-salt/v1'))",
+      "info": "UTF8('hokmnameh/e04/shuffle-key/v1') || 0x00 || canonicalContext",
+      "outputBytes": 32
+    },
+    "canonicalContext": {
+      "encodingId": "E04-CONTEXT-BINARY-v1",
+      "layout": [
+        "UTF8('HOKM-E04-CONTEXT') || 0x00",
+        "version:uint8=1",
+        "matchId:16 raw UUID bytes in RFC4122/network order",
+        "roundNumber:uint64 big-endian",
+        "rulesetId:uint16 big-endian length || UTF8 bytes",
+        "shuffleAlgorithmId:uint16 big-endian length || UTF8 bytes"
+      ],
+      "integers": "unsigned-big-endian",
+      "strings": "UTF-8-without-BOM-or-normalization; ASCII identifiers only in v1"
+    },
+    "commitment": "SHA256(UTF8('hokmnameh/e04/commit/v1') || 0x00 || canonicalContext || nonce || seed)",
+    "stream": "HMAC-SHA256(shuffleKey, UTF8('hokmnameh/e04/stream/v1') || 0x00 || canonicalContext || counter:uint64-big-endian), counter starts at 1",
+    "sampling": "consume uint32 big-endian words; rejection limit=floor(2^32/n)*n; accept x<limit; index=x mod n",
+    "shuffle": "Fisher-Yates descending i=51..1 using n=i+1",
+    "cutFallback": "same rejection sampling for n=51 in independent HMAC domain UTF8('hokmnameh/e04/cut-fallback/v1') || 0x00 || canonicalContext; result=index+1"
+  },
+  "revealAndRetention": {
+    "revealPreconditions": ["roundState=ROUND_CLOSED", "resumeAllowed=false", "finalStatePersisted=true"],
+    "activeRoundAccess": ["game-authority-only"],
+    "postCloseProofRecipients": ["round-participants", "authorized-auditor"],
+    "proofFields": ["contractId", "shuffleAlgorithmId", "canonicalContext", "seed", "nonce", "commitment", "cutIndex", "dealPlan", "eventHashRoot"],
+    "publicLogsContainSecrets": false,
+    "encryptedSecretRetentionDays": 30,
+    "participantProofAvailabilityDays": 30,
+    "nonSecretAuditHashRetentionDays": 365,
+    "backupsUseSameSecretExpiry": true,
+    "legalHold": "security-owner-approved-case-only",
+    "expiryAction": "cryptographic-erasure-of-seed-deck-and-private-hands; retain non-secret hashes and decision metadata"
+  }
+}
