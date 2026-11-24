@@ -201,6 +201,34 @@
       "security_review": "Verifier فایل‌های secret و artifactهای تولیدی tracked را رد می‌کند؛ CI فقط contents:read دارد و deployment خودکار ندارد.",
       "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0008",
+      "decision_id": "DEC-2026-0008",
+      "title": "تثبیت قرارداد امن VPS، کاربر عملیاتی و rollback",
+      "status": "VERIFIED",
+      "category": ["api"],
+      "requester": "project-owner",
+      "created_at": "2026-11-24T22:00:00Z",
+      "source_refs": ["S01-W02-T01", "S01-W02-T02", "S01-W02-T03", "Project owner continuation request 2026-11-25"],
+      "affected_paths": ["backend/Dockerfile", "docker-compose.yml", "deploy/security-contract.json", "deploy/scripts/preflight-host.sh", "deploy/scripts/deploy.sh", "deploy/scripts/rollback.sh", "deploy/ssh/sshd_config.hokmnameh.example", "docs/DEPLOYMENT.md", "docs/operations/S01_SERVER_RUNBOOK.md", "docs/stages/S01_W02_EVIDENCE.md", "tools/verify-vps-security-contract.mjs", ".github/workflows/backend.yml"],
+      "requirement_ids": ["NFR-002", "NFR-005", "SEC-003", "OPS-001", "OPS-002", "OPS-003"],
+      "impact": {"player": "بدون تغییر قواعد یا تجربه بازی", "compatibility": "مسیر عمومی /hokmnameh و پورت داخلی API ثابت می‌ماند", "data": "بدون migration؛ rollback دیتابیس عمداً ممنوع و migrationها forward-only هستند", "operations": "اجرای deployment فقط با hokmdeploy، Docker بدون root، secret محافظت‌شده، health gate و rollback صریح مجاز است"},
+      "risk_flags": ["production_gateway"],
+      "approvals": [
+        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "base path و upstream ثابت، Compose داخلی و قرارداد ماشین‌خوان"},
+        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "endpointهای live/ready و مسیر عمومی بدون breaking change حفظ شدند"},
+        {"role": "security_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "key-only SSH، منع root، rootless Docker، UID ثابت و secret mode 0600"},
+        {"role": "operations_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "preflight بدون mutation، تأیید صریح production/rollback و recovery در شکست health"},
+        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "verifier ماشین‌خوان، shell syntax، Compose validation و image user assertion در CI"}
+      ],
+      "acceptance_criteria": ["API فقط روی localhost:5080 منتشر شود", "PostgreSQL و Valkey پورت عمومی نداشته باشند", "SSH فقط key-based و پردازش API غیرریشه باشد", "secret با مالک hokmdeploy و mode 0600 محافظت شود", "rollback کد با تأیید صریح و health gate قابل اجرا باشد"],
+      "test_plan": ["VPS security contract verifier", "Docker Compose normalized contract validation", "shell syntax and JSON validation", "API image runtime user assertion", "Change Control registry/self-test", "full repository CI"],
+      "rollback_plan": "Revert the reviewed source commit. On a host already deployed from this revision, use the recorded image only through CONFIRM_ROLLBACK=YES and verify both health endpoints; database migrations stay forward-only.",
+      "migration_plan": null,
+      "security_review": "No host address, credential or private key is committed. Deployment as root, rootful Docker, wrong secret permissions, sample credentials, public database ports and unhealthy rollback all fail closed.",
+      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "supersedes": null
     }
   ]
 }

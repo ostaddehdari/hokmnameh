@@ -1,31 +1,27 @@
 # VPS deployment — operator checklist (NOT YET PERFORMED)
 
 Target supplied by project owner:
-- SSH `root@5.61.27.185` port `2233`.
 - HTTPS path `https://srun.ir/hokmnameh` (requires DNS, TLS and existing web server config verification).
 - Repo `https://github.com/ostaddehdari/hokmnameh`.
 
-**Current operator note:** GitHub source has been committed using the connected GitHub integration. Direct SSH from this execution environment to port `2233` still returns `Connection refused`; the VPS has NOT been modified. Direct `git` clone from this environment has DNS restrictions, but cloning from the VPS may work. Do NOT assume any existing server site has been modified.
+**Current operator note:** the VPS has NOT been modified by this source change. Do not place host addresses, credentials, private keys or raw production logs in this public repository. Use the separately verified host inventory and an authorized admin channel.
 
 ## Prerequisites — on a trusted admin workstation
 
 1. Verify domain DNS points to the intended server, and inspect current web server sites. Confirm existing service before adding route.
-2. Verify SSH through VPN/firewall/security-group first. Do not share root passwords or SSH private keys in chat. Prefer a dedicated limited `deploy` user and SSH key, then `sudo` only for required tasks.
-3. Install Docker Engine + Compose plugin from official distribution on your Linux host, and confirm sufficient disk/RAM and UFW/firewall status.
-4. Put this repository at `/opt/hokmnameh`. Use deploy SSH key **on the server**, not embedded in the repository. Clone after GitHub push.
+2. Verify SSH through VPN/firewall/security-group first. Disable root/password login only after a second key-authenticated admin session has been proven. The application deployment identity is `hokmdeploy`.
+3. Install rootless Docker Engine + Compose plugin for `hokmdeploy`; Docker-group access is root-equivalent and fails the project preflight.
+4. Put this repository at `/opt/hokmnameh`, owned by `hokmdeploy`. Keep Nginx changes with a separate authorized host administrator.
 5. Generate a secure database password using `openssl rand -base64 48` and set it only in `/opt/hokmnameh/.env` (chmod 600). Do NOT commit `.env`.
 
 ```bash
-# On the VPS AFTER GitHub main branch exists and you have authenticated repo access
-sudo mkdir -p /opt/hokmnameh
-sudo chown "$(id -u):$(id -g)" /opt/hokmnameh
-# If repository was initialized and pushed:
+# As hokmdeploy, after an administrator has provisioned /opt/hokmnameh ownership
 git clone https://github.com/ostaddehdari/hokmnameh.git /opt/hokmnameh
 cd /opt/hokmnameh
 cp .env.example .env
 # Edit .env using a secure editor. Never reuse sample password.
 chmod 600 .env
-./deploy/scripts/deploy.sh
+DEPLOY_ENV=staging ./deploy/scripts/deploy.sh
 ```
 
 ## Nginx routing
@@ -45,6 +41,8 @@ Proxy must preserve `/hokmnameh` prefix because ASP.NET maps route group there. 
 `deploy/scripts/migrate.sh` applies `backend/db/migrations/NNN_name.sql` through an advisory-locked transaction and records the SHA-256 in `public.schema_migrations`. It refuses a modified previously applied migration; add the next numbered file instead. `001_core.sql` is additive and idempotent for compatibility with earlier prototype volumes. A PostgreSQL 18 volume must not be deleted to rerun migrations. The old Docker `docker-entrypoint-initdb.d` mount has been removed.
 
 `DEPLOY_ENV=staging ./deploy/scripts/deploy.sh` is operator-initiated. Production additionally requires `CONFIRM_PRODUCTION_DEPLOY=YES` and `HOKM_BACKUP_AGE_RECIPIENT`, performing an encrypted database backup before migrations. Image rollback does **not** roll back the DB. See `docs/operations/RESTORE_DRILL.md` and `docs/stages/S01_EXECUTION.md`.
+
+An explicit code rollback requires `CONFIRM_ROLLBACK=YES ./deploy/scripts/rollback.sh`. It uses the locally recorded previous image, runs both health probes, and restores the pre-rollback image if the candidate is unhealthy. Database migrations remain forward-only.
 
 ## Stage S01 deployment state
 
