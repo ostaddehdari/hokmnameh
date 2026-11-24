@@ -1,5 +1,11 @@
 # Repository owner performs reviews until explicit maintainers are assigned.
 * @ostaddehdari
+/backend/ @ostaddehdari
+/unity/Packages/com.hokmnameh.core/ @ostaddehdari
+/unity/Assets/Hokmnameh/ @ostaddehdari
+/docs/ @ostaddehdari
 /docs/planning/ @ostaddehdari
+/tools/ @ostaddehdari
 /backend/db/migrations/ @ostaddehdari
 /deploy/ @ostaddehdari
+/.github/ @ostaddehdari
