@@ -33,6 +33,9 @@ jobs:
           node docs/verify-e04-decision-v1.mjs
           node 0000/change-control/verify-change-control.mjs --self-test
           python3 -m json.tool docs/planning/backlog.json >/dev/null
+          python3 -m json.tool repository.contract.json >/dev/null
+          python3 -m json.tool version-contract.json >/dev/null
+          node tools/verify-repository-contract.mjs
           git diff --check
       - name: Confirm no tracked local env file
         run: |
@@ -50,8 +53,8 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-      - name: Build ASP.NET Core API
-        run: dotnet build backend/src/Hokmnameh.Api/Hokmnameh.Api.csproj -c Release -p:ContinuousIntegrationBuild=true
+      - name: Lint and build solution with warnings as errors
+        run: dotnet build Hokmnameh.sln -c Release -warnaserror -p:ContinuousIntegrationBuild=true
       - name: Shared rules smoke
         run: dotnet run --project backend/tests/Hokmnameh.SmokeTests/Hokmnameh.SmokeTests.csproj -c Release
 
