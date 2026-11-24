@@ -7,6 +7,7 @@
 
 - Backend / Core / Unity / DB / deployment:
 - Breaking changes, versioning, compatibility:
+- Version before → after (API/Core/Rules/DB/Event, if applicable):
 
 ## Validation
 
@@ -16,3 +17,5 @@
 - [ ] Nginx and existing srun.ir routes unaffected
 - [ ] Rollback / restore strategy documented
 - [ ] Acceptance evidence linked
+- [ ] Repository/version contract verifier passed
+- [ ] Breaking change uses a new major/immutable ID/migration; no in-place contract break

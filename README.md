@@ -24,6 +24,8 @@ unity/Assets/Hokmnameh/Editor/         build scene generator
 ./docs/                                decisions, APIs, phases, caveats
 ```
 
+The machine-readable module map and owners live in [`repository.contract.json`](repository.contract.json). Unified .NET build entry is [`Hokmnameh.sln`](Hokmnameh.sln); compatibility rules are defined by [`version-contract.json`](version-contract.json) and [ADR-0003](docs/adr/0003-versioning-and-breaking-changes.md).
+
 ## Bootstrapping locally or on the VPS
 
 ```bash

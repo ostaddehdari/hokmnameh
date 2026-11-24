@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "repositoryVersion": "0.1.0",
+  "api": {"currentMajor":1,"routePrefix":"/hokmnameh/api/v1","breakingChange":"new-major-route-prefix-and-contract-tests"},
+  "sharedCore": {"package":"com.hokmnameh.core","version":"0.1.0","breakingChange":"semver-major-and-consumer-migration"},
+  "rules": {"classic":"iranian-hokm-classic-v1","e04":"hokmnameh-e04-v1","breakingChange":"new-immutable-id; active matches retain captured id"},
+  "database": {"migrationPattern":"^[0-9]{3}_[a-z0-9_]+\\.sql$","breakingChange":"new-forward-only-migration; applied files are immutable"},
+  "events": {"breakingChange":"new-payload-major-with-explicit-upcaster-or-parallel-consumer"},
+  "release": {"scheme":"semantic-versioning-2.0.0","tagPattern":"^v[0-9]+\\.[0-9]+\\.[0-9]+$","preReleaseAllowed":true}
+}

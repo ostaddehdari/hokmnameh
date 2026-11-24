@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "repository": "ostaddehdari/hokmnameh",
+  "layout": "monorepo",
+  "modules": [
+    {"id":"api","path":"backend/src/Hokmnameh.Api","owner":"@ostaddehdari","kind":"aspnet-api","build":"dotnet build backend/src/Hokmnameh.Api/Hokmnameh.Api.csproj -c Release"},
+    {"id":"shared-core","path":"unity/Packages/com.hokmnameh.core","owner":"@ostaddehdari","kind":"pure-csharp-unity-package","build":"compiled by API and smoke projects"},
+    {"id":"unity-client","path":"unity/Assets/Hokmnameh","owner":"@ostaddehdari","kind":"unity-client","build":"Unity 6000.3 LTS Android pipeline (future dedicated runner)"},
+    {"id":"tests","path":"backend/tests/Hokmnameh.SmokeTests","owner":"@ostaddehdari","kind":"executable-smoke-tests","test":"dotnet run --project backend/tests/Hokmnameh.SmokeTests/Hokmnameh.SmokeTests.csproj -c Release"},
+    {"id":"docs","path":"docs","owner":"@ostaddehdari","kind":"engineering-contracts","test":"node tools/verify-repository-contract.mjs"},
+    {"id":"deploy","path":"deploy","owner":"@ostaddehdari","kind":"operator-runbooks-and-scripts","test":"find deploy/scripts -name '*.sh' -exec bash -n {} +"}
+  ],
+  "rootContracts": ["Hokmnameh.sln", "Directory.Build.props", "version-contract.json", ".editorconfig", ".gitignore", ".github/CODEOWNERS"],
+  "forbiddenTrackedPatterns": [".env", "*.pem", "*.pfx", "id_rsa*", "unity/Library/**", "**/bin/**", "**/obj/**"]
+}
