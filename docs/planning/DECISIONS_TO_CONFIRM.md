@@ -2,11 +2,11 @@
 
 این موارد قبل از انتشار P0/P1 باید به RuleSet/Policy/Content Registry تبدیل شوند؛ هیچ مقدار آزمایشی به صورت silently approved نیست.
 
-1. **E-04:** نقش توزیع‌کننده و بازیکن برش‌دهنده، جهت حرکت، first receiver، pack size — `PENDING_APPROVAL`.
-2. **E-04:** Cut مجاز در حالت‌های بازی و محدوده CutIndex (۱..۵۱ یا محدود) — `PENDING_APPROVAL`.
-3. **E-04:** Deadline بریدن (۳ ثانیه فقط پیشنهاد)، انتخاب حکم و سیاست Timeout — `PENDING_APPROVAL`.
-4. **E-04:** Reveal راند زودتمام‌شده/ابطالی و مدت نگهداری Seed/Deck/Log — `PENDING_APPROVAL`.
-5. **E-04:** نسخه نهایی Canonical Encoding و شدت ممیزی رنک/جام؛ Client Entropy/Beacon فاز بعد — `PENDING_APPROVAL`.
+1. **E-04:** نقش توزیع‌کننده و بازیکن برش‌دهنده، جهت حرکت، first receiver، pack size — `APPROVED / DEC-2026-0006`.
+2. **E-04:** Cut مجاز در حالت‌های بازی و محدوده CutIndex — `APPROVED / DEC-2026-0006` (`1..51`).
+3. **E-04:** Deadline بریدن، انتخاب حکم و سیاست Timeout — `APPROVED / DEC-2026-0006` (`8s / 20s / deterministic fallback`).
+4. **E-04:** Reveal و مدت نگهداری Seed/Deck/Log — `APPROVED / DEC-2026-0006` (`ROUND_CLOSED / 30d secrets / 365d non-secret hashes`).
+5. **E-04:** Canonical Encoding و ممیزی رنک/جام — `APPROVED / DEC-2026-0006` (`E04-CONTEXT-BINARY-v1` و `E04-TV-001`)؛ Client Entropy/Beacon همچنان فاز بعد است.
 6. **E-04:** مدت و سبک انیمیشن Fast/Normal/Cinematic و نقطه شروع منطقی بازی — `PENDING_APPROVAL`.
 7. **MM-01:** ارقام ۲۰/۴۵/۹۰ ثانیه و حدود برد ۴۵–۵۵٪ / ۴۰–۶۰٪ به‌عنوان آزمایشی — `PENDING_APPROVAL`.
 8. **MM-01:** Ready Check timeout و Cooldown بعد از Ready Check Dodging — `PENDING_APPROVAL`.
