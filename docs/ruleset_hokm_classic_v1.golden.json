@@ -18,5 +18,12 @@
     {"id": "match-before-target", "points": [6, 4], "finished": false},
     {"id": "match-at-target", "points": [7, 4], "finished": true},
     {"id": "match-over-target-after-kot", "points": [8, 4], "finished": true}
+  ],
+  "acceptanceScenarios": [
+    {"id": "WIN-001", "category": "win", "expected": "round ends at seven tricks and points are awarded"},
+    {"id": "TRUMP-001", "category": "trump-selection", "expected": "only hakem selects after exactly five cards"},
+    {"id": "FOLLOW-001", "category": "follow-suit", "expected": "off-suit card is illegal while led suit exists"},
+    {"id": "CUT-001", "category": "cut", "expected": "trump card beats a higher led-suit card"},
+    {"id": "DISCONNECT-001", "category": "disconnect", "expected": "no action before deadline; legal auto-play after expiry"}
   ]
 }

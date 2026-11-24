@@ -25,6 +25,12 @@ for (const item of golden.termination) {
   if ('roundEnds' in item) eq(item.winnerTricks >= rules.trick.tricksNeededToWinRound, item.roundEnds, `termination/${item.id}`);
   if ('finished' in item) eq(Math.max(...item.points) >= rules.match.targetPoints, item.finished, `termination/${item.id}`);
 }
+const requiredAcceptance = new Set(['win','trump-selection','follow-suit','cut','disconnect']);
+for (const item of golden.acceptanceScenarios ?? []) {
+  if (!item.id || !item.expected) failures.push('acceptance scenario requires id and expected result');
+  requiredAcceptance.delete(item.category);
+}
+if (requiredAcceptance.size) failures.push(`missing acceptance categories: ${[...requiredAcceptance].join(',')}`);
 
 if (failures.length) { console.error(failures.join('\n')); process.exit(1); }
-console.log(JSON.stringify({task:'S00-W02-T01',ruleset:rules.immutableId,scoring:golden.scoring.length,hakemRotation:golden.hakemRotation.length,termination:golden.termination.length,status:'PASS'}));
+console.log(JSON.stringify({task:'S00-W02-T03',ruleset:rules.immutableId,scoring:golden.scoring.length,hakemRotation:golden.hakemRotation.length,termination:golden.termination.length,acceptance:golden.acceptanceScenarios.length,status:'PASS'}));

@@ -67,6 +67,21 @@ namespace Hokmnameh.Core
             if (winningTeam < 0 || winningTeam > 1) throw new ArgumentOutOfRangeException("winningTeam");
             return currentHakem % 2 == winningTeam ? currentHakem : (currentHakem + 1) % 4;
         }
+
+        public static int[] LegalCards(IList<int> hand, int ledSuit)
+        {
+            if (hand == null) throw new ArgumentNullException("hand");
+            if (ledSuit < -1 || ledSuit > 3) throw new ArgumentOutOfRangeException("ledSuit");
+            var all = new List<int>();
+            var follow = new List<int>();
+            foreach (var card in hand)
+            {
+                if (card < 0 || card >= 52) throw new ArgumentOutOfRangeException("hand");
+                all.Add(card);
+                if (ledSuit >= 0 && HokmGame.SuitOf(card) == ledSuit) follow.Add(card);
+            }
+            return follow.Count > 0 ? follow.ToArray() : all.ToArray();
+        }
     }
 
     public sealed class HokmGame
@@ -147,10 +162,7 @@ namespace Hokmnameh.Core
         {
             if (seat < 0 || seat > 3) throw new ArgumentOutOfRangeException("seat");
             if (Phase != GamePhase.Playing) return new int[0];
-            if (trick.Count == 0) return hands[seat].ToArray();
-            int ledSuit = SuitOf(trick[0].card);
-            var follow = hands[seat].FindAll(c => SuitOf(c) == ledSuit);
-            return follow.Count > 0 ? follow.ToArray() : hands[seat].ToArray();
+            return ClassicRules.LegalCards(hands[seat], trick.Count == 0 ? -1 : SuitOf(trick[0].card));
         }
 
         public void Play(int seat, int card)
