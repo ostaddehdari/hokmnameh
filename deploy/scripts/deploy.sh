@@ -7,6 +7,7 @@ case "$DEPLOY_ENV" in staging|production) ;; *) echo 'DEPLOY_ENV must be staging
 command -v docker >/dev/null || { echo 'Docker required' >&2; exit 1; }
 command -v curl >/dev/null || { echo 'curl required' >&2; exit 1; }
 [ -f .env ] || { echo 'Create a protected .env' >&2; exit 1; }
+./deploy/scripts/preflight-host.sh
 if grep -q 'CHANGE_TO_A_LONG_RANDOM_PASSWORD' .env; then
   echo 'Refusing sample database password' >&2; exit 1
 fi
@@ -31,6 +32,13 @@ fi
 docker compose build api
 docker compose up -d --no-build api
 if ./deploy/scripts/check.sh; then
+  if [ -n "$rollback_image" ]; then
+    umask 077
+    mkdir -p .deploy
+    chmod 700 .deploy
+    printf '%s\n' "$rollback_image" > .deploy/rollback-image
+    chmod 600 .deploy/rollback-image
+  fi
   echo "Deployment successful ($DEPLOY_ENV)."
 else
   echo 'API readiness failed; attempting code-only rollback' >&2

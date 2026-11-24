@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "task_ids": ["S01-W02-T01", "S01-W02-T02", "S01-W02-T03"],
+  "public_route": {
+    "base_path": "/hokmnameh",
+    "tls_termination": "existing-nginx-vhost",
+    "preserve_base_path": true,
+    "upstream": "http://127.0.0.1:5080"
+  },
+  "containers": {
+    "api": {
+      "host_bind": "127.0.0.1",
+      "host_port": 5080,
+      "container_port": 8080,
+      "uid": 10001,
+      "gid": 10001,
+      "read_only_rootfs": true,
+      "drop_all_capabilities": true,
+      "no_new_privileges": true
+    },
+    "postgres": {
+      "published_ports": [],
+      "network": "internal"
+    },
+    "valkey": {
+      "status": "not-deployed",
+      "published_ports": [],
+      "future_requirement": "internal-network-only"
+    }
+  },
+  "host": {
+    "deploy_user": "hokmdeploy",
+    "application_root": "/opt/hokmnameh",
+    "root_login": "forbidden",
+    "ssh_authentication": "public-key-only",
+    "docker_engine": "rootless-required",
+    "nginx_changes": "separate-authorized-admin"
+  },
+  "secrets": {
+    "env_file": "/opt/hokmnameh/.env",
+    "owner": "hokmdeploy",
+    "mode": "0600",
+    "tracked_in_git": false,
+    "sample_values_rejected": true
+  },
+  "health": {
+    "live": "http://127.0.0.1:5080/hokmnameh/health/live",
+    "ready": "http://127.0.0.1:5080/hokmnameh/health/ready"
+  },
+  "rollback": {
+    "code_image_only": true,
+    "database_migrations": "forward-only",
+    "explicit_confirmation": "CONFIRM_ROLLBACK=YES",
+    "readiness_required": true,
+    "restore_current_image_on_failed_rollback": true
+  }
+}

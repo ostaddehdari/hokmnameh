@@ -1,0 +1,13 @@
+# Review against the host's complete sshd configuration; never copy blindly.
+# Keep a second verified admin session open and run `sshd -t` before reload.
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+AuthenticationMethods publickey
+
+Match User hokmdeploy
+    AllowTcpForwarding no
+    X11Forwarding no
+    PermitTunnel no
+    GatewayPorts no

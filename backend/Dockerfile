@@ -8,7 +8,9 @@ RUN dotnet publish backend/src/Hokmnameh.Api/Hokmnameh.Api.csproj -c Release -o 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /out .
-USER $APP_UID
+# Keep the runtime identity deterministic and non-root across image revisions.
+# The application has no writable application directory; Compose provides only /tmp.
+USER 10001:10001
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "Hokmnameh.Api.dll"]

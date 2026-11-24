@@ -37,3 +37,4 @@ TestResults/
 *.dump
 *.dump.age
 *.dump.age.sha256
+.deploy/

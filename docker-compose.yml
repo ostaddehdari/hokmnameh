@@ -30,6 +30,7 @@ services:
       dockerfile: backend/Dockerfile
     restart: unless-stopped
     init: true
+    user: "10001:10001"
     depends_on:
       postgres: { condition: service_healthy }
     environment:
@@ -50,5 +51,6 @@ services:
         max-file: "3"
 networks:
   internal:
+    internal: true
 volumes:
   pgdata:

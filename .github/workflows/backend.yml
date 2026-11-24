@@ -36,6 +36,8 @@ jobs:
           python3 -m json.tool repository.contract.json >/dev/null
           python3 -m json.tool version-contract.json >/dev/null
           node tools/verify-repository-contract.mjs
+          python3 -m json.tool deploy/security-contract.json >/dev/null
+          node tools/verify-vps-security-contract.mjs
           git diff --check
       - name: Confirm no tracked local env file
         run: |
@@ -94,7 +96,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Docker build
-        run: docker build -f backend/Dockerfile -t hokmnameh-api:ci .
+        run: |
+          set -euo pipefail
+          docker build -f backend/Dockerfile -t hokmnameh-api:ci .
+          test "$(docker image inspect -f '{{.Config.User}}' hokmnameh-api:ci)" = '10001:10001'
 
 # Deployment is deliberately NOT triggered by push or pull_request.
 # Production requires a separately authorized operator, backup, and verified VPS access.
