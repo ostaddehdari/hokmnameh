@@ -43,7 +43,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp:rw,nosuid,noexec,size=64m
-    networks: [internal]
+    networks: [internal, edge]
     logging:
       driver: json-file
       options:
@@ -52,5 +52,7 @@ services:
 networks:
   internal:
     internal: true
+  edge:
+    driver: bridge
 volumes:
   pgdata:

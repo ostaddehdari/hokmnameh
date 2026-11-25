@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "task_ids": ["S01-W03-T01", "S01-W03-T02", "S01-W03-T03"],
+  "environments": {
+    "development": {
+      "data_class": "synthetic-only",
+      "credentials": "local-unique",
+      "database": "development-only"
+    },
+    "staging": {
+      "data_class": "synthetic-or-redacted",
+      "credentials": "staging-unique",
+      "database": "staging-only",
+      "backup_namespace": "staging-only"
+    },
+    "production": {
+      "data_class": "production",
+      "credentials": "production-unique",
+      "database": "production-only",
+      "backup_namespace": "production-only",
+      "pre_migration_encrypted_backup": true
+    }
+  },
+  "migrations": {
+    "manifest": "backend/db/migrations/manifest.json",
+    "ordered": true,
+    "contiguous_from": 1,
+    "immutable_after_apply": true,
+    "serialized_by": ["host-flock", "postgres-advisory-transaction-lock"],
+    "database_recovery": "forward-only"
+  },
+  "backup_restore": {
+    "format": "postgres-custom-streamed-to-age",
+    "plaintext_dump_on_disk": false,
+    "encrypted_sha256_required": true,
+    "restore_target": "isolated-disposable-postgresql",
+    "restore_network": "none",
+    "validated_in_ci": true,
+    "minimum_public_tables": 5,
+    "migration_ledger_required": true,
+    "duration_recorded": true
+  },
+  "rate_limits": {
+    "guest_identity": {"policy": "auth-guest", "partition": "trusted-client-ip", "permit_limit": 10, "window_seconds": 300, "queue_limit": 0},
+    "authenticated_commands": {"policy": "authenticated-command", "partition": "trusted-client-ip", "permit_limit": 120, "window_seconds": 60, "queue_limit": 0},
+    "websocket_connect": {"policy": "websocket-connect", "partition": "trusted-client-ip", "permit_limit": 20, "window_seconds": 60, "queue_limit": 0},
+    "rejection_status": 429,
+    "retry_after_header": true
+  },
+  "health": {
+    "live": "/hokmnameh/health/live",
+    "ready": "/hokmnameh/health/ready",
+    "ready_dependency": "postgresql",
+    "probe_interval_seconds": 60
+  },
+  "alerts": {
+    "transport": "https-webhook",
+    "local_ci_receiver_allowed": true,
+    "delivery_timeout_seconds": 5,
+    "liveness_failure_check": "api-liveness",
+    "readiness_failure_check": "database-readiness",
+    "raw_secret_logging": false,
+    "delivery_failure_is_nonzero": true
+  }
+}

@@ -1,6 +1,10 @@
 {
   "schema_version": "1.0",
-  "task_ids": ["S01-W02-T01", "S01-W02-T02", "S01-W02-T03"],
+  "task_ids": [
+    "S01-W02-T01",
+    "S01-W02-T02",
+    "S01-W02-T03"
+  ],
   "public_route": {
     "base_path": "/hokmnameh",
     "tls_termination": "existing-nginx-vhost",
@@ -16,7 +20,11 @@
       "gid": 10001,
       "read_only_rootfs": true,
       "drop_all_capabilities": true,
-      "no_new_privileges": true
+      "no_new_privileges": true,
+      "networks": [
+        "internal",
+        "edge"
+      ]
     },
     "postgres": {
       "published_ports": [],

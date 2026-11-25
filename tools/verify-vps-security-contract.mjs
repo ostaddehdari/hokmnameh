@@ -11,6 +11,7 @@ assert.deepEqual(contract.task_ids, ['S01-W02-T01', 'S01-W02-T02', 'S01-W02-T03'
 assert.equal(contract.public_route.base_path, '/hokmnameh');
 assert.equal(contract.public_route.upstream, 'http://127.0.0.1:5080');
 assert.equal(contract.public_route.preserve_base_path, true);
+assert.deepEqual(contract.containers.api.networks, ['internal', 'edge']);
 assert.deepEqual(contract.containers.postgres.published_ports, []);
 assert.deepEqual(contract.containers.valkey.published_ports, []);
 assert.equal(contract.containers.valkey.future_requirement, 'internal-network-only');
@@ -26,7 +27,8 @@ assert.match(composeSource, /user: "10001:10001"/);
 assert.match(composeSource, /ports: \["127\.0\.0\.1:5080:8080"\]/);
 assert.match(composeSource, /cap_drop: \["ALL"\]/);
 assert.match(composeSource, /read_only: true/);
-assert.match(composeSource, /networks:\n  internal:\n    internal: true/);
+assert.match(composeSource, /networks: \[internal, edge\]/);
+assert.match(composeSource, /networks:\n  internal:\n    internal: true\n  edge:\n    driver: bridge/);
 
 if (!staticOnly) {
   const composeResult = spawnSync('docker', ['compose', 'config', '--format', 'json'], {
@@ -41,12 +43,14 @@ if (!staticOnly) {
   assert.equal(api.read_only, true);
   assert.ok(api.cap_drop.includes('ALL'));
   assert.ok(api.security_opt.includes('no-new-privileges:true'));
+  assert.deepEqual(Object.keys(api.networks).sort(), ['edge', 'internal']);
   assert.equal(api.ports.length, 1);
   assert.equal(api.ports[0].host_ip, '127.0.0.1');
   assert.equal(Number(api.ports[0].published), 5080);
   assert.equal(Number(api.ports[0].target), 8080);
   assert.ok(!('ports' in postgres) || postgres.ports.length === 0, 'PostgreSQL must not publish a host port');
   assert.equal(compose.networks.internal.internal, true);
+  assert.notEqual(compose.networks.edge.internal, true);
 }
 
 const dockerfile = read('backend/Dockerfile');

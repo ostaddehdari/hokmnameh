@@ -9,13 +9,23 @@ command -v flock >/dev/null || { echo 'flock required (util-linux)' >&2; exit 1;
 # One migration runner per installation. The database transaction also uses an advisory lock.
 exec 9>.migration.lock
 flock -n 9 || { echo 'Another migration runner is active' >&2; exit 1; }
+shopt -s nullglob
+paths=(backend/db/migrations/[0-9][0-9][0-9]_*.sql)
+[ "${#paths[@]}" -gt 0 ] || { echo 'No versioned migrations found' >&2; exit 1; }
+expected=1
+for path in "${paths[@]}"; do
+  version="$(basename "$path" .sql)"
+  [[ "$version" =~ ^[0-9]{3}_[A-Za-z0-9_-]+$ ]] || { echo "Invalid migration name: $version" >&2; exit 1; }
+  raw_number="${version%%_*}"
+  number=$((10#$raw_number))
+  [ "$number" -eq "$expected" ] || { echo "Migration sequence gap: expected $(printf '%03d' "$expected"), found $raw_number" >&2; exit 1; }
+  expected=$((expected + 1))
+done
 docker compose up -d --wait postgres
 pg() { docker compose exec -T postgres sh -c 'exec psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" "$@"' sh "$@"; }
 printf '%s\n' 'CREATE TABLE IF NOT EXISTS public.schema_migrations (version text PRIMARY KEY, sha256 text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now());' | pg >/dev/null
-shopt -s nullglob
-for path in backend/db/migrations/[0-9][0-9][0-9]_*.sql; do
+for path in "${paths[@]}"; do
   version="$(basename "$path" .sql)"
-  [[ "$version" =~ ^[0-9]{3}_[A-Za-z0-9_-]+$ ]] || { echo "Invalid migration name: $version" >&2; exit 1; }
   checksum="$(sha256sum "$path" | cut -d' ' -f1)"
   existing="$(printf 'SELECT sha256 FROM public.schema_migrations WHERE version = '\''%s'\'';\n' "$version" | pg -Atq | tr -d '\r')"
   if [ -n "$existing" ]; then
