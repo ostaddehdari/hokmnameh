@@ -1,6 +1,8 @@
 using Hokmnameh.Core;
 using Hokmnameh.Api;
 using System.Text.Json;
+using System.Text;
+using System.Net.WebSockets;
 
 void Assert(bool condition, string name) { if (!condition) throw new Exception("FAILED: " + name); Console.WriteLine("PASS: " + name); }
 void AssertRuleError(Action action, string name)
@@ -115,6 +117,9 @@ using (var audit = new MatchAudit())
 {
     var action = Guid.NewGuid(); var now = DateTimeOffset.UtcNow;
     audit.Append(new CommandV1(1, action, -1, ClassicRules.ImmutableId, now, 0, "round-started"));
+    Assert(audit.Events[0].SchemaVersion == 1 && audit.Events[0].Sequence == 1 &&
+        audit.Events[0].StateVersion == 1 && audit.Events[0].ActionId == action,
+        "versioned event preserves required command metadata");
     AssertRuleError(() => audit.Append(new CommandV1(2, action, 0, ClassicRules.ImmutableId, now, 1, "duplicate")), "duplicate action rejected");
     AssertRuleError(() => audit.Append(new CommandV1(3, Guid.NewGuid(), 0, ClassicRules.ImmutableId, now, 1, "gap")), "sequence gap rejected");
     var signed = audit.Sign(Guid.NewGuid(), 0, trumpGame.Snapshot(0));
@@ -122,6 +127,8 @@ using (var audit = new MatchAudit())
     var other = trumpGame.Snapshot(1);
     Assert(!audit.Verify(signed with { Snapshot = other }), "other seat snapshot signature rejected");
     Assert(!audit.Verify(signed with { StateVersion = 2 }), "snapshot version tamper rejected");
+    signed.Snapshot.hand[0] = other.hand[0];
+    Assert(!audit.Verify(signed), "snapshot card tamper rejected");
     var seatJson = JsonSerializer.Serialize(signed, JsonOptions.Default);
     var otherPrivateCard = other.hand.First(x => !signed.Snapshot.hand.Contains(x));
     Assert(!signed.Snapshot.hand.Contains(otherPrivateCard) &&
@@ -131,6 +138,43 @@ using (var audit = new MatchAudit())
     Assert(!JsonSerializer.Serialize(audit.Events, JsonOptions.Default).Contains("hand", StringComparison.OrdinalIgnoreCase),
         "public event audit excludes private hands");
 }
+
+var players = Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray();
+var privateRoom = new GameRoom(Guid.NewGuid(), "PRIVATE", "free", players[0], 30, ClassicRules.ImmutableId);
+for (int i = 1; i < 4; ++i) privateRoom.Join(players[i]);
+AssertRuleError(() => privateRoom.State(Guid.NewGuid()), "non-member HTTP state rejected");
+using var unauthorizedSocket = new CapturingSocket();
+AssertRuleError(() => privateRoom.RegisterSocket(Guid.NewGuid(), unauthorizedSocket, Guid.NewGuid()),
+    "non-member WebSocket registration rejected");
+var sockets = new CapturingSocket[4];
+var seatHands = new List<int[]>();
+for (int seat = 0; seat < 4; ++seat)
+{
+    using var stateJson = JsonDocument.Parse(JsonSerializer.Serialize(privateRoom.State(players[seat]), JsonOptions.Default));
+    var gameJson = stateJson.RootElement.GetProperty("game");
+    Assert(gameJson.GetProperty("yourSeat").GetInt32() == seat, "HTTP state owner seat=" + seat);
+    Assert(!stateJson.RootElement.TryGetProperty("seed", out _) &&
+        !gameJson.TryGetProperty("hands", out _), "HTTP response excludes secrets seat=" + seat);
+    var owned = gameJson.GetProperty("hand").EnumerateArray().Select(x => x.GetInt32()).ToArray();
+    Assert(owned.Length == 5, "preliminary HTTP hand has five seat=" + seat);
+    seatHands.Add(owned);
+    sockets[seat] = new CapturingSocket();
+    privateRoom.RegisterSocket(Guid.NewGuid(), sockets[seat], players[seat]);
+}
+Assert(seatHands.SelectMany(x => x).Distinct().Count() == 20, "HTTP preliminary hands disjoint");
+await privateRoom.BroadcastAsync();
+for (int seat = 0; seat < 4; ++seat)
+{
+    Assert(sockets[seat].Messages.Count == 1, "WebSocket sent one state seat=" + seat);
+    using var wsJson = JsonDocument.Parse(sockets[seat].Messages[0]);
+    var state = wsJson.RootElement.GetProperty("state");
+    var wsHand = state.GetProperty("hand").EnumerateArray().Select(x => x.GetInt32()).ToArray();
+    Assert(wsHand.SequenceEqual(seatHands[seat]) && state.GetProperty("yourSeat").GetInt32() == seat,
+        "WebSocket contains only seat hand=" + seat);
+    Assert(!state.TryGetProperty("hands", out _) &&
+        !wsJson.RootElement.TryGetProperty("seed", out _), "WebSocket excludes secret fields seat=" + seat);
+    sockets[seat].Dispose();
+}
 Console.WriteLine("All core smoke tests passed");
 
 sealed class ManualTimeProvider(DateTimeOffset now) : TimeProvider
@@ -138,4 +182,24 @@ sealed class ManualTimeProvider(DateTimeOffset now) : TimeProvider
     private DateTimeOffset _now = now;
     public override DateTimeOffset GetUtcNow() => _now;
     public void Advance(TimeSpan amount) => _now = _now.Add(amount);
+}
+
+sealed class CapturingSocket : WebSocket
+{
+    public List<string> Messages { get; } = new();
+    public override WebSocketCloseStatus? CloseStatus => null;
+    public override string? CloseStatusDescription => null;
+    public override WebSocketState State => WebSocketState.Open;
+    public override string? SubProtocol => null;
+    public override void Abort() { }
+    public override Task CloseAsync(WebSocketCloseStatus status, string? description, CancellationToken ct) => Task.CompletedTask;
+    public override Task CloseOutputAsync(WebSocketCloseStatus status, string? description, CancellationToken ct) => Task.CompletedTask;
+    public override void Dispose() { }
+    public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken ct) =>
+        Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true));
+    public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType type, bool end, CancellationToken ct)
+    {
+        Messages.Add(Encoding.UTF8.GetString(buffer.Array!, buffer.Offset, buffer.Count));
+        return Task.CompletedTask;
+    }
 }

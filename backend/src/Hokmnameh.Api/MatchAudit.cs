@@ -6,9 +6,15 @@ namespace Hokmnameh.Api;
 
 // An append-only in-process audit contract. Durable event storage/replay is S02-W03.
 public sealed record CommandV1(long Sequence, Guid ActionId, int ActorSeat, string RulesetVersion,
-    DateTimeOffset Timestamp, long StateVersion, string Kind);
+    DateTimeOffset Timestamp, long StateVersion, string Kind)
+{
+    public int SchemaVersion => 1;
+}
 public sealed record MatchEventV1(long Sequence, Guid ActionId, int ActorSeat, string RulesetVersion,
-    DateTimeOffset Timestamp, long StateVersion, string Kind, int? PublicValue);
+    DateTimeOffset Timestamp, long StateVersion, string Kind, int? PublicValue)
+{
+    public int SchemaVersion => 1;
+}
 public sealed record SignedSeatSnapshotV1(Guid RoomId, int Seat, long StateVersion,
     GameSnapshot Snapshot, string Signature);
 
@@ -25,6 +31,7 @@ public sealed class MatchAudit : IDisposable
         if (command.ActionId == Guid.Empty || command.Sequence != StateVersion + 1 ||
             command.StateVersion != StateVersion || command.ActorSeat < -1 || command.ActorSeat > 3 ||
             command.RulesetVersion != ClassicRules.ImmutableId || command.Timestamp == default ||
+            command.Timestamp.Offset != TimeSpan.Zero ||
             string.IsNullOrWhiteSpace(command.Kind) || !_actions.Add(command.ActionId))
             throw new GameRuleException("Invalid or duplicate versioned action");
         _events.Add(new MatchEventV1(command.Sequence, command.ActionId, command.ActorSeat,

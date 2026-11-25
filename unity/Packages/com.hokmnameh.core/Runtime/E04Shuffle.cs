@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -117,8 +116,11 @@ namespace Hokmnameh.Core
         public static E04Round CreateRandom(Guid matchId, ulong roundNumber, string rulesetId)
         {
             var seed = new byte[32]; var nonce = new byte[16];
-            using (var rng = RandomNumberGenerator.Create()) { rng.GetBytes(seed); rng.GetBytes(nonce); }
-            try { return Create(matchId, roundNumber, rulesetId, seed, nonce); }
+            try
+            {
+                using (var rng = RandomNumberGenerator.Create()) { rng.GetBytes(seed); rng.GetBytes(nonce); }
+                return Create(matchId, roundNumber, rulesetId, seed, nonce);
+            }
             finally { Array.Clear(seed, 0, seed.Length); Array.Clear(nonce, 0, nonce.Length); }
         }
     }

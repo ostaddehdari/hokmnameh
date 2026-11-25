@@ -134,7 +134,14 @@ public sealed class GameRoom
         }
     }
 
-    public void RegisterSocket(Guid socketId, WebSocket ws, int seat) => _clients[socketId] = new ClientSocket(ws, seat);
+    public void RegisterSocket(Guid socketId, WebSocket ws, Guid identity)
+    {
+        lock (_lock)
+        {
+            int seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
+            _clients[socketId] = new ClientSocket(ws, seat);
+        }
+    }
     public void RemoveSocket(Guid socketId) => _clients.TryRemove(socketId, out _);
     public async Task BroadcastAsync(CancellationToken ct = default)
     {

@@ -139,7 +139,7 @@ api.MapGet("/ws/rooms/{roomId:guid}", async (Guid roomId, HttpContext context, A
     if (!seat.HasValue) { context.Response.StatusCode = 403; return; }
     using var socket = await context.WebSockets.AcceptWebSocketAsync();
     var connectionId = Guid.NewGuid();
-    room.RegisterSocket(connectionId, socket, seat.Value);
+    room.RegisterSocket(connectionId, socket, identity.AccountId);
     try
     {
         await room.BroadcastAsync(ct);

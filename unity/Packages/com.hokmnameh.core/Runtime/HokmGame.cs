@@ -127,12 +127,14 @@ namespace Hokmnameh.Core
             if (hakem < 0 || hakem > 3) throw new ArgumentOutOfRangeException("hakem");
             if (Phase == GamePhase.Playing || Phase == GamePhase.ChoosingTrump) throw new GameRuleException("Round already active");
             if (Phase == GamePhase.Finished) throw new GameRuleException("Match finished");
+            // Draw and validate entropy before changing the current round. An RNG failure
+            // must leave the previous state untouched and must never publish a deal.
+            var shuffle = E04Shuffle.CreateRandom(matchId, (ulong)(Round + 1), ClassicRules.ImmutableId);
             Hakem = hakem; Turn = hakem; Trump = -1; WinnerTeam = -1; LastTrickWinner = -1;
             Round++; trick.Clear(); lastTrick.Clear(); undealt.Clear(); played.Clear();
             dealCursors.Clear();
             tricksWon[0] = tricksWon[1] = 0;
             foreach (var h in hands) h.Clear();
-            var shuffle = E04Shuffle.CreateRandom(matchId, (ulong)Round, ClassicRules.ImmutableId);
             // The commitment is fixed before any seat receives a card. No seed enters a snapshot.
             ShuffleCommitment = shuffle.CommitmentHex; CutIndex = shuffle.CutIndex;
             for (int offset = 0; offset < 4; ++offset)
