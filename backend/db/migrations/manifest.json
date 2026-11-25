@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "runner_contract": "hokmnameh-forward-only-v1",
+  "migrations": [
+    {
+      "version": "001_core",
+      "file": "001_core.sql",
+      "sha256": "1b3fbf3bfceee7a0d06480f18cc4af5b2bc9c93748e42259b923b2b957d2d038"
+    }
+  ]
+}

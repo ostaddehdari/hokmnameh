@@ -229,6 +229,35 @@
       "security_review": "No host address, credential or private key is committed. Deployment as root, rootful Docker, wrong secret permissions, sample credentials, public database ports and unhealthy rollback all fail closed.",
       "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0009",
+      "decision_id": "DEC-2026-0009",
+      "title": "تثبیت عملیات نسخه‌دار دیتابیس، بازیابی و پایش سلامت",
+      "status": "VERIFIED",
+      "category": ["api", "database"],
+      "requester": "project-owner",
+      "created_at": "2026-11-25T08:42:20Z",
+      "source_refs": ["S01-W03-T01", "S01-W03-T02", "S01-W03-T03", "Project owner continuation request 2026-11-25"],
+      "affected_paths": ["backend/db/migrations/", "backend/src/Hokmnameh.Api/Program.cs", "deploy/operations-contract.json", "deploy/scripts/backup.sh", "deploy/scripts/migrate.sh", "deploy/scripts/restore-drill.sh", "deploy/scripts/watch-health.sh", "deploy/systemd/hokmnameh-health.service", "docs/DEPLOYMENT.md", "docs/operations/", "docs/stages/S01_W03_EVIDENCE.md", "tools/test-health-monitor.mjs", "tools/verify-s01-operations.mjs", ".github/workflows/backend.yml"],
+      "requirement_ids": ["FR-018", "NFR-002", "NFR-005", "DATA-001", "OPS-001", "OPS-002", "OPS-003"],
+      "impact": {"player": "بدون تغییر قواعد بازی؛ درخواست‌های بیش از سقف با 429 کنترل می‌شوند", "compatibility": "endpointهای موجود حفظ و Retry-After به پاسخ محدودسازی افزوده می‌شود", "data": "schema جدیدی اضافه نمی‌شود؛ manifest نسخه 001 و دفتر checksum موجود تثبیت می‌شوند", "operations": "بکاپ رمزگذاری‌شده، restore جدا، health alert و شواهد CI الزامی می‌شوند"},
+      "risk_flags": ["production_gateway"],
+      "approvals": [
+        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "سه rate policy مستقل بر IP مورد اعتماد پراکسی و health contract سازگار"},
+        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "endpoint حذف نشده و پاسخ استاندارد 429 با Retry-After در CI آزموده می‌شود"},
+        {"role": "data_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "manifest پیوسته، checksum immutable و forward-only recovery"},
+        {"role": "operations_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "بکاپ age، checksum، metadata، restore ایزوله و زمان ثبت‌شده"},
+        {"role": "security_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "بدون dump خام، بدون bearer یا webhook در لاگ، receiver HTTPS و systemd سخت‌سازی‌شده"},
+        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "verifier قطعی، tamper test، restore واقعی، rate test و alert receiver test در CI"}
+      ],
+      "acceptance_criteria": ["فهرست migration پیوسته و checksum هر نسخه ممیزی شود", "بکاپ رمزگذاری‌شده در PostgreSQL جدا بازیابی و زمان نتیجه ثبت شود", "سقف درخواست، live/ready و تحویل هشدار خرابی دیتابیس به‌صورت اجرایی آزموده شوند"],
+      "test_plan": ["S01 operations contract verifier", "migration idempotency and checksum tamper rejection", "encrypted backup and isolated restore drill", "runtime 201/429/Retry-After test", "simulated health alert delivery", "full repository CI"],
+      "rollback_plan": "Revert the reviewed source commit. No production mutation is included; applied database migrations remain forward-only and are recovered by a subsequent migration or verified restore, never destructive rollback.",
+      "migration_plan": "No new schema migration is introduced. Existing 001_core.sql is registered with its immutable SHA-256; future changes require the next contiguous numbered migration and a manifest update.",
+      "security_review": "Encrypted dumps never touch disk as plaintext; restore has no network; unverified bearer values cannot create limiter partitions; webhook URL and secrets are not logged; real production receiver and off-host custody remain an operator gate.",
+      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "supersedes": null
     }
   ]
 }

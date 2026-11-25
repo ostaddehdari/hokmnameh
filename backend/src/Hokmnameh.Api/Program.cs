@@ -6,6 +6,18 @@ using System.Net.WebSockets;
 using Hokmnameh.Api;
 using Hokmnameh.Core;
 
+static string RatePartition(HttpContext context) =>
+    $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+
+static RateLimitPartition<string> FixedWindow(string key, int permits, TimeSpan window) =>
+    RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+    {
+        PermitLimit = permits,
+        Window = window,
+        QueueLimit = 0,
+        AutoReplenishment = true
+    });
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<AuthService>();
 builder.Services.AddSingleton<RoomDirectory>();
@@ -21,14 +33,27 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddRateLimiter(options =>
 {
     options.AddPolicy("auth-guest", context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 10, Window = TimeSpan.FromMinutes(5), QueueLimit = 0,
-                AutoReplenishment = true
-            }));
+        FixedWindow(RatePartition(context), 10, TimeSpan.FromMinutes(5)));
+    options.AddPolicy("authenticated-command", context =>
+        FixedWindow(RatePartition(context), 120, TimeSpan.FromMinutes(1)));
+    options.AddPolicy("websocket-connect", context =>
+        FixedWindow(RatePartition(context), 20, TimeSpan.FromMinutes(1)));
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers["Retry-After"] =
+                Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
+        }
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            type = "https://www.rfc-editor.org/rfc/rfc6585#section-4",
+            title = "Too many requests",
+            status = StatusCodes.Status429TooManyRequests
+        }, cancellationToken);
+    };
 });
 var app = builder.Build();
 app.UseForwardedHeaders();
@@ -50,7 +75,7 @@ api.MapGet("/api/v1/identity/me", async (HttpRequest req, AuthService auth, Canc
 {
     var identity = await auth.ValidateAsync(req, ct);
     return identity == null ? Results.Unauthorized() : Results.Ok(identity);
-});
+}).RequireRateLimiting("authenticated-command");
 
 api.MapPost("/api/v1/rooms", async (HttpRequest req, CreateRoomRequest body, AuthService auth,
     RoomDirectory rooms, CancellationToken ct) =>
@@ -59,7 +84,7 @@ api.MapPost("/api/v1/rooms", async (HttpRequest req, CreateRoomRequest body, Aut
     if (identity == null) return Results.Unauthorized();
     var room = rooms.Create(identity.AccountId, (body.Mode ?? "free").ToLowerInvariant());
     return Results.Created($"/hokmnameh/api/v1/rooms/{room.Id}", new JoinRoomResponse(room.View(), 0));
-});
+}).RequireRateLimiting("authenticated-command");
 
 api.MapPost("/api/v1/rooms/join/{code}", async (string code, HttpRequest req, AuthService auth,
     RoomDirectory rooms, CancellationToken ct) =>
@@ -70,14 +95,14 @@ api.MapPost("/api/v1/rooms/join/{code}", async (string code, HttpRequest req, Au
     var joined = room.Join(identity.AccountId);
     await room.BroadcastAsync(ct);
     return Results.Ok(joined);
-});
+}).RequireRateLimiting("authenticated-command");
 
 api.MapGet("/api/v1/rooms/{roomId:guid}", async (Guid roomId, HttpRequest req, AuthService auth,
     RoomDirectory rooms, CancellationToken ct) =>
 {
     var identity = await auth.ValidateAsync(req, ct);
     return identity == null ? Results.Unauthorized() : Results.Ok(rooms.Get(roomId).State(identity.AccountId));
-});
+}).RequireRateLimiting("authenticated-command");
 
 api.MapPost("/api/v1/rooms/{roomId:guid}/trump", async (Guid roomId, SetTrumpRequest body,
     HttpRequest req, AuthService auth, RoomDirectory rooms, CancellationToken ct) =>
@@ -88,7 +113,7 @@ api.MapPost("/api/v1/rooms/{roomId:guid}/trump", async (Guid roomId, SetTrumpReq
     room.ChooseTrump(identity.AccountId, body.Suit);
     await room.BroadcastAsync(ct);
     return Results.Ok(room.State(identity.AccountId));
-});
+}).RequireRateLimiting("authenticated-command");
 
 api.MapPost("/api/v1/rooms/{roomId:guid}/play", async (Guid roomId, PlayCardRequest body,
     HttpRequest req, AuthService auth, RoomDirectory rooms, CancellationToken ct) =>
@@ -99,7 +124,7 @@ api.MapPost("/api/v1/rooms/{roomId:guid}/play", async (Guid roomId, PlayCardRequ
     room.Play(identity.AccountId, body.Card);
     await room.BroadcastAsync(ct);
     return Results.Ok(room.State(identity.AccountId));
-});
+}).RequireRateLimiting("authenticated-command");
 
 api.MapGet("/ws/rooms/{roomId:guid}", async (Guid roomId, HttpContext context, AuthService auth,
     RoomDirectory rooms, CancellationToken ct) =>
@@ -135,7 +160,7 @@ api.MapGet("/ws/rooms/{roomId:guid}", async (Guid roomId, HttpContext context, A
         if (socket.State == WebSocketState.Open)
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None);
     }
-});
+}).RequireRateLimiting("websocket-connect");
 
 // Explicit problem responses without leaking stack traces.
 app.Use(async (ctx, next) =>

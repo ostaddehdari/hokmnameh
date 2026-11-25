@@ -38,11 +38,13 @@ Proxy must preserve `/hokmnameh` prefix because ASP.NET maps route group there. 
 
 ## Versioned database migrations — S01
 
-`deploy/scripts/migrate.sh` applies `backend/db/migrations/NNN_name.sql` through an advisory-locked transaction and records the SHA-256 in `public.schema_migrations`. It refuses a modified previously applied migration; add the next numbered file instead. `001_core.sql` is additive and idempotent for compatibility with earlier prototype volumes. A PostgreSQL 18 volume must not be deleted to rerun migrations. The old Docker `docker-entrypoint-initdb.d` mount has been removed.
+`deploy/scripts/migrate.sh` applies contiguous `backend/db/migrations/NNN_name.sql` files through an advisory-locked transaction and records the SHA-256 in `public.schema_migrations`. The audited list and immutable baseline checksums are in `backend/db/migrations/manifest.json`. It refuses a gap or a modified previously applied migration; add the next numbered file instead. `001_core.sql` is additive and idempotent for compatibility with earlier prototype volumes. A PostgreSQL 18 volume must not be deleted to rerun migrations. The old Docker `docker-entrypoint-initdb.d` mount has been removed.
 
 `DEPLOY_ENV=staging ./deploy/scripts/deploy.sh` is operator-initiated. Production additionally requires `CONFIRM_PRODUCTION_DEPLOY=YES` and `HOKM_BACKUP_AGE_RECIPIENT`, performing an encrypted database backup before migrations. Image rollback does **not** roll back the DB. See `docs/operations/RESTORE_DRILL.md` and `docs/stages/S01_EXECUTION.md`.
 
 An explicit code rollback requires `CONFIRM_ROLLBACK=YES ./deploy/scripts/rollback.sh`. It uses the locally recorded previous image, runs both health probes, and restores the pre-rollback image if the candidate is unhealthy. Database migrations remain forward-only.
+
+For monitoring, create `/opt/hokmnameh/.monitoring.env` owned by `hokmdeploy` with mode `0600`, containing only `HOKM_ENVIRONMENT=staging|production` and an HTTPS `HOKM_ALERT_WEBHOOK_URL`. Install the supplied systemd service/timer only after a test alert is observed by the authorized receiver.
 
 ## Stage S01 deployment state
 

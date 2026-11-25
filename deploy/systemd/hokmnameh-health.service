@@ -5,6 +5,12 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+EnvironmentFile=-/opt/hokmnameh/.monitoring.env
 ExecStart=/opt/hokmnameh/deploy/scripts/watch-health.sh
 User=hokmdeploy
 Group=hokmdeploy
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
