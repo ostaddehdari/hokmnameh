@@ -36,9 +36,12 @@ for(const p of tracked){
   if(secret.test(base))failures.push(`sensitive file tracked: ${p}`);
   if(p.includes('/bin/')||p.includes('/obj/')||p.startsWith('unity/Library/'))failures.push(`generated file tracked: ${p}`);
 }
-const migrations=tracked.filter(p=>p.startsWith('backend/db/migrations/'));
+const migrationArtifacts=tracked.filter(p=>p.startsWith('backend/db/migrations/'));
+const migrations=migrationArtifacts.filter(p=>p.endsWith('.sql'));
 const migrationRe=new RegExp(versions.database.migrationPattern);
 for(const p of migrations)expect(migrationRe.test(path.basename(p)),`invalid migration name: ${p}`);
+for(const p of migrationArtifacts.filter(p=>!p.endsWith('.sql')))
+  expect(p==='backend/db/migrations/manifest.json',`unexpected migration artifact: ${p}`);
 
 if(failures.length){console.error(failures.join('\n'));process.exit(1);}
 console.log(JSON.stringify({work:'S01-W01',modules:ids.size,tracked:tracked.length,migrations:migrations.length,repositoryVersion:versions.repositoryVersion,status:'PASS'}));

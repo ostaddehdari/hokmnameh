@@ -239,7 +239,7 @@
       "requester": "project-owner",
       "created_at": "2026-11-25T08:42:20Z",
       "source_refs": ["S01-W03-T01", "S01-W03-T02", "S01-W03-T03", "Project owner continuation request 2026-11-25"],
-      "affected_paths": ["backend/db/migrations/", "backend/src/Hokmnameh.Api/Program.cs", "deploy/operations-contract.json", "deploy/scripts/backup.sh", "deploy/scripts/migrate.sh", "deploy/scripts/restore-drill.sh", "deploy/scripts/watch-health.sh", "deploy/systemd/hokmnameh-health.service", "docs/DEPLOYMENT.md", "docs/operations/", "docs/stages/S01_W03_EVIDENCE.md", "tools/test-health-monitor.mjs", "tools/verify-s01-operations.mjs", ".github/workflows/backend.yml"],
+      "affected_paths": ["backend/db/migrations/", "backend/src/Hokmnameh.Api/Program.cs", "deploy/operations-contract.json", "deploy/scripts/backup.sh", "deploy/scripts/migrate.sh", "deploy/scripts/restore-drill.sh", "deploy/scripts/watch-health.sh", "deploy/systemd/hokmnameh-health.service", "docs/DEPLOYMENT.md", "docs/operations/", "docs/stages/S01_W03_EVIDENCE.md", "tools/test-health-monitor.mjs", "tools/verify-repository-contract.mjs", "tools/verify-s01-operations.mjs", ".github/workflows/backend.yml"],
       "requirement_ids": ["FR-018", "NFR-002", "NFR-005", "DATA-001", "OPS-001", "OPS-002", "OPS-003"],
       "impact": {"player": "بدون تغییر قواعد بازی؛ درخواست‌های بیش از سقف با 429 کنترل می‌شوند", "compatibility": "endpointهای موجود حفظ و Retry-After به پاسخ محدودسازی افزوده می‌شود", "data": "schema جدیدی اضافه نمی‌شود؛ manifest نسخه 001 و دفتر checksum موجود تثبیت می‌شوند", "operations": "بکاپ رمزگذاری‌شده، restore جدا، health alert و شواهد CI الزامی می‌شوند"},
       "risk_flags": ["production_gateway"],
