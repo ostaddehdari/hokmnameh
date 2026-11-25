@@ -93,7 +93,18 @@ namespace Hokmnameh.Core
         private readonly int[] tricksWon = { 0, 0 };
         private readonly int[] points = { 0, 0 };
         private readonly HashSet<int> played = new HashSet<int>();
-        private readonly RandomNumberGenerator random = RandomNumberGenerator.Create();
+        private readonly Guid matchId;
+        public string ShuffleCommitment { get; private set; } = "";
+        public string ShuffleAlgorithmId { get { return E04Shuffle.AlgorithmId; } }
+        public int CutIndex { get; private set; }
+        private readonly List<int> dealCursors = new List<int>();
+        public int[] DealCursors { get { return dealCursors.ToArray(); } }
+        public HokmGame() : this(Guid.NewGuid()) { }
+        public HokmGame(Guid matchId)
+        {
+            if (matchId == Guid.Empty) throw new ArgumentException("Match ID required", "matchId");
+            this.matchId = matchId;
+        }
         public GamePhase Phase { get; private set; } = GamePhase.Waiting;
         public int Hakem { get; private set; }
         public int Turn { get; private set; }
@@ -115,36 +126,19 @@ namespace Hokmnameh.Core
             if (Phase == GamePhase.Finished) throw new GameRuleException("Match finished");
             Hakem = hakem; Turn = hakem; Trump = -1; WinnerTeam = -1; LastTrickWinner = -1;
             Round++; trick.Clear(); lastTrick.Clear(); undealt.Clear(); played.Clear();
+            dealCursors.Clear();
             tricksWon[0] = tricksWon[1] = 0;
             foreach (var h in hands) h.Clear();
-            var deck = new int[52];
-            for (int i = 0; i < 52; ++i) deck[i] = i;
-            for (int i = deck.Length - 1; i > 0; --i)
-            {
-                int j = SecureInt(i + 1);
-                int x = deck[i]; deck[i] = deck[j]; deck[j] = x;
-            }
-            // First five cards for every seat, starting from hakem; only then choose trump.
-            for (int i = 0; i < 20; ++i) hands[(Hakem + i % 4) % 4].Add(deck[i]);
-            for (int i = 20; i < 52; ++i) undealt.Enqueue(deck[i]);
+            var shuffle = E04Shuffle.CreateRandom(matchId, (ulong)Round, ClassicRules.ImmutableId);
+            // The commitment is fixed before any seat receives a card. No seed enters a snapshot.
+            ShuffleCommitment = shuffle.CommitmentHex; CutIndex = shuffle.CutIndex;
+            for (int offset = 0; offset < 4; ++offset)
+                for (int card = 0; card < 5; ++card)
+                    hands[(Hakem - offset + 4) % 4].Add(shuffle.Deck[offset * 5 + card]);
+            for (int i = 20; i < 52; ++i) undealt.Enqueue(shuffle.Deck[i]);
+            dealCursors.Add(20);
             Phase = GamePhase.ChoosingTrump;
             AssertInvariant();
-        }
-
-        private int SecureInt(int exclusiveUpperBound)
-        {
-            if (exclusiveUpperBound <= 0) throw new ArgumentOutOfRangeException("exclusiveUpperBound");
-            var b = new byte[4];
-            // Rejection sampling avoids modulo bias with cryptographic entropy.
-            ulong range = (ulong)uint.MaxValue + 1UL;
-            ulong limit = range - (range % (ulong)exclusiveUpperBound);
-            uint value;
-            do
-            {
-                random.GetBytes(b);
-                value = BitConverter.ToUInt32(b, 0);
-            } while ((ulong)value >= limit);
-            return (int)((ulong)value % (ulong)exclusiveUpperBound);
         }
 
         public void ChooseTrump(int seat, int suit)
@@ -152,10 +146,21 @@ namespace Hokmnameh.Core
             if (Phase != GamePhase.ChoosingTrump || seat != Hakem) throw new GameRuleException("Only hakem chooses trump now");
             if (suit < 0 || suit > 3) throw new GameRuleException("Invalid trump suit");
             Trump = suit;
-            // Four remaining groups of eight. All four hands end with exactly thirteen cards.
-            for (int i = 0; i < 32; ++i) hands[(Hakem + i % 4) % 4].Add(undealt.Dequeue());
+            // Approved packet order is 5 + 4 + 4, counter-clockwise from Hakem.
+            DealPacket(4);
+            dealCursors.Add(36);
+            foreach (var hand in hands) if (hand.Count != 9) throw new InvalidOperationException("E04 stage two invariant");
+            DealPacket(4);
+            dealCursors.Add(52);
             Phase = GamePhase.Playing; Turn = Hakem;
             AssertInvariant();
+        }
+
+        private void DealPacket(int cardsPerSeat)
+        {
+            for (int offset = 0; offset < 4; ++offset)
+                for (int card = 0; card < cardsPerSeat; ++card)
+                    hands[(Hakem - offset + 4) % 4].Add(undealt.Dequeue());
         }
 
         public int[] LegalCards(int seat)

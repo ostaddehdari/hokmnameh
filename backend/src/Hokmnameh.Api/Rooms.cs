@@ -28,7 +28,8 @@ public sealed class GameRoom
     private readonly Guid?[] _players = new Guid?[4];
     private readonly bool[] _bots = new bool[4];
     private readonly ConcurrentDictionary<Guid, ClientSocket> _clients = new();
-    private readonly HokmGame _game = new();
+    private readonly HokmGame _game;
+    private readonly MatchAudit _audit = new();
     private readonly TimeProvider _timeProvider;
     private DateTimeOffset _turnDeadline;
     private int _turnSeconds;
@@ -42,6 +43,7 @@ public sealed class GameRoom
     {
         if (string.IsNullOrWhiteSpace(rulesetVersion)) throw new ArgumentException("Ruleset version is required", nameof(rulesetVersion));
         Id = id; Code = code; Mode = mode; _players[0] = owner;
+        _game = new HokmGame(id);
         RulesetVersion = rulesetVersion;
         _timeProvider = timeProvider ?? TimeProvider.System;
         CreatedAt = _timeProvider.GetUtcNow();
@@ -49,7 +51,7 @@ public sealed class GameRoom
         if (mode == "practice")
         {
             for (int i = 1; i < 4; i++) _bots[i] = true;
-            _game.StartRound(0); ResetDeadline();
+            _game.StartRound(0); Record(-1, "round-started"); ResetDeadline();
         }
     }
 
@@ -74,7 +76,7 @@ public sealed class GameRoom
                 if (!_players[i].HasValue && !_bots[i])
                 {
                     _players[i] = identity;
-                    if (_players.All(p => p.HasValue)) { _game.StartRound(0); ResetDeadline(); }
+                    if (_players.All(p => p.HasValue)) { _game.StartRound(0); Record(-1, "round-started"); ResetDeadline(); }
                     return new JoinRoomResponse(View(), i);
                 }
             throw new GameRuleException("Room full");
@@ -85,7 +87,8 @@ public sealed class GameRoom
         lock (_lock)
         {
             var seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
-            return new { room = View(), game = _game.Round > 0 ? _game.Snapshot(seat) : null,
+            var signed = _game.Round > 0 ? _audit.Sign(Id, seat, _game.Snapshot(seat)) : null;
+            return new { room = View(), game = signed?.Snapshot, snapshotProof = signed == null ? null : new { signed.StateVersion, signed.Signature },
                 turnDeadline = _turnDeadline, isYourTurn = _game.Turn == seat &&
                     (_game.Phase == GamePhase.ChoosingTrump || _game.Phase == GamePhase.Playing) };
         }
@@ -95,7 +98,7 @@ public sealed class GameRoom
         lock (_lock)
         {
             int seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
-            _game.ChooseTrump(seat, suit); ResetDeadline();
+            _game.ChooseTrump(seat, suit); Record(seat, "trump-selected", suit); ResetDeadline();
         }
     }
     public void Play(Guid identity, int card)
@@ -103,10 +106,13 @@ public sealed class GameRoom
         lock (_lock)
         {
             int seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
-            _game.Play(seat, card); ResetDeadline();
+            _game.Play(seat, card); Record(seat, "card-played", card); ResetDeadline();
         }
     }
     private void ResetDeadline() => _turnDeadline = _timeProvider.GetUtcNow().AddSeconds(_turnSeconds);
+    private void Record(int seat, string kind, int? card = null) =>
+        _audit.Append(new CommandV1(_audit.StateVersion + 1, Guid.NewGuid(), seat, RulesetVersion,
+            _timeProvider.GetUtcNow(), _audit.StateVersion, kind), card);
 
     public bool Tick()
     {
@@ -115,13 +121,15 @@ public sealed class GameRoom
             if (_game.Round == 0 || _game.Phase == GamePhase.Finished) return false;
             if (_game.Phase == GamePhase.Waiting)
             {
-                _game.StartRound(_game.Hakem); ResetDeadline(); return true;
+                _game.StartRound(_game.Hakem); Record(-1, "round-started"); ResetDeadline(); return true;
             }
             int seat = _game.Phase == GamePhase.ChoosingTrump ? _game.Hakem : _game.Turn;
             bool timerExpired = _timeProvider.GetUtcNow() >= _turnDeadline;
             if (!_bots[seat] && !timerExpired) return false;
-            if (_game.Phase == GamePhase.ChoosingTrump) _game.ChooseTrump(seat, HokmBot.PickTrump(_game, seat));
-            else _game.Play(seat, HokmBot.ChooseCard(_game, seat, 1));
+            if (_game.Phase == GamePhase.ChoosingTrump)
+            { int suit = HokmBot.PickTrump(_game, seat); _game.ChooseTrump(seat, suit); Record(seat, "trump-fallback", suit); }
+            else
+            { int card = HokmBot.ChooseCard(_game, seat, 1); _game.Play(seat, card); Record(seat, "card-auto-played", card); }
             ResetDeadline(); return true;
         }
     }
@@ -135,8 +143,13 @@ public sealed class GameRoom
             var client = kv.Value;
             if (client.Socket.State != WebSocketState.Open) continue;
             object payload;
-            lock (_lock) payload = new { type = "state", roomId = Id, state = _game.Round > 0 ? _game.Snapshot(client.Seat) : null,
-                room = View(), turnDeadline = _turnDeadline };
+            lock (_lock)
+            {
+                var signed = _game.Round > 0 ? _audit.Sign(Id, client.Seat, _game.Snapshot(client.Seat)) : null;
+                payload = new { type = "state", roomId = Id, state = signed?.Snapshot,
+                    snapshotProof = signed == null ? null : new { signed.StateVersion, signed.Signature },
+                    room = View(), turnDeadline = _turnDeadline };
+            }
             var bytes = JsonSerializer.SerializeToUtf8Bytes(payload, JsonOptions.Default);
             try
             {

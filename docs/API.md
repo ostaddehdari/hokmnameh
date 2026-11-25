@@ -37,3 +37,7 @@ Ranked economy, durable match log, resume after instance restart, OAuth/SMS, ant
 ## Unity HTTP fallback
 
 `OnlineClient.cs` implements minimal guest creation, room create/join and authenticated polling via UnityWebRequest. It is **not** production realtime transport and must be migrated to WebSocket push + reconnect.
+
+## S02 private state extension (draft CR-2026-0010)
+
+Room state responses retain `game` and WebSocket `state` and add `snapshotProof: { stateVersion, signature }`. The signature covers room ID, seat, state version and the exact JSON snapshot, using an authority-only per-room HMAC key. The API sends only the authenticated player's hand; hand counts, current/last trick, score and trump are public. The proof is only verifiable by the current process; no client verification or crash-stable audit is claimed. The E04 commitment and cut metadata are kept in the authority, and no seed, nonce or other player's hidden hand may appear in HTTP, WebSocket or logs. This extension is not production enabled until its Change Request is approved and CI passes.

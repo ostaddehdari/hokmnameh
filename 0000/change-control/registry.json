@@ -258,6 +258,33 @@
       "security_review": "Encrypted dumps never touch disk as plaintext; restore has no network; unverified bearer values cannot create limiter partitions; webhook URL and secrets are not logged; real production receiver and off-host custody remain an operator gate.",
       "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0010",
+      "decision_id": "DEC-2026-0010",
+      "title": "اجرای قواعد E-04 و مدل رویداد و نمای خصوصی صندلی",
+      "status": "DRAFT",
+      "category": ["rules", "api"],
+      "requester": "project-owner",
+      "created_at": "2026-11-25T18:00:00Z",
+      "source_refs": ["DEC-2026-0006", "S02-W01-T01..T03", "S02-W02-T01..T03", "Project owner request 2026-11-25"],
+      "affected_paths": ["unity/Packages/com.hokmnameh.core/Runtime/", "backend/src/Hokmnameh.Api/", "docs/API.md", "docs/stages/S02_W01_W02_EVIDENCE.md"],
+      "requirement_ids": ["FR-001", "SEC-003"],
+      "impact": {
+        "player": "جهت و بسته‌های توزیع مطابق E-04 و وضعیت فقط برای صندلی صاحب درخواست است",
+        "compatibility": "فیلدهای game/state حفظ و snapshotProof اضافه می‌شود؛ ترتیب کارت هر راند تغییر می‌کند",
+        "data": "بدون migration؛ رویدادها فعلاً فقط در حافظه‌اند",
+        "operations": "کلید امضای وضعیت در حافظهٔ Room می‌ماند؛ پس از restart امضاهای قبلی قابل تأیید نیستند"
+      },
+      "risk_flags": ["hidden_information", "ranked_integrity"],
+      "approvals": [],
+      "acceptance_criteria": ["بردار رسمی E-04 در C# پاس شود", "توزیع ۵+۴+۴ با cursorهای ۲۰/۳۶/۵۲ و جهت خلاف ساعت", "رویداد نسخه‌دار با شناسه و ترتیب و آزمون منع نشت اطلاعات"],
+      "test_plan": ["dotnet build -warnaserror", "shared rules smoke", "full repository CI", "security review of per-seat serialization"],
+      "rollback_plan": "Revert this source commit; no production or database mutation is included.",
+      "migration_plan": null,
+      "security_review": "Seed و کلید HMAC فقط در حافظهٔ authority هستند؛ تعهد عمومی است؛ آزمون‌های نشتی و بازبینی مستقل پیش از merge الزامی است.",
+      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "supersedes": null
     }
   ]
 }

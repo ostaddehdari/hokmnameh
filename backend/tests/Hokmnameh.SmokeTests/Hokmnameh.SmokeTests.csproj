@@ -6,7 +6,9 @@
   <ItemGroup>
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs" Link="Rules/HokmGame.cs" />
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/HokmBot.cs" Link="Rules/HokmBot.cs" />
+    <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/E04Shuffle.cs" Link="Rules/E04Shuffle.cs" />
     <Compile Include="../../src/Hokmnameh.Api/Rooms.cs" Link="Api/Rooms.cs" />
+    <Compile Include="../../src/Hokmnameh.Api/MatchAudit.cs" Link="Api/MatchAudit.cs" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>

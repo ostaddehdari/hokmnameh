@@ -11,9 +11,14 @@ void AssertRuleError(Action action, string name)
 var game = new HokmGame();
 game.StartRound(0);
 Assert(game.Phase == GamePhase.ChoosingTrump, "20-card preliminary deal");
+Assert(game.ShuffleCommitment.Length == 64 && game.ShuffleAlgorithmId == E04Shuffle.AlgorithmId,
+    "E04 commitment and version established before first deal");
+Assert(game.CutIndex >= 1 && game.CutIndex <= 51, "E04 fallback cut range");
+Assert(game.DealCursors.SequenceEqual(new[] { 20 }), "E04 preliminary cursor 20");
 for (int i = 0; i < 4; ++i) Assert(game.Snapshot(i).hand.Length == 5, "Five cards seat=" + i);
 int suit = HokmBot.PickTrump(game, 0);
 game.ChooseTrump(0, suit);
+Assert(game.DealCursors.SequenceEqual(new[] { 20, 36, 52 }), "E04 staged cursors 20/36/52");
 var seen = new HashSet<int>();
 for (int i = 0; i < 4; ++i)
 {
@@ -79,6 +84,52 @@ fallbackRoom.ChooseTrump(owner, 0);
 Assert(!fallbackRoom.Tick(), "golden disconnect: no fallback before deadline");
 clock.Advance(TimeSpan.FromSeconds(11));
 Assert(fallbackRoom.Tick(), "golden disconnect: legal auto-play after deadline");
+
+var e04Path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../../docs/e04_test_vector_v1.json"));
+using var e04 = JsonDocument.Parse(File.ReadAllText(e04Path));
+var input = e04.RootElement.GetProperty("input");
+var expected = e04.RootElement.GetProperty("expected");
+var vector = E04Shuffle.Create(Guid.Parse(input.GetProperty("matchId").GetString()!),
+    input.GetProperty("roundNumber").GetUInt64(), input.GetProperty("rulesetId").GetString()!,
+    Convert.FromHexString(input.GetProperty("seedHex").GetString()!),
+    Convert.FromHexString(input.GetProperty("nonceHex").GetString()!),
+    input.GetProperty("cutIndex").GetInt32());
+Assert(vector.CommitmentHex == expected.GetProperty("commitmentHex").GetString(), "E04 official commitment");
+Assert(vector.Deck.SequenceEqual(expected.GetProperty("cutDeck").EnumerateArray().Select(x => x.GetInt32())), "E04 official 52-card cut deck");
+Assert(vector.Deck.Distinct().Count() == 52 && vector.Deck.Min() == 0 && vector.Deck.Max() == 51, "E04 permutation invariant");
+var changedSeed = Convert.FromHexString(input.GetProperty("seedHex").GetString()!);
+changedSeed[0] ^= 1;
+var different = E04Shuffle.Create(Guid.Parse(input.GetProperty("matchId").GetString()!), 7,
+    ClassicRules.ImmutableId, changedSeed, Convert.FromHexString(input.GetProperty("nonceHex").GetString()!), 17);
+Assert(different.CommitmentHex != vector.CommitmentHex && !different.Deck.SequenceEqual(vector.Deck), "E04 seed sensitivity");
+for (int cut = 1; cut <= 51; ++cut)
+{
+    var result = E04Shuffle.Create(Guid.Parse(input.GetProperty("matchId").GetString()!), 7,
+        ClassicRules.ImmutableId, changedSeed, Convert.FromHexString(input.GetProperty("nonceHex").GetString()!), cut);
+    Assert(result.Deck.Distinct().Count() == 52, "cut permutation " + cut);
+}
+try { _ = new HokmGame(Guid.Empty); throw new Exception("FAILED: missing match identity rejected"); }
+catch (ArgumentException) { Console.WriteLine("PASS: missing match identity rejected"); }
+using (var audit = new MatchAudit())
+{
+    var action = Guid.NewGuid(); var now = DateTimeOffset.UtcNow;
+    audit.Append(new CommandV1(1, action, -1, ClassicRules.ImmutableId, now, 0, "round-started"));
+    AssertRuleError(() => audit.Append(new CommandV1(2, action, 0, ClassicRules.ImmutableId, now, 1, "duplicate")), "duplicate action rejected");
+    AssertRuleError(() => audit.Append(new CommandV1(3, Guid.NewGuid(), 0, ClassicRules.ImmutableId, now, 1, "gap")), "sequence gap rejected");
+    var signed = audit.Sign(Guid.NewGuid(), 0, trumpGame.Snapshot(0));
+    Assert(audit.Verify(signed), "private seat snapshot signature valid");
+    var other = trumpGame.Snapshot(1);
+    Assert(!audit.Verify(signed with { Snapshot = other }), "other seat snapshot signature rejected");
+    Assert(!audit.Verify(signed with { StateVersion = 2 }), "snapshot version tamper rejected");
+    var seatJson = JsonSerializer.Serialize(signed, JsonOptions.Default);
+    var otherPrivateCard = other.hand.First(x => !signed.Snapshot.hand.Contains(x));
+    Assert(!signed.Snapshot.hand.Contains(otherPrivateCard) &&
+        !seatJson.Contains("\"seed\"", StringComparison.OrdinalIgnoreCase) &&
+        !seatJson.Contains("\"hands\"", StringComparison.OrdinalIgnoreCase),
+        "seat snapshot excludes RNG and all-hands fields");
+    Assert(!JsonSerializer.Serialize(audit.Events, JsonOptions.Default).Contains("hand", StringComparison.OrdinalIgnoreCase),
+        "public event audit excludes private hands");
+}
 Console.WriteLine("All core smoke tests passed");
 
 sealed class ManualTimeProvider(DateTimeOffset now) : TimeProvider
