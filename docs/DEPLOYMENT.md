@@ -34,7 +34,7 @@ curl -fsS https://srun.ir/hokmnameh/health/live
 curl -fsS https://srun.ir/hokmnameh/health/ready
 ```
 
-Proxy must preserve `/hokmnameh` prefix because ASP.NET maps route group there. HTTP-to-HTTPS redirects and valid TLS certificates must already be in place. WebSocket upgrade headers are included in the snippet.
+Proxy must preserve `/hokmnameh` prefix because ASP.NET maps route group there. HTTP-to-HTTPS redirects and valid TLS certificates must already be in place. WebSocket upgrade headers are included in the snippet. Compose connects the API to both the private `internal` database network and a separate `edge` bridge so the localhost-only port can reach Nginx; PostgreSQL remains on `internal` only.
 
 ## Versioned database migrations — S01
 
