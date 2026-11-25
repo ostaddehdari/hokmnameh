@@ -175,6 +175,16 @@ for (int seat = 0; seat < 4; ++seat)
         !wsJson.RootElement.TryGetProperty("seed", out _), "WebSocket excludes secret fields seat=" + seat);
     sockets[seat].Dispose();
 }
+var failPlayers = Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray();
+var failRoom = new GameRoom(Guid.NewGuid(), "FAILSTOP", "free", failPlayers[0], 30,
+    ClassicRules.ImmutableId, eventStore: new ThrowOnTrumpStore());
+for (int seat = 1; seat < 4; seat++) failRoom.Join(failPlayers[seat]);
+try { failRoom.ChooseTrump(failPlayers[0], 0); throw new Exception("FAILED: persistence failure rejected"); }
+catch (InvalidOperationException e) when (e.Message == "Simulated persistent event failure")
+{ Console.WriteLine("PASS: persistence failure rejected"); }
+try { _ = failRoom.State(failPlayers[0]); throw new Exception("FAILED: failed authority state hidden"); }
+catch (InvalidOperationException e) when (e.Message.Contains("quarantined"))
+{ Console.WriteLine("PASS: failed authority state quarantined"); }
 Console.WriteLine("All core smoke tests passed");
 
 sealed class ManualTimeProvider(DateTimeOffset now) : TimeProvider
@@ -201,5 +211,14 @@ sealed class CapturingSocket : WebSocket
     {
         Messages.Add(Encoding.UTF8.GetString(buffer.Array!, buffer.Offset, buffer.Count));
         return Task.CompletedTask;
+    }
+}
+
+sealed class ThrowOnTrumpStore : IMatchEventStore
+{
+    public void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound)
+    {
+        if (command.Kind == "trump-selected")
+            throw new InvalidOperationException("Simulated persistent event failure");
     }
 }

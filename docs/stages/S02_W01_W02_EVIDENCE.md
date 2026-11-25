@@ -9,12 +9,17 @@ This branch advances both Works together. Source changes are governed by `CR-202
 - Shared smoke test compares the .NET implementation with E04-TV-001, exercises all 51 cuts, checks deal cursors, rejects duplicate/gapped actions and tampered or cross-seat snapshots, and checks serialized snapshots/events have no secret field names.
 - A simulated four-player room now checks every authenticated HTTP state and every WebSocket broadcast against that seat's five private cards. It rejects a non-member requesting state or registering a socket. An entropy failure cannot partially advance the round because the random deck is prepared before any state mutation, and the temporary seed/nonce are cleared even when CSPRNG fails.
 
+## Durable custody and fail stop (candidate)
+
+- Migration `002_match_audit.sql` adds a per-match monotonic event ledger with a unique `(match_id, action_id)` and an encrypted round-proof table. `PostgresMatchStore` commits the `round-started` event and AES-256-GCM sealed seed/nonce together before any card is dealt. Each later command appends through a row lock and version check. On storage failure the room is quarantined and cannot serve uncommitted state.
+- `HOKM_AUDIT_KEY_BASE64` is a unique 32-byte key in the protected operator `.env`; it is never stored in Git, proof ciphertext, event rows or API responses. Round proof can be decrypted by the internal auditor operation only after a committed `round-closed` event and before its 30-day expiry. The CI integration drill plays a full synthetic round against PostgreSQL, checks event sequence/count and recomputes the commitment from the decrypted proof. No public proof endpoint exists yet.
+
 ## Gates before closure
 
-- The current room and event list are in memory; there is no durable authoritative event store or deterministic replay. That work is scheduled in S02-W03. Claims about durable single-source-of-truth, crash recovery or proof retention must wait.
-- The random seed/nonce are cleared after shuffle. An auditable, encrypted 30-day post-close proof and player cut/deadline ceremony are scheduled in S02-W04/W05; this branch does **not** implement those contracts. Automatic HMAC fallback cut is used for the prototype.
+- Match events and sealed proofs are persisted, but active room state is not rehydrated from the ledger after a restart. Deterministic replay/rejoin is S02-W03. Backups and purge must respect the 30-day secret lifetime before production activation.
+- The full player cut/deadline ceremony is scheduled in S02-W05; this prototype uses the HMAC fallback cut. End-user post-close proof delivery is not enabled; only the internal auditor can decrypt closed proofs.
 - A server-side HMAC signature can only be verified by the running authority; the API does not supply clients with verification keys. Never log or return HMAC keys, seed, nonce or hidden decks.
-- GitHub Actions run 45665227616 passed all five jobs for the previous draft revision. The new four-seat HTTP/WS simulation, independent role approvals in the Change Request, and review of real transport/auth integration are required before marking either Work complete or merging to `main`.
+- GitHub Actions run 45691529159 passed all five jobs for the previous draft revision. The new PostgreSQL integration drill, migration checksum/tamper check, protected-path CR approvals, and review of secret custody/real transport/auth integration are required before merge.
 
 ## Commands
 

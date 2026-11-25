@@ -5,13 +5,26 @@ using System.Text;
 namespace Hokmnameh.Core
 {
     // Pure C# reference for approved DEC-2026-0006. Seed and shuffle key stay with the authority.
-    public sealed class E04Round
+    public sealed class E04Round : IDisposable
     {
         internal readonly int[] Deck;
+        internal readonly byte[] Seed;
+        internal readonly byte[] Nonce;
+        internal readonly Guid MatchId;
+        internal readonly ulong RoundNumber;
         public readonly string CommitmentHex;
         public readonly int CutIndex;
-        internal E04Round(int[] deck, string commitmentHex, int cutIndex)
-        { Deck = deck; CommitmentHex = commitmentHex; CutIndex = cutIndex; }
+        internal E04Round(int[] deck, string commitmentHex, int cutIndex, Guid matchId,
+            ulong roundNumber, byte[] seed, byte[] nonce)
+        {
+            Deck = deck; CommitmentHex = commitmentHex; CutIndex = cutIndex;
+            MatchId = matchId; RoundNumber = roundNumber;
+            Seed = (byte[])seed.Clone(); Nonce = (byte[])nonce.Clone();
+        }
+        public void Dispose()
+        {
+            Array.Clear(Seed, 0, Seed.Length); Array.Clear(Nonce, 0, Nonce.Length);
+        }
     }
 
     public static class E04Shuffle
@@ -99,7 +112,8 @@ namespace Hokmnameh.Core
                 int cut = cutIndex ?? FallbackCut(key, context);
                 var result = new int[52];
                 for (int i = 0; i < 52; ++i) result[i] = deck[(i + cut) % 52];
-                return new E04Round(result, BitConverter.ToString(commitment).Replace("-", "").ToLowerInvariant(), cut);
+                return new E04Round(result, BitConverter.ToString(commitment).Replace("-", "").ToLowerInvariant(),
+                    cut, matchId, roundNumber, seed, nonce);
             }
             finally { Array.Clear(key, 0, key.Length); }
         }

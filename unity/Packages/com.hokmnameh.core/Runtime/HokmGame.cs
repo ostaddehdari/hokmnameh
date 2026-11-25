@@ -124,12 +124,19 @@ namespace Hokmnameh.Core
 
         public void StartRound(int hakem)
         {
+            using (var shuffle = E04Shuffle.CreateRandom(matchId, (ulong)(Round + 1), ClassicRules.ImmutableId))
+                StartRound(hakem, shuffle);
+        }
+
+        // Authority may persist the sealed proof and event before calling this overload.
+        public void StartRound(int hakem, E04Round shuffle)
+        {
             if (hakem < 0 || hakem > 3) throw new ArgumentOutOfRangeException("hakem");
             if (Phase == GamePhase.Playing || Phase == GamePhase.ChoosingTrump) throw new GameRuleException("Round already active");
             if (Phase == GamePhase.Finished) throw new GameRuleException("Match finished");
-            // Draw and validate entropy before changing the current round. An RNG failure
-            // must leave the previous state untouched and must never publish a deal.
-            var shuffle = E04Shuffle.CreateRandom(matchId, (ulong)(Round + 1), ClassicRules.ImmutableId);
+            if (shuffle == null || shuffle.MatchId != matchId || shuffle.RoundNumber != (ulong)(Round + 1) ||
+                shuffle.Deck.Length != 52 || shuffle.Seed.Length != 32 || shuffle.Nonce.Length != 16)
+                throw new GameRuleException("Prepared E04 round does not match game context");
             Hakem = hakem; Turn = hakem; Trump = -1; WinnerTeam = -1; LastTrickWinner = -1;
             Round++; trick.Clear(); lastTrick.Clear(); undealt.Clear(); played.Clear();
             dealCursors.Clear();

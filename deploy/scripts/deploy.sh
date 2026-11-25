@@ -11,6 +11,10 @@ command -v curl >/dev/null || { echo 'curl required' >&2; exit 1; }
 if grep -q 'CHANGE_TO_A_LONG_RANDOM_PASSWORD' .env; then
   echo 'Refusing sample database password' >&2; exit 1
 fi
+audit_key="$(sed -n 's/^HOKM_AUDIT_KEY_BASE64=//p' .env | tail -n 1)"
+if [ -z "$audit_key" ] || [ "$(printf '%s' "$audit_key" | base64 -d 2>/dev/null | wc -c)" -ne 32 ]; then
+  echo 'HOKM_AUDIT_KEY_BASE64 must decode to exactly 32 random bytes' >&2; exit 1
+fi
 if [ "$DEPLOY_ENV" = production ]; then
   [ "${CONFIRM_PRODUCTION_DEPLOY:-}" = 'YES' ] || { echo 'Production deployment requires CONFIRM_PRODUCTION_DEPLOY=YES and an approved change window' >&2; exit 1; }
   [ -n "${HOKM_BACKUP_AGE_RECIPIENT:-}" ] || { echo 'Production deployment requires HOKM_BACKUP_AGE_RECIPIENT' >&2; exit 1; }

@@ -18,22 +18,38 @@ public sealed record MatchEventV1(long Sequence, Guid ActionId, int ActorSeat, s
 public sealed record SignedSeatSnapshotV1(Guid RoomId, int Seat, long StateVersion,
     GameSnapshot Snapshot, string Signature);
 
+public interface IMatchEventStore
+{
+    void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound);
+}
+
 public sealed class MatchAudit : IDisposable
 {
+    private readonly Guid _roomId;
+    private readonly IMatchEventStore? _store;
     private readonly byte[] _key = RandomNumberGenerator.GetBytes(32);
     private readonly List<MatchEventV1> _events = new();
     private readonly HashSet<Guid> _actions = new();
     public long StateVersion => _events.Count;
     public IReadOnlyList<MatchEventV1> Events => _events.AsReadOnly();
 
-    public void Append(CommandV1 command, int? publicValue = null)
+    public MatchAudit() : this(Guid.Empty) { }
+    public MatchAudit(Guid roomId, IMatchEventStore? store = null)
+    { _roomId = roomId; _store = store; }
+
+    public void Append(CommandV1 command, int? publicValue = null, E04Round? preparedRound = null)
     {
         if (command.ActionId == Guid.Empty || command.Sequence != StateVersion + 1 ||
             command.StateVersion != StateVersion || command.ActorSeat < -1 || command.ActorSeat > 3 ||
             command.RulesetVersion != ClassicRules.ImmutableId || command.Timestamp == default ||
             command.Timestamp.Offset != TimeSpan.Zero ||
-            string.IsNullOrWhiteSpace(command.Kind) || !_actions.Add(command.ActionId))
+            string.IsNullOrWhiteSpace(command.Kind) || _actions.Contains(command.ActionId))
             throw new GameRuleException("Invalid or duplicate versioned action");
+        if (preparedRound != null && (command.Kind != "round-started" ||
+            preparedRound.MatchId != _roomId || preparedRound.RoundNumber != (ulong)publicValue.GetValueOrDefault()))
+            throw new GameRuleException("Invalid round proof context");
+        _store?.Append(_roomId, command, publicValue, preparedRound);
+        _actions.Add(command.ActionId);
         _events.Add(new MatchEventV1(command.Sequence, command.ActionId, command.ActorSeat,
             command.RulesetVersion, command.Timestamp, command.Sequence, command.Kind, publicValue));
     }

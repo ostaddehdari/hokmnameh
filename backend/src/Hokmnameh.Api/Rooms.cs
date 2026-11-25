@@ -29,7 +29,8 @@ public sealed class GameRoom
     private readonly bool[] _bots = new bool[4];
     private readonly ConcurrentDictionary<Guid, ClientSocket> _clients = new();
     private readonly HokmGame _game;
-    private readonly MatchAudit _audit = new();
+    private readonly MatchAudit _audit;
+    private bool _faulted;
     private readonly TimeProvider _timeProvider;
     private DateTimeOffset _turnDeadline;
     private int _turnSeconds;
@@ -39,11 +40,13 @@ public sealed class GameRoom
     public string RulesetVersion { get; }
     public DateTimeOffset CreatedAt { get; }
 
-    public GameRoom(Guid id, string code, string mode, Guid owner, int turnSeconds, string rulesetVersion, TimeProvider? timeProvider = null)
+    public GameRoom(Guid id, string code, string mode, Guid owner, int turnSeconds, string rulesetVersion,
+        TimeProvider? timeProvider = null, IMatchEventStore? eventStore = null)
     {
         if (string.IsNullOrWhiteSpace(rulesetVersion)) throw new ArgumentException("Ruleset version is required", nameof(rulesetVersion));
         Id = id; Code = code; Mode = mode; _players[0] = owner;
         _game = new HokmGame(id);
+        _audit = new MatchAudit(id, eventStore);
         RulesetVersion = rulesetVersion;
         _timeProvider = timeProvider ?? TimeProvider.System;
         CreatedAt = _timeProvider.GetUtcNow();
@@ -51,7 +54,7 @@ public sealed class GameRoom
         if (mode == "practice")
         {
             for (int i = 1; i < 4; i++) _bots[i] = true;
-            _game.StartRound(0); Record(-1, "round-started"); ResetDeadline();
+            BeginRound(0); ResetDeadline();
         }
     }
 
@@ -69,6 +72,7 @@ public sealed class GameRoom
     {
         lock (_lock)
         {
+            EnsureHealthy();
             for (int i = 0; i < 4; i++) if (_players[i] == identity) return new JoinRoomResponse(View(), i);
             if (Mode == "practice") throw new GameRuleException("Practice room has only one human seat");
             if (_game.Round != 0) throw new GameRuleException("Match already started");
@@ -76,7 +80,7 @@ public sealed class GameRoom
                 if (!_players[i].HasValue && !_bots[i])
                 {
                     _players[i] = identity;
-                    if (_players.All(p => p.HasValue)) { _game.StartRound(0); Record(-1, "round-started"); ResetDeadline(); }
+                    if (_players.All(p => p.HasValue)) { BeginRound(0); ResetDeadline(); }
                     return new JoinRoomResponse(View(), i);
                 }
             throw new GameRuleException("Room full");
@@ -86,6 +90,7 @@ public sealed class GameRoom
     {
         lock (_lock)
         {
+            EnsureHealthy();
             var seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
             var signed = _game.Round > 0 ? _audit.Sign(Id, seat, _game.Snapshot(seat)) : null;
             return new { room = View(), game = signed?.Snapshot, snapshotProof = signed == null ? null : new { signed.StateVersion, signed.Signature },
@@ -98,6 +103,7 @@ public sealed class GameRoom
         lock (_lock)
         {
             int seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
+            EnsureHealthy();
             _game.ChooseTrump(seat, suit); Record(seat, "trump-selected", suit); ResetDeadline();
         }
     }
@@ -106,22 +112,45 @@ public sealed class GameRoom
         lock (_lock)
         {
             int seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
-            _game.Play(seat, card); Record(seat, "card-played", card); ResetDeadline();
+            EnsureHealthy();
+            _game.Play(seat, card); Record(seat, "card-played", card);
+            if (_game.Phase == GamePhase.Waiting || _game.Phase == GamePhase.Finished)
+                Record(-1, "round-closed", _game.Round);
+            ResetDeadline();
         }
     }
     private void ResetDeadline() => _turnDeadline = _timeProvider.GetUtcNow().AddSeconds(_turnSeconds);
-    private void Record(int seat, string kind, int? card = null) =>
-        _audit.Append(new CommandV1(_audit.StateVersion + 1, Guid.NewGuid(), seat, RulesetVersion,
-            _timeProvider.GetUtcNow(), _audit.StateVersion, kind), card);
+    private void EnsureHealthy()
+    {
+        if (_faulted) throw new InvalidOperationException("Match authority is quarantined after audit failure");
+    }
+    private void Record(int seat, string kind, int? value = null, E04Round? proof = null)
+    {
+        try
+        {
+            _audit.Append(new CommandV1(_audit.StateVersion + 1, Guid.NewGuid(), seat, RulesetVersion,
+                _timeProvider.GetUtcNow(), _audit.StateVersion, kind), value, proof);
+        }
+        catch { _faulted = true; throw; }
+    }
+    private void BeginRound(int hakem)
+    {
+        EnsureHealthy();
+        using var prepared = E04Shuffle.CreateRandom(Id, (ulong)(_game.Round + 1), RulesetVersion);
+        Record(-1, "round-started", _game.Round + 1, prepared);
+        try { _game.StartRound(hakem, prepared); }
+        catch { _faulted = true; throw; }
+    }
 
     public bool Tick()
     {
         lock (_lock)
         {
+            if (_faulted) return false;
             if (_game.Round == 0 || _game.Phase == GamePhase.Finished) return false;
             if (_game.Phase == GamePhase.Waiting)
             {
-                _game.StartRound(_game.Hakem); Record(-1, "round-started"); ResetDeadline(); return true;
+                BeginRound(_game.Hakem); ResetDeadline(); return true;
             }
             int seat = _game.Phase == GamePhase.ChoosingTrump ? _game.Hakem : _game.Turn;
             bool timerExpired = _timeProvider.GetUtcNow() >= _turnDeadline;
@@ -129,7 +158,12 @@ public sealed class GameRoom
             if (_game.Phase == GamePhase.ChoosingTrump)
             { int suit = HokmBot.PickTrump(_game, seat); _game.ChooseTrump(seat, suit); Record(seat, "trump-fallback", suit); }
             else
-            { int card = HokmBot.ChooseCard(_game, seat, 1); _game.Play(seat, card); Record(seat, "card-auto-played", card); }
+            {
+                int card = HokmBot.ChooseCard(_game, seat, 1); _game.Play(seat, card);
+                Record(seat, "card-auto-played", card);
+                if (_game.Phase == GamePhase.Waiting || _game.Phase == GamePhase.Finished)
+                    Record(-1, "round-closed", _game.Round);
+            }
             ResetDeadline(); return true;
         }
     }
@@ -138,6 +172,7 @@ public sealed class GameRoom
     {
         lock (_lock)
         {
+            EnsureHealthy();
             int seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
             _clients[socketId] = new ClientSocket(ws, seat);
         }
@@ -152,6 +187,7 @@ public sealed class GameRoom
             object payload;
             lock (_lock)
             {
+                EnsureHealthy();
                 var signed = _game.Round > 0 ? _audit.Sign(Id, client.Seat, _game.Snapshot(client.Seat)) : null;
                 payload = new { type = "state", roomId = Id, state = signed?.Snapshot,
                     snapshotProof = signed == null ? null : new { signed.StateVersion, signed.Signature },
@@ -181,6 +217,8 @@ public sealed class RoomDirectory(IConfiguration config)
     private readonly ConcurrentDictionary<string, Guid> _codes = new(StringComparer.OrdinalIgnoreCase);
     private readonly int _turnSeconds = config.GetValue<int?>("Hokm:TurnSeconds") ?? 30;
     private readonly string _rulesetVersion = ResolveRulesetVersion(config);
+    private readonly string? _connectionString = config.GetConnectionString("Postgres");
+    private readonly string? _auditKey = config.GetValue<string>("Hokm:AuditKeyBase64");
 
     private static string ResolveRulesetVersion(IConfiguration config)
     {
@@ -193,11 +231,14 @@ public sealed class RoomDirectory(IConfiguration config)
     public GameRoom Create(Guid owner, string mode)
     {
         if (mode != "free" && mode != "practice") throw new GameRuleException("Supported modes: free, practice");
+        if (string.IsNullOrEmpty(_connectionString) || string.IsNullOrEmpty(_auditKey))
+            throw new InvalidOperationException("Room creation requires PostgreSQL and Hokm:AuditKeyBase64");
         var id = Guid.NewGuid();
         // Human readable invites are intentionally not credentials.
         var code = id.ToString("N")[..8].ToUpperInvariant();
         // Capture once at match creation. Later configuration/default changes cannot alter an active match.
-        var room = new GameRoom(id, code, mode, owner, _turnSeconds, _rulesetVersion);
+        var room = new GameRoom(id, code, mode, owner, _turnSeconds, _rulesetVersion,
+            eventStore: new PostgresMatchStore(_connectionString, _auditKey, mode));
         if (!_rooms.TryAdd(id, room)) throw new InvalidOperationException("Failed to register room");
         _codes[code] = id;
         return room;

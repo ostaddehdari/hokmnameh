@@ -9,6 +9,8 @@
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/E04Shuffle.cs" Link="Rules/E04Shuffle.cs" />
     <Compile Include="../../src/Hokmnameh.Api/Rooms.cs" Link="Api/Rooms.cs" />
     <Compile Include="../../src/Hokmnameh.Api/MatchAudit.cs" Link="Api/MatchAudit.cs" />
+    <Compile Include="../../src/Hokmnameh.Api/PostgresMatchStore.cs" Link="Api/PostgresMatchStore.cs" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
 </Project>
