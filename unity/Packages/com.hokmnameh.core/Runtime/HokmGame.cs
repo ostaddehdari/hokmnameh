@@ -37,6 +37,9 @@ namespace Hokmnameh.Core
         public int winnerTeam = -1;
         public int ledSuit = -1;
         public string ruleset = ClassicRules.ImmutableId;
+        public string shuffleAlgorithmId = E04Shuffle.AlgorithmId;
+        public string shuffleCommitment = "";
+        public int cutIndex;
     }
 
     public sealed class GameRuleException : Exception
@@ -224,6 +227,8 @@ namespace Hokmnameh.Core
             var v = new GameSnapshot();
             v.phase = (int)Phase; v.yourSeat = seat; v.hakem = Hakem; v.turn = Turn;
             v.trump = Trump; v.round = Round; v.winnerTeam = WinnerTeam;
+            v.shuffleAlgorithmId = ShuffleAlgorithmId;
+            v.shuffleCommitment = ShuffleCommitment; v.cutIndex = CutIndex;
             v.lastTrickWinner = LastTrickWinner;
             v.hand = hands[seat].ToArray();
             for (int i = 0; i < 4; i++) v.handCounts[i] = hands[i].Count;

@@ -15,6 +15,7 @@ Assert(game.ShuffleCommitment.Length == 64 && game.ShuffleAlgorithmId == E04Shuf
     "E04 commitment and version established before first deal");
 Assert(game.CutIndex >= 1 && game.CutIndex <= 51, "E04 fallback cut range");
 Assert(game.DealCursors.SequenceEqual(new[] { 20 }), "E04 preliminary cursor 20");
+Assert(game.Snapshot(0).shuffleCommitment == game.ShuffleCommitment, "commitment visible after preliminary deal");
 for (int i = 0; i < 4; ++i) Assert(game.Snapshot(i).hand.Length == 5, "Five cards seat=" + i);
 int suit = HokmBot.PickTrump(game, 0);
 game.ChooseTrump(0, suit);
