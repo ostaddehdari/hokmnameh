@@ -29,7 +29,7 @@
 
 ## Exactly what scales today vs later
 
-The current v0.1 API can handle a small number of rooms; each room is in-memory and all matches on one process. NO load-test evidence exists for 1000s of connected players. There are no durability guarantees for ongoing games across process crashes. The server's Timer uses a room-by-room tick, which must be profiled before any large-scale launch.
+The current v0.1 API can handle a small number of rooms; each active room is in memory and all matches are on one process. Versioned match events and encrypted E-04 round proofs are persisted in PostgreSQL, but the live room cannot be rehydrated after a crash until S02-W03 replay/rejoin is built. NO load-test evidence exists for 1000s of connected players. The server's Timer uses a room-by-room tick, which must be profiled before any large-scale launch.
 
 **Phase 2 for thousands of concurrent users:** stateless auth/API nodes; a match-placement directory and per-match single-writer worker ownership; process-local room actors under bounded scheduling; atomic checkpoint/event log into PostgreSQL; Valkey for ephemeral presence, queues and matchmaking; sticky WS connection routing or event pub/sub; bounded backpressure; reconnect tokens; metrics for simultaneous connections, turn p95 latency, match CPU, heap, DB pool; chaos testing.
 
@@ -43,7 +43,7 @@ No Redis/Valkey dependency is needed until a service actually uses it. Avoids op
 
 ## Rules specifics
 
-Classic 4-player Hokm is frozen as `iranian-hokm-classic-v1`: seats (0,2) vs (1,3), 52 cards, five cards per seat before Hakem selects trump, eight remaining each, must follow suit, first to seven tricks ends the round, and first team at or above seven match points wins. A normal round awards one point; a 7–0 sweep by Hakem's team awards two; a 7–0 sweep by the non-Hakem team awards three. Hakem stays when Hakem's team wins; otherwise authority rotates to the next clockwise seat. Every match records the immutable ruleset ID. Any behavioral change requires a new ruleset ID and Change Request.
+Classic 4-player Hokm is frozen as `iranian-hokm-classic-v1`: seats (0,2) vs (1,3), 52 cards, five cards per seat before Hakem selects trump, then two packets of four each under approved `hokmnameh-e04-v1`, must follow suit, first to seven tricks ends the round, and first team at or above seven match points wins. Deal starts at Hakem and moves counter-clockwise under E-04; Hakem rotation after a loss remains the Classic rule. A normal round awards one point; a 7–0 sweep by Hakem's team awards two; a 7–0 sweep by the non-Hakem team awards three. Every match records the immutable ruleset ID. Any behavioral change requires a versioned contract and Change Request.
 
 ## Product constraints preserved
 

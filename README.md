@@ -4,7 +4,7 @@ Monorepo for the **Hokmnameh** Android card game: Unity 6, shared C# Hokm rules,
 
 ## Current deliverable (engineering bootstrap, not production)
 
-- **Working source design:** pure C# rules engine with 52-card CSPRNG shuffle, 5+8 deal, follow-suit validation, four-seat tricks, scoring, replayable state transitions and bot heuristics.
+- **Working source design:** pure C# rules engine with versioned E-04 52-card CSPRNG shuffle, 5+4+4 deal, follow-suit validation, four-seat tricks, scoring, deterministic transitions and bot heuristics.
 - **Backend API source:** guest accounts using PostgreSQL, private bearer sessions, game rooms, free + practice rooms, trump/play validation, per-seat snapshots and websocket state stream.
 - **Unity engineering prototype:** menu, HTTP-polling online room prototype, 1 vs 3 bots, one Android phone as TCP LAN match host, three Android phones join through the same hotspot/Wi-Fi; no Internet is required for LAN.
 - **Server:** Docker Compose PostgreSQL 18 + ASP.NET Core 10, Nginx reverse proxy **under `/hokmnameh`** without replacing your existing `srun.ir` website.
@@ -48,7 +48,7 @@ Open `unity/` with a Unity **6.3 LTS** Editor with Android Build Support. Click 
 
 ## Roadmap and limitations
 
-**Not yet implemented:** user login via SMS, ranked ladders, coins, sponsorship billing, social systems, durable match event log, full rejoin, strong bots/ISMCTS, production hosting telemetry, Redis/Valkey orchestration, 1000+ player load certification, LAN cryptographic authentication, and final UI/UX. This is an honest v0.1 bootstrap, not a completed game.
+**Not yet implemented:** user login via SMS, ranked ladders, coins, sponsorship billing, social systems, deterministic match replay/rejoin, strong bots/ISMCTS, production hosting telemetry, Redis/Valkey orchestration, 1000+ player load certification, LAN cryptographic authentication, and final UI/UX. Online rooms now write versioned events and encrypted round proofs to PostgreSQL, but an active room is still in memory and cannot resume after process restart. This is an engineering bootstrap, not a completed game.
 
 ## Stage S01 implementation (2026-11-20)
 

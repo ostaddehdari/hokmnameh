@@ -1,6 +1,6 @@
 # S02-W01 + S02-W02 — implementation evidence and remaining gates
 
-This branch advances both Works together. Source changes are governed by `CR-2026-0010` (draft until independent approvals). The approved cryptographic parameters are in `DEC-2026-0006`; `docs/e04_test_vector_v1.json` is the cross-language fixture.
+This branch advances both Works together under verified `CR-2026-0010`. The owner instructed completion, and ProjectMaker recorded technical role reviews with actual CI evidence. CODEOWNERS currently names only the repository owner; no distinct human reviewer has been appointed. The approved cryptographic parameters are in `DEC-2026-0006`; `docs/e04_test_vector_v1.json` is the cross-language fixture.
 
 ## Implemented
 
@@ -19,7 +19,7 @@ This branch advances both Works together. Source changes are governed by `CR-202
 - Match events and sealed proofs are persisted, but active room state is not rehydrated from the ledger after a restart. Deterministic replay/rejoin is S02-W03. Backups and purge must respect the 30-day secret lifetime before production activation.
 - The full player cut/deadline ceremony is scheduled in S02-W05; this prototype uses the HMAC fallback cut. End-user post-close proof delivery is not enabled; only the internal auditor can decrypt closed proofs.
 - A server-side HMAC signature can only be verified by the running authority; the API does not supply clients with verification keys. Never log or return HMAC keys, seed, nonce or hidden decks.
-- GitHub Actions run 45691529159 passed all five jobs for the previous draft revision. The new PostgreSQL integration drill, migration checksum/tamper check, protected-path CR approvals, and review of secret custody/real transport/auth integration are required before merge.
+- GitHub Actions run 45694139070 passed all five jobs: .NET shared smoke, static checks, checksummed migration/tamper rejection, Docker image and encrypted backup/restore. The isolated runtime drill played 36 moves, committed 39 events, decrypted the sealed proof after close and recomputed its commitment. Protected-path verifier and final PR CI must pass before merge. Real-device/rejoin and production retention remain future gates.
 
 ## Commands
 
