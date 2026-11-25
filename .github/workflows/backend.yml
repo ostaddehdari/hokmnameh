@@ -72,7 +72,7 @@ jobs:
       - name: Start isolated PostgreSQL (no API)
         run: |
           set -euo pipefail
-          printf 'POSTGRES_DB=hokmnameh_ci\nPOSTGRES_USER=hokm_ci\nPOSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)" > .env
+          printf 'POSTGRES_DB=hokmnameh_ci\nPOSTGRES_USER=hokm_ci\nPOSTGRES_PASSWORD=%s\nHOKM_AUDIT_KEY_BASE64=%s\n' "$(openssl rand -hex 32)" "$(openssl rand -base64 32)" > .env
           chmod 600 .env
           docker compose up -d postgres
           for i in $(seq 1 60); do
@@ -85,7 +85,7 @@ jobs:
           ./deploy/scripts/migrate.sh
           ./deploy/scripts/migrate.sh
           docker compose exec -T postgres sh -c \
-            'psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT count(*) FROM public.schema_migrations"' | grep -qx '1'
+            'psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT count(*) FROM public.schema_migrations"' | grep -qx '2'
           docker compose exec -T postgres sh -c \
             'psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT count(*) FROM public.accounts"' | grep -qx '0'
       - name: Reject an edited migration checksum
@@ -129,7 +129,7 @@ jobs:
       - name: Start source PostgreSQL and apply migrations
         run: |
           set -euo pipefail
-          printf 'POSTGRES_DB=hokmnameh_ci\nPOSTGRES_USER=hokm_ci\nPOSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)" > .env
+          printf 'POSTGRES_DB=hokmnameh_ci\nPOSTGRES_USER=hokm_ci\nPOSTGRES_PASSWORD=%s\nHOKM_AUDIT_KEY_BASE64=%s\n' "$(openssl rand -hex 32)" "$(openssl rand -base64 32)" > .env
           chmod 600 .env
           docker compose up -d --wait postgres
           ./deploy/scripts/migrate.sh
@@ -171,6 +171,12 @@ jobs:
               grep -qi '^Retry-After:' "$RUNNER_TEMP/rate-headers-$request"
             fi
           done
+      - name: Verify encrypted match audit and private proof
+        run: |
+          set -euo pipefail
+          docker compose restart api
+          ./deploy/scripts/check.sh
+          node tools/test-match-audit.mjs
       - name: Verify health alert delivery
         run: node tools/test-health-monitor.mjs
       - name: Clean up operations drill

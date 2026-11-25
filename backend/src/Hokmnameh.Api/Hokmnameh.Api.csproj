@@ -9,5 +9,6 @@
     <PackageReference Include="Npgsql" Version="10.0.3" />
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs" Link="Rules/HokmGame.cs" />
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/HokmBot.cs" Link="Rules/HokmBot.cs" />
+    <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/E04Shuffle.cs" Link="Rules/E04Shuffle.cs" />
   </ItemGroup>
 </Project>

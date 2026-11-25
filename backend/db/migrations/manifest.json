@@ -6,6 +6,11 @@
       "version": "001_core",
       "file": "001_core.sql",
       "sha256": "1b3fbf3bfceee7a0d06480f18cc4af5b2bc9c93748e42259b923b2b957d2d038"
+    },
+    {
+      "version": "002_match_audit",
+      "file": "002_match_audit.sql",
+      "sha256": "29d8b0bc657697167624e44876b433ccdf918b60a45d4dc457d995790c8bee5b"
     }
   ]
 }

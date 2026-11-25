@@ -66,3 +66,7 @@ docker compose logs -n 80 api
 - Abuse-resistant auth and guest onboarding; distributed rate limiting and WAF where necessary.
 - Monitor endpoints, load test, central exception alerting, data retention, incident response.
 - Do not publicly announce the service just because `/health` returns 200.
+
+## S02 audit key for room creation
+
+Generate a unique audit encryption key for each environment with `openssl rand -base64 32` and add it as `HOKM_AUDIT_KEY_BASE64` to the protected `.env` (mode 0600, owned by the deployment user). The deployment preflight rejects a missing or malformed key. Preserve it in secure off-host custody: losing it makes sealed round proofs undecryptable. Rotate only with a reviewed key-version migration and proof re-encryption; never commit or print the key. Apply the versioned migration before enabling room traffic. No production migration or deployment has been performed by this change.
