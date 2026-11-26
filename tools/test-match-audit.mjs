@@ -52,11 +52,18 @@ while (state.game.phase === 2 && moves < 52) {
   moves++;
 }
 assert.ok(moves >= 28 && (state.game.phase === 0 || state.game.phase === 3));
-recovered = replay();
-assert.equal(recovered.phase, state.game.phase);
-assert.equal(recovered.round, state.game.round);
-assert.deepEqual(recovered.score, state.game.matchPoints);
-assert.equal(recovered.commitment, state.game.shuffleCommitment);
+// The ticker may start round 2 immediately after the round-closed response.
+// Compare two fresh reads of the same authority, retrying only the boundary race.
+let matchingLiveState = false;
+for (let attempt = 0; attempt < 4; attempt++) {
+  recovered = replay();
+  const live = (await request(`/api/v1/rooms/${room.id}`, tokens[0])).game;
+  matchingLiveState = recovered.phase === live.phase && recovered.round === live.round &&
+    recovered.commitment === live.shuffleCommitment &&
+    JSON.stringify(recovered.score) === JSON.stringify(live.matchPoints);
+  if (matchingLiveState) break;
+}
+assert.ok(matchingLiveState, 'replay and live room must converge at a stable boundary');
 assert.equal(recovered.closedRounds, 1);
 
 const db = sql => {
