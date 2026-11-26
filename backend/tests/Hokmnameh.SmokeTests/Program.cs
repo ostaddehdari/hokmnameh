@@ -3,6 +3,7 @@ using Hokmnameh.Api;
 using System.Text.Json;
 using System.Text;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 
 void Assert(bool condition, string name) { if (!condition) throw new Exception("FAILED: " + name); Console.WriteLine("PASS: " + name); }
 void AssertRuleError(Action action, string name)
@@ -263,6 +264,21 @@ foreach (var ignoredProfile in new[] { (mmr: 0, skin: "default", ad: ""),
 try { _ = E04Shuffle.Create(fixtureMatch, 1, ClassicRules.ImmutableId, new byte[31], new byte[16]);
     throw new Exception("FAILED: weak seed rejected"); }
 catch (ArgumentException) { Console.WriteLine("PASS: weak seed rejected"); }
+var failedEntropyGame = new HokmGame(fixtureMatch);
+using (var brokenRng = new BrokenRandomNumberGenerator())
+{
+    try { using var never = E04Shuffle.CreateWithRandom(fixtureMatch, 1,
+        ClassicRules.ImmutableId, brokenRng); throw new Exception("FAILED: RNG failure accepted"); }
+    catch (CryptographicException) { Console.WriteLine("PASS: RNG failure prevents deal"); }
+}
+Assert(failedEntropyGame.Round == 0 && failedEntropyGame.Phase == GamePhase.Waiting,
+    "no round transition after RNG failure");
+using (var randomFirst = E04Shuffle.CreateRandom(fixtureMatch, 1, ClassicRules.ImmutableId))
+using (var randomSecond = E04Shuffle.CreateRandom(fixtureMatch, 2, ClassicRules.ImmutableId))
+    Assert(randomFirst.Seed.Length == 32 && randomFirst.Nonce.Length == 16 &&
+        !randomFirst.Seed.SequenceEqual(randomSecond.Seed) &&
+        !randomFirst.Nonce.SequenceEqual(randomSecond.Nonce),
+        "fresh independent 256-bit seed and 128-bit nonce per round");
 Console.WriteLine("All core smoke tests passed");
 
 sealed class ManualTimeProvider(DateTimeOffset now) : TimeProvider
@@ -299,4 +315,10 @@ sealed class ThrowOnTrumpStore : IMatchEventStore
         if (command.Kind == "trump-selected")
             throw new InvalidOperationException("Simulated persistent event failure");
     }
+}
+
+sealed class BrokenRandomNumberGenerator : RandomNumberGenerator
+{
+    public override void GetBytes(byte[] data) => throw new CryptographicException("Simulated entropy failure");
+    public override void GetNonZeroBytes(byte[] data) => throw new CryptographicException("Simulated entropy failure");
 }

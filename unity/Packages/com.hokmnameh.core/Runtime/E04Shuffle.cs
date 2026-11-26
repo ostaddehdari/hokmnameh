@@ -129,10 +129,18 @@ namespace Hokmnameh.Core
         }
         public static E04Round CreateRandom(Guid matchId, ulong roundNumber, string rulesetId)
         {
+            using (var rng = RandomNumberGenerator.Create())
+                return CreateWithRandom(matchId, roundNumber, rulesetId, rng);
+        }
+        // Injected only inside the authority/rules test assembly to exercise RNG failure.
+        internal static E04Round CreateWithRandom(Guid matchId, ulong roundNumber, string rulesetId,
+            RandomNumberGenerator rng)
+        {
+            if (rng == null) throw new ArgumentNullException("rng");
             var seed = new byte[32]; var nonce = new byte[16];
             try
             {
-                using (var rng = RandomNumberGenerator.Create()) { rng.GetBytes(seed); rng.GetBytes(nonce); }
+                rng.GetBytes(seed); rng.GetBytes(nonce);
                 return Create(matchId, roundNumber, rulesetId, seed, nonce);
             }
             finally { Array.Clear(seed, 0, seed.Length); Array.Clear(nonce, 0, nonce.Length); }
