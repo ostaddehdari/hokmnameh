@@ -407,6 +407,102 @@
         "post_review_due_at": null
       },
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0013",
+      "decision_id": "DEC-2026-0013",
+      "title": "فرمان Cut نسخه‌دار با صلاحیت Cutter و مهلت هشت‌ثانیه‌ای",
+      "status": "IMPLEMENTING",
+      "category": [
+        "rules",
+        "api"
+      ],
+      "requester": "project-owner",
+      "created_at": "2026-11-26T14:15:26Z",
+      "source_refs": [
+        "DEC-2026-0006 approved E-04 contract",
+        "S02-W05-T02 acceptance in deployment-center plan",
+        "ProjectMaker continuation request 2026-11-26"
+      ],
+      "affected_paths": [
+        "backend/src/Hokmnameh.Api/Rooms.cs",
+        "backend/src/Hokmnameh.Api/Program.cs",
+        "backend/src/Hokmnameh.Api/PostgresMatchStore.cs",
+        "backend/src/Hokmnameh.Api/MatchReplay.cs",
+        "backend/tests/Hokmnameh.SmokeTests/Program.cs",
+        "tools/test-match-audit.mjs",
+        "docs/API.md",
+        "docs/stages/S02_W05_T02_EVIDENCE.md"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-006",
+        "DATA-002",
+        "SEC-002"
+      ],
+      "impact": {
+        "player": "در اتاق v2 فقط Cutter مجاز قبل از توزیع اندیس Cut می‌فرستد",
+        "compatibility": "ایجاد اتاق v1 و API موجود بلافاصله deal می‌کند؛ قرارداد جدید در /api/v2 opt-in است",
+        "data": "بدون migration؛ رویداد cut-selected/fallback در جدول audit موجود ذخیره می‌شود",
+        "operations": "بدون اجرای تولید؛ آزمون DB/replay ایزوله در CI"
+      },
+      "risk_flags": [
+        "ranked_integrity",
+        "hidden_information"
+      ],
+      "approvals": [
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T14:15:26Z",
+          "evidence": "قرارداد E-04 مصوب DEC-2026-0006 و درخواست ادامه S02-W05-T02"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-26T14:15:26Z",
+          "evidence": "بررسی طرح pending Cut و مالکیت سرور برای Seed/Deck توسط ProjectMaker؛ بازبین مستقل نیست"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T14:15:26Z",
+          "evidence": "بررسی تست‌های seat/state/deadline/duplicate/replay؛ نتیجه CI هنوز لازم است، بازبین مستقل نیست"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T14:15:26Z",
+          "evidence": "نسخه opt-in v2 و حفظ رفتار v1 بررسی شد؛ بازبین مستقل نیست"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T14:15:26Z",
+          "evidence": "قرارداد درخواست و خطاهای typed در docs/API.md و drill HTTP بررسی شد؛ بازبین مستقل نیست"
+        }
+      ],
+      "acceptance_criteria": [
+        "Cut فقط در CUT_PENDING، توسط صندلی (hakem+3)%4 و با ActionId و stateVersion معتبر پذیرفته شود",
+        "درخواست دیر یا تکراری یا نامعتبر با خطای typed رد شود و fallback بعد از هشت ثانیه اجرا شود",
+        "Deck و Seed در خروجی عمومی ظاهر نشوند و رویداد و proof قابل بازپخش باشند"
+      ],
+      "test_plan": [
+        "shared .NET smoke with manual clock",
+        "isolated HTTP/PostgreSQL replay drill",
+        "legacy E04 fixture and five CI jobs",
+        "change-control changed-files verification"
+      ],
+      "rollback_plan": "Revert reviewed v2 handler and pending-cut source through a new PR; leave immutable audit rows intact, no production run or migration.",
+      "migration_plan": null,
+      "security_review": "Deck و Seed فقط نزد authority در RAM می‌مانند؛ پاسخ v2 فقط وضعیت، deadline و نسخه را می‌دهد. رویداد عمومی فقط اندیس Cut دارد؛ proof رمزگذاری‌شده و post-close است. Pending state پس از restart بازیابی ندارد و production gate جداگانه می‌خواهد.",
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
+      "supersedes": null
     }
   ]
 }

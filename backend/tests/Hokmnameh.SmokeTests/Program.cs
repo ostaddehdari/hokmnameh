@@ -11,6 +11,14 @@ void AssertRuleError(Action action, string name)
     try { action(); throw new Exception("FAILED: " + name + " (no error)"); }
     catch (GameRuleException) { Console.WriteLine("PASS: " + name); }
 }
+void AssertCutError(Action action, string code, int status)
+{
+    try { action(); throw new Exception("FAILED: expected " + code); }
+    catch (CutCommandException e)
+    {
+        Assert(e.Code == code && e.StatusCode == status, "typed cut error " + code);
+    }
+}
 var game = new HokmGame();
 game.StartRound(0);
 Assert(game.Phase == GamePhase.ChoosingTrump, "20-card preliminary deal");
@@ -158,6 +166,59 @@ using (var audit = new MatchAudit())
         "public event audit excludes private hands");
 }
 
+var cutClock = new ManualTimeProvider(DateTimeOffset.Parse("2026-01-01T00:00:00Z"));
+var cutPlayers = Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray();
+var cutStore = new CapturingCutStore();
+var cutRoom = new GameRoom(Guid.NewGuid(), "CUTROOM", "free", cutPlayers[0], 30,
+    ClassicRules.ImmutableId, cutClock, cutStore, requireCut: true);
+for (int i = 1; i < 4; ++i) cutRoom.Join(cutPlayers[i]);
+using (var pendingJson = JsonDocument.Parse(JsonSerializer.Serialize(cutRoom.State(cutPlayers[3]), JsonOptions.Default)))
+{
+    var pending = pendingJson.RootElement;
+    Assert(pending.GetProperty("room").GetProperty("cutPhase").GetString() == "CUT_PENDING" &&
+        pending.GetProperty("cutStateVersion").GetInt64() == 0 && pending.GetProperty("isYourCut").GetBoolean() &&
+        pending.GetProperty("game").ValueKind == JsonValueKind.Null &&
+        !pendingJson.RootElement.ToString().Contains("seed", StringComparison.OrdinalIgnoreCase),
+        "v2 cut pending exposes only cutter status and no cards or seed");
+}
+var chosenCutAction = Guid.NewGuid();
+var chosenCut = new CutCardRequest(17, chosenCutAction, 0);
+AssertCutError(() => cutRoom.Cut(Guid.NewGuid(), chosenCut), "cut_not_member", 403);
+AssertCutError(() => cutRoom.Cut(cutPlayers[0], chosenCut), "wrong_cutter", 403);
+AssertCutError(() => cutRoom.Cut(cutPlayers[3], chosenCut with { ActionId = Guid.Empty }), "invalid_cut_action_id", 400);
+AssertCutError(() => cutRoom.Cut(cutPlayers[3], chosenCut with { StateVersion = 1 }), "stale_cut_state", 409);
+AssertCutError(() => cutRoom.Cut(cutPlayers[3], chosenCut with { CutIndex = 0 }), "invalid_cut_index", 400);
+Assert(cutStore.Events.Count == 0, "rejected cut commands never enter audit");
+cutRoom.Cut(cutPlayers[3], chosenCut);
+Assert(cutStore.Events.Count == 2 && cutStore.Events[0].Kind == "cut-selected" &&
+    cutStore.Events[0].ActionId == chosenCutAction && cutStore.Events[0].ActorSeat == 3 &&
+    cutStore.Events[0].PublicValue == 17 && cutStore.Events[1].Kind == "round-started" &&
+    cutStore.Proofs.Single().Cut == 17, "accepted cut and proof persisted in event order");
+AssertCutError(() => cutRoom.Cut(cutPlayers[3], chosenCut), "duplicate_cut_action", 409);
+AssertCutError(() => cutRoom.Cut(cutPlayers[3], chosenCut with { ActionId = Guid.NewGuid() }), "cut_not_pending", 409);
+using (var replayCut = new ReplayBundleV1(cutRoom.Id, ClassicRules.ImmutableId,
+    cutStore.Events.Count, cutStore.Events, cutStore.Proofs))
+{
+    var recoveredCut = MatchReplay.Rebuild(replayCut);
+    Assert(recoveredCut.Game.CutIndex == 17 && recoveredCut.Game.Phase == GamePhase.ChoosingTrump,
+        "authorized cut can be reconstructed from audit and encrypted proof contract");
+}
+var fallbackClock = new ManualTimeProvider(DateTimeOffset.Parse("2026-01-02T00:00:00Z"));
+var fallbackCutPlayers = Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray();
+var fallbackCutStore = new CapturingCutStore();
+var fallbackCutRoom = new GameRoom(Guid.NewGuid(), "CUTTIME", "free", fallbackCutPlayers[0], 30,
+    ClassicRules.ImmutableId, fallbackClock, fallbackCutStore, requireCut: true);
+for (int i = 1; i < 4; ++i) fallbackCutRoom.Join(fallbackCutPlayers[i]);
+var originalCutDeadline = fallbackCutRoom.View().CutDeadline;
+fallbackClock.Advance(TimeSpan.FromMilliseconds(7999));
+Assert(!fallbackCutRoom.Tick() && fallbackCutRoom.View().CutDeadline == originalCutDeadline,
+    "cut deadline does not move during wait");
+fallbackClock.Advance(TimeSpan.FromMilliseconds(1));
+AssertCutError(() => fallbackCutRoom.Cut(fallbackCutPlayers[3], new CutCardRequest(5, Guid.NewGuid(), 0)),
+    "cut_deadline_expired", 410);
+Assert(fallbackCutRoom.Tick() && fallbackCutStore.Events[0].Kind == "cut-fallback" &&
+    fallbackCutStore.Events[0].ActorSeat == -1 && fallbackCutStore.Proofs.Single().Cut is >= 1 and <= 51 &&
+    fallbackCutRoom.View().CutPhase == null, "timeout records deterministic fallback before deal");
 var players = Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray();
 var privateRoom = new GameRoom(Guid.NewGuid(), "PRIVATE", "free", players[0], 30, ClassicRules.ImmutableId);
 for (int i = 1; i < 4; ++i) privateRoom.Join(players[i]);
@@ -338,6 +399,21 @@ sealed class ThrowOnTrumpStore : IMatchEventStore
     {
         if (command.Kind == "trump-selected")
             throw new InvalidOperationException("Simulated persistent event failure");
+    }
+}
+
+sealed class CapturingCutStore : IMatchEventStore
+{
+    public List<MatchEventV1> Events { get; } = new();
+    public List<ReplayRoundSecretV1> Proofs { get; } = new();
+    public void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound)
+    {
+        Events.Add(new MatchEventV1(command.Sequence, command.ActionId, command.ActorSeat,
+            command.RulesetVersion, command.Timestamp, command.Sequence, command.Kind, publicValue));
+        if (preparedRound != null)
+            Proofs.Add(new ReplayRoundSecretV1((long)preparedRound.RoundNumber,
+                (byte[])preparedRound.Seed.Clone(), (byte[])preparedRound.Nonce.Clone(),
+                preparedRound.CommitmentHex, preparedRound.CutIndex, E04Shuffle.AlgorithmId));
     }
 }
 
