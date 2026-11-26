@@ -108,5 +108,5 @@ const recomputed = createHash('sha256').update(Buffer.concat([
 ])).digest('hex');
 assert.equal(recomputed, rows[6].trim());
 proof.fill(0); key.fill(0);
-console.log(JSON.stringify({ work: 'S02-W01/S02-W02', eventCount: Number(rows[1]),
+console.log(JSON.stringify({ work: 'S02-W03/S02-W04', eventCount: Number(rows[1]),
   moves, encryptedProof: true, closedRoundVerified: true, replayVerified: true, status: 'PASS' }));

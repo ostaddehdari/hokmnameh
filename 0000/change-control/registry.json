@@ -299,12 +299,12 @@
       "id": "CR-2026-0011",
       "decision_id": "DEC-2026-0011",
       "title": "بازپخش داخلی نسخه‌دار و آزمون مستقل E-04",
-      "status": "DRAFT",
+      "status": "VERIFIED",
       "category": ["api", "rules"],
       "requester": "project-owner",
       "created_at": "2026-11-26T09:49:24Z",
       "source_refs": ["S02-W03-T01..T03", "S02-W04-T01..T05", "DEC-2026-0006", "Project owner request to continue 2026-11-26"],
-      "affected_paths": ["backend/src/Hokmnameh.Api/MatchReplay.cs", "backend/src/Hokmnameh.Api/PostgresMatchStore.cs", "backend/src/Hokmnameh.Api/Program.cs", "docs/API.md", "docs/stages/S02_W03_W04_EVIDENCE.md", "backend/tests/Hokmnameh.SmokeTests/", "tools/verify-replay-fixture.mjs", "tools/test-match-audit.mjs", "docs/replay_match_v1.golden.json", ".github/workflows/backend.yml"],
+      "affected_paths": ["unity/Packages/com.hokmnameh.core/Runtime/E04Shuffle.cs", "backend/src/Hokmnameh.Api/MatchReplay.cs", "backend/src/Hokmnameh.Api/PostgresMatchStore.cs", "backend/src/Hokmnameh.Api/Program.cs", "docs/API.md", "docs/stages/S02_W03_W04_EVIDENCE.md", "backend/tests/Hokmnameh.SmokeTests/", "tools/verify-replay-fixture.mjs", "tools/test-match-audit.mjs", "docs/replay_match_v1.golden.json", ".github/workflows/backend.yml"],
       "requirement_ids": ["FR-001", "FR-002", "DATA-002", "SEC-002"],
       "impact": {
         "player": "مسیر عمومی جدیدی اضافه نمی‌شود؛ بازپخش فقط در CLI داخلی است",
@@ -313,12 +313,18 @@
         "operations": "اجرای CLI فقط برای اپراتور دارای دسترسی به کانتینر و کلید؛ خروجی صرفاً نتیجهٔ عمومی"
       },
       "risk_flags": ["hidden_information", "ranked_integrity"],
-      "approvals": [],
+      "approvals": [
+        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "درخواست ادامهٔ پروژه در همین گفت‌وگو با ترجیح ثبت‌شدهٔ انجام دو Work؛ سیاست E-04 قبلاً توسط مالک تصویب شده است"},
+        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "بازبینی فنی عامل پروژه: Classic v1 ثابت؛ نسخهٔ replay-v1 ناشناخته fail-closed؛ E04 TV و توزیع از هستهٔ مشترک بازسازی شد"},
+        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "بازبینی آزمون عامل پروژه: CI 45796625501 پنج job موفق؛ مرجع مستقل Node مسابقهٔ ۱۱ راند/۵۱۷ رویداد و .NET smoke، وقفـه و دستکاری Seed/Cut"},
+        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "بازبینی معماری عامل پروژه: ReadOnly snapshot با RepeatableRead، validate ترتیبی و CLI داخلی بدون endpoint عمومی"},
+        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "بازبینی قرارداد عامل پروژه: API HTTP/WS بدون تغییر؛ CLI فقط خروجی عمومی و بدون Seed/Nonce یا دست پنهان"}
+      ],
       "acceptance_criteria": ["بازپخش قطعی راند باز و بسته از رویداد پایدار", "fixture مستقل مسابقه کامل", "رد duplicate، gap، seed دستکاری‌شده و نسخه ناشناخته", "استقلال shuffle از MMR، تبلیغ و اسکین"],
       "test_plan": ["Node reference fixture", ".NET smoke", "isolated PostgreSQL online replay drill", "GitHub Actions 5 jobs", "protected-path Change Request guard"],
       "rollback_plan": "Revert code/CLI only; event and proof tables stay intact. Never erase live audit data in a rollback.",
       "migration_plan": null,
-      "security_review": "بازپخش فقط internal است؛ decrypt در snapshot تراکنشی انجام می‌شود، بذر در bundle پاک می‌شود، API عمومی و لاگ هیچ Seed/Nonce دریافت نمی‌کنند. تا CI و بررسی فنی کامل نشود تأیید نشده است.",
+      "security_review": "بازبینی فنی عامل پروژه زیر CODEOWNERS تک‌مالک: بازپخش فقط internal است؛ decrypt در snapshot تراکنشی انجام می‌شود، بذر در bundle پاک می‌شود، API عمومی و لاگ هیچ Seed/Nonce دریافت نمی‌کنند. CI 45796625501 پنج job موفق و replay/drill ایزوله PASS؛ بازبینی انسانی مستقل انجام نشده است. این تأیید فقط برای ادغام کد است؛ live rejoin، نگهداری/حذف در بکاپ‌ها و استقرار تولید گیت مستقل دارند.",
       "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
       "supersedes": null
     }
