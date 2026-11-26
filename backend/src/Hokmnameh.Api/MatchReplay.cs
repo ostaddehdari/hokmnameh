@@ -148,7 +148,8 @@ internal static class MatchReplay
                  bundle.Events[i + 1].Kind != "round-closed" && closed < game.Round))
                 throw new GameRuleException("Replay round boundary mismatch");
         }
-        if (pendingCut.HasValue || stagedProgress is >= 1 and <= 4 ||
+        if (pendingCut.HasValue || stagedProgress is 1 or 3 or 4 ||
+            (stagedProgress == 2 && game.Phase != GamePhase.ChoosingTrump) ||
             game.Phase is GamePhase.DealingSecond or GamePhase.DealingFinal ||
             roundIndex != bundle.Rounds.Count || game.Round != roundIndex || closed > roundIndex ||
             (game.Phase is GamePhase.Waiting or GamePhase.Finished && closed != roundIndex))
