@@ -141,7 +141,11 @@ public sealed class GameRoom
         {
             int seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
             EnsureHealthy();
-            _game.ChooseTrump(seat, suit); Record(seat, "trump-selected", suit); ResetDeadline();
+            if (_requireCut && _game.Phase == GamePhase.ChoosingTrump && _timeProvider.GetUtcNow() >= _turnDeadline)
+                throw new CutCommandException("trump_deadline_expired", 410);
+            if (_requireCut) DealTrump(seat, suit, "trump-staged");
+            else { _game.ChooseTrump(seat, suit); Record(seat, "trump-selected", suit); }
+            ResetDeadline();
         }
     }
     public void Play(Guid identity, int card)
@@ -156,7 +160,20 @@ public sealed class GameRoom
             ResetDeadline();
         }
     }
-    private void ResetDeadline() => _turnDeadline = _timeProvider.GetUtcNow().AddSeconds(_turnSeconds);
+    private void ResetDeadline() => _turnDeadline = _timeProvider.GetUtcNow().AddSeconds(
+        _requireCut && _game.Phase == GamePhase.ChoosingTrump ? 20 : _turnSeconds);
+    private void DealTrump(int seat, int suit, string kind)
+    {
+        // The transition and both cursors are independent audit events for authority replay.
+        try
+        {
+            _game.SelectTrump(seat, suit); Record(seat, kind, suit);
+            _game.AdvanceDeal(); Record(-1, "deal-second", E04DealPlan.Cursor(1));
+            _game.AdvanceDeal(); Record(-1, "deal-final", E04DealPlan.Cursor(2));
+        }
+        catch (GameRuleException) when (_game.Phase == GamePhase.ChoosingTrump) { throw; }
+        catch { _faulted = true; throw; }
+    }
     private void EnsureHealthy()
     {
         if (_faulted) throw new InvalidOperationException("Match authority is quarantined after audit failure");
@@ -200,6 +217,7 @@ public sealed class GameRoom
             if (!fallback) _cutActions.Add(actionId);
             Record(-1, "round-started", _game.Round + 1, prepared);
             _game.StartRound(_pendingHakem, prepared);
+            Record(-1, "deal-initial", E04DealPlan.Cursor(0));
             ResetDeadline();
         }
         catch { _faulted = true; throw; }
@@ -227,7 +245,9 @@ public sealed class GameRoom
             bool timerExpired = _timeProvider.GetUtcNow() >= _turnDeadline;
             if (!_bots[seat] && !timerExpired) return false;
             if (_game.Phase == GamePhase.ChoosingTrump)
-            { int suit = HokmBot.PickTrump(_game, seat); _game.ChooseTrump(seat, suit); Record(seat, "trump-fallback", suit); }
+            { int suit = HokmBot.PickTrump(_game, seat);
+              if (_requireCut) DealTrump(seat, suit, "trump-staged-fallback");
+              else { _game.ChooseTrump(seat, suit); Record(seat, "trump-fallback", suit); } }
             else
             {
                 int card = HokmBot.ChooseCard(_game, seat, 1); _game.Play(seat, card);

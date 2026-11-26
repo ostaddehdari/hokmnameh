@@ -11,6 +11,11 @@
       "version": "002_match_audit",
       "file": "002_match_audit.sql",
       "sha256": "29d8b0bc657697167624e44876b433ccdf918b60a45d4dc457d995790c8bee5b"
+    },
+    {
+      "version": "003_round_cut_actions",
+      "file": "003_round_cut_actions.sql",
+      "sha256": "1e967425961e68ac48b0ef23a91520b221aeea2d4fbe5e2d378cbc804cc642ed"
     }
   ]
 }

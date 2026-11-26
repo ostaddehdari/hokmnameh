@@ -96,6 +96,24 @@ internal static class MatchReplay
                         throw new GameRuleException("Invalid replay trump");
                     game.ChooseTrump(e.ActorSeat, e.PublicValue.Value);
                     break;
+                case "deal-initial":
+                    if (e.ActorSeat != -1 || e.PublicValue != E04DealPlan.Cursor(0) ||
+                        game.Phase != GamePhase.ChoosingTrump || game.DealCursors.Length != 1)
+                        throw new GameRuleException("Invalid initial deal cursor");
+                    break;
+                case "trump-staged":
+                case "trump-staged-fallback":
+                    if (e.ActorSeat != game.Hakem || e.PublicValue is not (>= 0 and <= 3))
+                        throw new GameRuleException("Invalid staged trump");
+                    game.SelectTrump(e.ActorSeat, e.PublicValue.Value);
+                    break;
+                case "deal-second":
+                case "deal-final":
+                    if (e.ActorSeat != -1 || e.PublicValue != E04DealPlan.Cursor(e.Kind == "deal-second" ? 1 : 2) ||
+                        game.Phase != (e.Kind == "deal-second" ? GamePhase.DealingSecond : GamePhase.DealingFinal))
+                        throw new GameRuleException("Invalid staged deal cursor");
+                    game.AdvanceDeal();
+                    break;
                 case "card-played":
                 case "card-auto-played":
                     if (e.ActorSeat != game.Turn || e.PublicValue is not (>= 0 and < 52))
@@ -117,7 +135,8 @@ internal static class MatchReplay
                  bundle.Events[i + 1].Kind != "round-closed" && closed < game.Round))
                 throw new GameRuleException("Replay round boundary mismatch");
         }
-        if (pendingCut.HasValue || roundIndex != bundle.Rounds.Count || game.Round != roundIndex || closed > roundIndex ||
+        if (pendingCut.HasValue || game.Phase is GamePhase.DealingSecond or GamePhase.DealingFinal ||
+            roundIndex != bundle.Rounds.Count || game.Round != roundIndex || closed > roundIndex ||
             (game.Phase is GamePhase.Waiting or GamePhase.Finished && closed != roundIndex))
             throw new GameRuleException("Replay proof or closing event missing");
         return new ReplayResultV1(game, bundle.AuditSequence, closed);

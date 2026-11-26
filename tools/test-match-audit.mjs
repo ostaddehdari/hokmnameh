@@ -39,9 +39,15 @@ async function expectCutError(token, body, status, code) {
 }
 await expectCutError(tokens[0], cutCommand, 403, 'wrong_cutter');
 await expectCutError(tokens[3], { ...cutCommand, stateVersion: 999 }, 409, 'stale_cut_state');
-const acceptedCut = await request(cutPath, tokens[3], 'POST', cutCommand);
+const concurrent = await Promise.all([0, 1].map(() => fetch(base + cutPath, {
+  method: 'POST', headers: { authorization: `Bearer ${tokens[3]}`, 'content-type': 'application/json' },
+  body: JSON.stringify(cutCommand)
+})));
+assert.deepEqual(concurrent.map(x => x.status).sort(), [200, 409]);
+const acceptedCut = await concurrent.find(x => x.ok).json();
 assert.equal(acceptedCut.game.cutIndex, 17);
 assert.equal(acceptedCut.game.phase, 1);
+assert.equal(acceptedCut.game.dealCursor, 20);
 await expectCutError(tokens[3], cutCommand, 409, 'duplicate_cut_action');
 const otherCutState = await request(`/api/v1/rooms/${cutRoom.id}`, tokens[1]);
 assert.equal(otherCutState.game.hand.length, 5);
@@ -57,9 +63,9 @@ let state = await request(`/api/v1/rooms/${room.id}`, tokens[0]);
 assert.equal(state.game.phase, 1);
 assert.equal(state.game.hand.length, 5);
 assert.equal(state.game.shuffleCommitment.length, 64);
-const replay = () => {
+const replay = (matchId = room.id) => {
   const cmd = spawnSync('docker', ['compose', 'exec', '-T', 'api',
-    'dotnet', 'Hokmnameh.Api.dll', '--verify-replay', room.id], { encoding: 'utf8' });
+    'dotnet', 'Hokmnameh.Api.dll', '--verify-replay', matchId], { encoding: 'utf8' });
   assert.equal(cmd.status, 0, 'isolated authority replay failed');
   return JSON.parse(cmd.stdout.trim());
 };
@@ -101,6 +107,19 @@ const db = sql => {
   assert.equal(cmd.status, 0, 'isolated PostgreSQL query failed');
   return cmd.stdout.trim();
 };
+assert.equal(db(`SELECT count(*) FROM round_cut_actions_v1 WHERE match_id='${cutRoom.id}'`), '1');
+assert.equal(db(`SELECT count(*) FROM round_proofs_v1 WHERE match_id='${cutRoom.id}'`), '1');
+assert.equal(db(`SELECT string_agg(kind || ':' || coalesce(public_value::text,''),',' ORDER BY sequence)
+ FROM match_events_v1 WHERE match_id='${cutRoom.id}'`),
+ 'cut-selected:17,round-started:1,deal-initial:20');
+assert.equal(replay(cutRoom.id).phase, acceptedCut.game.phase);
+const stagedRoom = await request(`/api/v1/rooms/${cutRoom.id}/trump`, tokens[0], 'POST', { suit: 2 });
+assert.equal(stagedRoom.game.dealCursor, 52);
+assert.equal(stagedRoom.game.hand.length, 13);
+assert.equal(db(`SELECT string_agg(kind || ':' || coalesce(public_value::text,''),',' ORDER BY sequence)
+ FROM match_events_v1 WHERE match_id='${cutRoom.id}'`),
+ 'cut-selected:17,round-started:1,deal-initial:20,trump-staged:2,deal-second:36,deal-final:52');
+assert.equal(replay(cutRoom.id).phase, stagedRoom.game.phase);
 const id = room.id;
 const rows = db(`SELECT r.audit_sequence,(SELECT count(*) FROM match_events_v1 e WHERE e.match_id=r.id),
   (SELECT count(*) FROM match_events_v1 e WHERE e.match_id=r.id AND e.kind='round-closed'),

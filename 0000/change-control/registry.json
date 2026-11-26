@@ -7,33 +7,118 @@
       "decision_id": "DEC-2026-0001",
       "title": "ایجاد کنترل رسمی تغییرات حکمنامه",
       "status": "VERIFIED",
-      "category": ["rules", "economy", "api", "database", "ux"],
+      "category": [
+        "rules",
+        "economy",
+        "api",
+        "database",
+        "ux"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-22T19:37:15Z",
-      "source_refs": ["S00-W01-T03 accepted task", "ChatGPT Project owner request 2026-11-22"],
-      "affected_paths": ["0000/change-control/"],
-      "requirement_ids": ["FR-001", "FR-020", "SEC-003"],
-      "impact": {"player": "بدون تغییر runtime", "compatibility": "افزودن قرارداد governance نسخه 1", "data": "بدون migration", "operations": "افزودن verifier پیش از merge"},
+      "source_refs": [
+        "S00-W01-T03 accepted task",
+        "ChatGPT Project owner request 2026-11-22"
+      ],
+      "affected_paths": [
+        "0000/change-control/"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "FR-020",
+        "SEC-003"
+      ],
+      "impact": {
+        "player": "بدون تغییر runtime",
+        "compatibility": "افزودن قرارداد governance نسخه 1",
+        "data": "بدون migration",
+        "operations": "افزودن verifier پیش از merge"
+      },
       "risk_flags": [],
       "approvals": [
-        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "درخواست صریح کاربر برای اجرای S00-W01-T03"},
-        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "قواعد محافظت مسیر و عدم تغییر runtime"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "self-test و registry validation"},
-        {"role": "economy_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "کنترل تغییرات currency/non-P2W"},
-        {"role": "security_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام بررسی ریسک و PII"},
-        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "کنترل API و compatibility"},
-        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام contract impact"},
-        {"role": "data_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام migration و rollback"},
-        {"role": "operations_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام deployment approval"},
-        {"role": "ux_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "کنترل تغییر journey/page"},
-        {"role": "accessibility_owner", "decision": "APPROVE", "at": "2026-11-22T19:37:15Z", "evidence": "الزام accessibility impact"}
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "درخواست صریح کاربر برای اجرای S00-W01-T03"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "قواعد محافظت مسیر و عدم تغییر runtime"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "self-test و registry validation"
+        },
+        {
+          "role": "economy_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "کنترل تغییرات currency/non-P2W"
+        },
+        {
+          "role": "security_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "الزام بررسی ریسک و PII"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "کنترل API و compatibility"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "الزام contract impact"
+        },
+        {
+          "role": "data_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "الزام migration و rollback"
+        },
+        {
+          "role": "operations_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "الزام deployment approval"
+        },
+        {
+          "role": "ux_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "کنترل تغییر journey/page"
+        },
+        {
+          "role": "accessibility_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T19:37:15Z",
+          "evidence": "الزام accessibility impact"
+        }
       ],
-      "acceptance_criteria": ["تغییر protected بدون CR واجد شرایط رد شود", "CR ناقص یا بدون تأیید نقش‌های لازم رد شود"],
-      "test_plan": ["registry validation", "self-test protected/exempt/approved changes"],
+      "acceptance_criteria": [
+        "تغییر protected بدون CR واجد شرایط رد شود",
+        "CR ناقص یا بدون تأیید نقش‌های لازم رد شود"
+      ],
+      "test_plan": [
+        "registry validation",
+        "self-test protected/exempt/approved changes"
+      ],
       "rollback_plan": "Revert governance commit; no runtime or data rollback is required.",
       "migration_plan": "No database change; this bootstrap CR adds governance artifacts only.",
       "security_review": "No secrets or PII; validation is local and deterministic.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -41,25 +126,77 @@
       "decision_id": "DEC-2026-0002",
       "title": "تثبیت Ruleset Classic v1 حاکم، کُت، امتیاز و خاتمه",
       "status": "VERIFIED",
-      "category": ["rules"],
+      "category": [
+        "rules"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-22T20:14:10Z",
-      "source_refs": ["S00-W02-T01 accepted task", "Project owner request 2026-11-22"],
-      "affected_paths": ["docs/ruleset_hokm_classic_v1", "docs/RULESET_CLASSIC_V1_APPROVAL.md", "docs/verify-ruleset-classic-v1.mjs", "docs/ARCHITECTURE.md", "unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs", "backend/tests/Hokmnameh.SmokeTests/Program.cs", ".github/workflows/backend.yml"],
-      "requirement_ids": ["FR-001", "FR-020", "SEC-003"],
-      "impact": {"player": "قواعد Classic v1 به‌صورت قطعی و نسخه‌دار می‌شود", "compatibility": "رفتار موجود شفاف و با helperهای مشترک قفل می‌شود", "data": "بدون migration", "operations": "CI سناریوهای golden را اجرا می‌کند"},
-      "risk_flags": ["ranked_integrity", "hidden_information"],
-      "approvals": [
-        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-22T20:14:10Z", "evidence": "درخواست صریح مالک پروژه برای اجرای S00-W02-T01"},
-        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-22T20:14:10Z", "evidence": "Ruleset immutable و helper مشترک server/Unity"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-22T20:14:10Z", "evidence": "golden fixtures، verifier مستقل و smoke tests"}
+      "source_refs": [
+        "S00-W02-T01 accepted task",
+        "Project owner request 2026-11-22"
       ],
-      "acceptance_criteria": ["انتخاب حکم پس از پنج کارت قطعی باشد", "کُت و حاکم‌کُتی امتیاز قطعی داشته باشند", "چرخش حاکم و پایان راند/مسابقه با نمونه تست شوند"],
-      "test_plan": ["اجرای verifier مستقل Ruleset", "اجرای smoke tests مشترک C# در CI", "اجرای Change Control روی فهرست فایل‌های تغییرکرده"],
+      "affected_paths": [
+        "docs/ruleset_hokm_classic_v1",
+        "docs/RULESET_CLASSIC_V1_APPROVAL.md",
+        "docs/verify-ruleset-classic-v1.mjs",
+        "docs/ARCHITECTURE.md",
+        "unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs",
+        "backend/tests/Hokmnameh.SmokeTests/Program.cs",
+        ".github/workflows/backend.yml"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "FR-020",
+        "SEC-003"
+      ],
+      "impact": {
+        "player": "قواعد Classic v1 به‌صورت قطعی و نسخه‌دار می‌شود",
+        "compatibility": "رفتار موجود شفاف و با helperهای مشترک قفل می‌شود",
+        "data": "بدون migration",
+        "operations": "CI سناریوهای golden را اجرا می‌کند"
+      },
+      "risk_flags": [
+        "ranked_integrity",
+        "hidden_information"
+      ],
+      "approvals": [
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T20:14:10Z",
+          "evidence": "درخواست صریح مالک پروژه برای اجرای S00-W02-T01"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-22T20:14:10Z",
+          "evidence": "Ruleset immutable و helper مشترک server/Unity"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-22T20:14:10Z",
+          "evidence": "golden fixtures، verifier مستقل و smoke tests"
+        }
+      ],
+      "acceptance_criteria": [
+        "انتخاب حکم پس از پنج کارت قطعی باشد",
+        "کُت و حاکم‌کُتی امتیاز قطعی داشته باشند",
+        "چرخش حاکم و پایان راند/مسابقه با نمونه تست شوند"
+      ],
+      "test_plan": [
+        "اجرای verifier مستقل Ruleset",
+        "اجرای smoke tests مشترک C# در CI",
+        "اجرای Change Control روی فهرست فایل‌های تغییرکرده"
+      ],
       "rollback_plan": "Revert the reviewed source commit; no data migration or production mutation is included.",
       "migration_plan": null,
       "security_review": "قواعد در core اقتدارگرا اجرا می‌شوند؛ کلاینت به دست مخفی یا RNG دسترسی جدیدی نمی‌گیرد.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -67,27 +204,87 @@
       "decision_id": "DEC-2026-0003",
       "title": "ثبت immutable rulesetVersion برای هر مسابقه",
       "status": "VERIFIED",
-      "category": ["rules", "api"],
+      "category": [
+        "rules",
+        "api"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-23T19:28:19Z",
-      "source_refs": ["S00-W02-T02 accepted task", "DEC-2026-0002 Classic v1"],
-      "affected_paths": ["backend/src/Hokmnameh.Api/Rooms.cs", "backend/src/Hokmnameh.Api/appsettings.json", "backend/tests/Hokmnameh.SmokeTests/", "docs/API.md", "docs/RULESET_CLASSIC_V1_APPROVAL.md"],
-      "requirement_ids": ["FR-001", "FR-020", "SEC-003"],
-      "impact": {"player": "نسخه قواعد هر اتاق شفاف و ثابت می‌شود", "compatibility": "RoomView فیلد rulesetVersion اضافه می‌کند", "data": "schema موجود recorded_matches.ruleset_version تغییر نمی‌کند", "operations": "نسخه ناشناخته هنگام startup/create fail-closed رد می‌شود"},
-      "risk_flags": ["ranked_integrity"],
-      "approvals": [
-        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-23T19:28:19Z", "evidence": "اجرای S00-W02-T02 در ادامه Work مصوب"},
-        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-23T19:28:19Z", "evidence": "capture-at-create و عدم mutation مسابقه فعال"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-23T19:28:19Z", "evidence": "smoke test تغییر default پس از ایجاد اتاق"},
-        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-23T19:28:19Z", "evidence": "Room API contract نسخه‌دار"},
-        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-23T19:28:19Z", "evidence": "افزودن backward-compatible field به RoomView"}
+      "source_refs": [
+        "S00-W02-T02 accepted task",
+        "DEC-2026-0002 Classic v1"
       ],
-      "acceptance_criteria": ["هر Room rulesetVersion ثبت کند", "تغییر default بر Room جاری اثر نگذارد", "نسخه ناشناخته fail-closed رد شود"],
-      "test_plan": ["shared rules/API smoke test", "Change Control protected-path verification", "full repository CI"],
+      "affected_paths": [
+        "backend/src/Hokmnameh.Api/Rooms.cs",
+        "backend/src/Hokmnameh.Api/appsettings.json",
+        "backend/tests/Hokmnameh.SmokeTests/",
+        "docs/API.md",
+        "docs/RULESET_CLASSIC_V1_APPROVAL.md"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "FR-020",
+        "SEC-003"
+      ],
+      "impact": {
+        "player": "نسخه قواعد هر اتاق شفاف و ثابت می‌شود",
+        "compatibility": "RoomView فیلد rulesetVersion اضافه می‌کند",
+        "data": "schema موجود recorded_matches.ruleset_version تغییر نمی‌کند",
+        "operations": "نسخه ناشناخته هنگام startup/create fail-closed رد می‌شود"
+      },
+      "risk_flags": [
+        "ranked_integrity"
+      ],
+      "approvals": [
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-23T19:28:19Z",
+          "evidence": "اجرای S00-W02-T02 در ادامه Work مصوب"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-23T19:28:19Z",
+          "evidence": "capture-at-create و عدم mutation مسابقه فعال"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-23T19:28:19Z",
+          "evidence": "smoke test تغییر default پس از ایجاد اتاق"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-23T19:28:19Z",
+          "evidence": "Room API contract نسخه‌دار"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-23T19:28:19Z",
+          "evidence": "افزودن backward-compatible field به RoomView"
+        }
+      ],
+      "acceptance_criteria": [
+        "هر Room rulesetVersion ثبت کند",
+        "تغییر default بر Room جاری اثر نگذارد",
+        "نسخه ناشناخته fail-closed رد شود"
+      ],
+      "test_plan": [
+        "shared rules/API smoke test",
+        "Change Control protected-path verification",
+        "full repository CI"
+      ],
       "rollback_plan": "Revert the reviewed source commit; no database or production mutation is included.",
       "migration_plan": null,
       "security_review": "نسخه قواعد server-authoritative است و ورودی کلاینت نیست؛ نسخه ناشناخته رد می‌شود.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -95,27 +292,92 @@
       "decision_id": "DEC-2026-0004",
       "title": "تکمیل تست‌های طلایی پذیرش Ruleset Classic v1",
       "status": "VERIFIED",
-      "category": ["rules", "api"],
+      "category": [
+        "rules",
+        "api"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-24T16:37:40Z",
-      "source_refs": ["S00-W02-T03 accepted task", "DEC-2026-0002", "DEC-2026-0003"],
-      "affected_paths": ["unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs", "backend/src/Hokmnameh.Api/Rooms.cs", "backend/tests/Hokmnameh.SmokeTests/Program.cs", "docs/ruleset_hokm_classic_v1.golden.json", "docs/verify-ruleset-classic-v1.mjs", "docs/RULESET_CLASSIC_V1_APPROVAL.md"],
-      "requirement_ids": ["FR-001", "FR-020", "SEC-003"],
-      "impact": {"player": "رفتار قواعد تغییر نمی‌کند و با تست قطعی قفل می‌شود", "compatibility": "TimeProvider اختیاری و API موجود سازگار می‌ماند", "data": "بدون migration", "operations": "CI پنج سناریوی پذیرش را اجرا می‌کند"},
-      "risk_flags": ["ranked_integrity", "hidden_information"],
-      "approvals": [
-        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-24T16:37:40Z", "evidence": "درخواست صریح تکمیل S00-W02-T03 و بستن Work"},
-        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-24T16:37:40Z", "evidence": "pure legal-card rule و ساعت قابل تزریق بدون تغییر رفتار production"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-24T16:37:40Z", "evidence": "پنج Golden ID و تست‌های deterministic بدون sleep"},
-        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-24T16:37:40Z", "evidence": "TimeProvider.System پیش‌فرض production حفظ می‌شود"},
-        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-24T16:37:40Z", "evidence": "هیچ فیلد یا endpoint موجود حذف یا تغییر ناسازگار ندارد"}
+      "source_refs": [
+        "S00-W02-T03 accepted task",
+        "DEC-2026-0002",
+        "DEC-2026-0003"
       ],
-      "acceptance_criteria": ["برد تست اجرایی داشته باشد", "انتخاب حکم پس از پنج کارت و فقط توسط حاکم تست شود", "دنبال‌کردن خال و بریدن تست قطعی داشته باشند", "fallback قطع اتصال قبل و بعد deadline تست شود"],
-      "test_plan": ["Golden JSON verifier", "shared C# smoke tests", "Change Control guard", "full repository CI"],
+      "affected_paths": [
+        "unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs",
+        "backend/src/Hokmnameh.Api/Rooms.cs",
+        "backend/tests/Hokmnameh.SmokeTests/Program.cs",
+        "docs/ruleset_hokm_classic_v1.golden.json",
+        "docs/verify-ruleset-classic-v1.mjs",
+        "docs/RULESET_CLASSIC_V1_APPROVAL.md"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "FR-020",
+        "SEC-003"
+      ],
+      "impact": {
+        "player": "رفتار قواعد تغییر نمی‌کند و با تست قطعی قفل می‌شود",
+        "compatibility": "TimeProvider اختیاری و API موجود سازگار می‌ماند",
+        "data": "بدون migration",
+        "operations": "CI پنج سناریوی پذیرش را اجرا می‌کند"
+      },
+      "risk_flags": [
+        "ranked_integrity",
+        "hidden_information"
+      ],
+      "approvals": [
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:37:40Z",
+          "evidence": "درخواست صریح تکمیل S00-W02-T03 و بستن Work"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:37:40Z",
+          "evidence": "pure legal-card rule و ساعت قابل تزریق بدون تغییر رفتار production"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:37:40Z",
+          "evidence": "پنج Golden ID و تست‌های deterministic بدون sleep"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:37:40Z",
+          "evidence": "TimeProvider.System پیش‌فرض production حفظ می‌شود"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:37:40Z",
+          "evidence": "هیچ فیلد یا endpoint موجود حذف یا تغییر ناسازگار ندارد"
+        }
+      ],
+      "acceptance_criteria": [
+        "برد تست اجرایی داشته باشد",
+        "انتخاب حکم پس از پنج کارت و فقط توسط حاکم تست شود",
+        "دنبال‌کردن خال و بریدن تست قطعی داشته باشند",
+        "fallback قطع اتصال قبل و بعد deadline تست شود"
+      ],
+      "test_plan": [
+        "Golden JSON verifier",
+        "shared C# smoke tests",
+        "Change Control guard",
+        "full repository CI"
+      ],
       "rollback_plan": "Revert the reviewed source commit; no production or data mutation is included.",
       "migration_plan": null,
       "security_review": "تست‌ها به دست مخفی سایر بازیکنان در API دسترسی نمی‌دهند؛ authority-only helper موجود صرفاً داخل engine باقی می‌ماند.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -123,29 +385,103 @@
       "decision_id": "DEC-2026-0005",
       "title": "تثبیت دامنه چهار زمین، جداسازی Arena و رقابت بدون ورود پولی",
       "status": "VERIFIED",
-      "category": ["rules", "economy", "ux"],
+      "category": [
+        "rules",
+        "economy",
+        "ux"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-24T16:47:34Z",
-      "source_refs": ["S00-W03-T01", "S00-W03-T02", "S00-W03-T03", "Project owner request 2026-11-24"],
-      "affected_paths": ["docs/product_domains_v1.json", "docs/PRODUCT_DOMAINS_V1.md", "docs/verify-product-domains-v1.mjs", ".github/workflows/backend.yml"],
-      "requirement_ids": ["FR-001", "FR-020", "SEC-003"],
-      "impact": {"player": "چهار زمین و شرایط ورود شفاف می‌شوند", "compatibility": "runtime موجود free/practice تغییر نمی‌کند و حالت‌های برنامه‌ریزی‌شده زودهنگام فعال نمی‌شوند", "data": "بدون migration", "operations": "قرارداد محصول در CI به‌صورت fail-closed آزموده می‌شود"},
-      "risk_flags": ["ranked_integrity", "currency"],
-      "approvals": [
-        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "درخواست صریح مالک برای اجرای تمام Work S00-W03"},
-        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "جداسازی Classic v1 از Ruleset مستقل Arena"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "verifier دوحالته برای چهار زمین، Arena و اقتصاد سالم"},
-        {"role": "economy_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "ورود صفر سکه، بازی نامحدود و منع P2W"},
-        {"role": "security_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "عدم ایجاد پول واقعی، wager، secret یا PII"},
-        {"role": "ux_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "نام، دسترسی و شرایط هر زمین به‌صورت متمایز"},
-        {"role": "accessibility_owner", "decision": "APPROVE", "at": "2026-11-24T16:47:34Z", "evidence": "قرارداد متنی و ماشین‌خوان بدون وابستگی به رنگ یا تصویر"}
+      "source_refs": [
+        "S00-W03-T01",
+        "S00-W03-T02",
+        "S00-W03-T03",
+        "Project owner request 2026-11-24"
       ],
-      "acceptance_criteria": ["چهار زمین با مجوز و شرایط مستقل ثبت شوند", "قابلیت‌های Arena فقط در Ruleset فاز دوم باشند", "آزاد و رنک ورود صفر سکه و نامحدود داشته باشند", "VIP و مزیت رقابتی پولی ممنوع باشد"],
-      "test_plan": ["product-domain contract verifier", "Change Control registry/self-test", "full repository CI"],
+      "affected_paths": [
+        "docs/product_domains_v1.json",
+        "docs/PRODUCT_DOMAINS_V1.md",
+        "docs/verify-product-domains-v1.mjs",
+        ".github/workflows/backend.yml"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "FR-020",
+        "SEC-003"
+      ],
+      "impact": {
+        "player": "چهار زمین و شرایط ورود شفاف می‌شوند",
+        "compatibility": "runtime موجود free/practice تغییر نمی‌کند و حالت‌های برنامه‌ریزی‌شده زودهنگام فعال نمی‌شوند",
+        "data": "بدون migration",
+        "operations": "قرارداد محصول در CI به‌صورت fail-closed آزموده می‌شود"
+      },
+      "risk_flags": [
+        "ranked_integrity",
+        "currency"
+      ],
+      "approvals": [
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:47:34Z",
+          "evidence": "درخواست صریح مالک برای اجرای تمام Work S00-W03"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:47:34Z",
+          "evidence": "جداسازی Classic v1 از Ruleset مستقل Arena"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:47:34Z",
+          "evidence": "verifier دوحالته برای چهار زمین، Arena و اقتصاد سالم"
+        },
+        {
+          "role": "economy_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:47:34Z",
+          "evidence": "ورود صفر سکه، بازی نامحدود و منع P2W"
+        },
+        {
+          "role": "security_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:47:34Z",
+          "evidence": "عدم ایجاد پول واقعی، wager، secret یا PII"
+        },
+        {
+          "role": "ux_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:47:34Z",
+          "evidence": "نام، دسترسی و شرایط هر زمین به‌صورت متمایز"
+        },
+        {
+          "role": "accessibility_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T16:47:34Z",
+          "evidence": "قرارداد متنی و ماشین‌خوان بدون وابستگی به رنگ یا تصویر"
+        }
+      ],
+      "acceptance_criteria": [
+        "چهار زمین با مجوز و شرایط مستقل ثبت شوند",
+        "قابلیت‌های Arena فقط در Ruleset فاز دوم باشند",
+        "آزاد و رنک ورود صفر سکه و نامحدود داشته باشند",
+        "VIP و مزیت رقابتی پولی ممنوع باشد"
+      ],
+      "test_plan": [
+        "product-domain contract verifier",
+        "Change Control registry/self-test",
+        "full repository CI"
+      ],
       "rollback_plan": "Revert the reviewed source commit; no runtime, database or production mutation is included.",
       "migration_plan": null,
       "security_review": "این تغییر سیاست fail-closed منع P2W و ورود پولی را تثبیت می‌کند؛ دست مخفی، RNG، اطلاعات شخصی و production تغییر نمی‌کنند.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -153,25 +489,82 @@
       "decision_id": "DEC-2026-0006",
       "title": "تصویب قرارداد فنی و امنیتی E-04 v1",
       "status": "VERIFIED",
-      "category": ["rules"],
+      "category": [
+        "rules"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-24T17:43:38Z",
-      "source_refs": ["S00-W04-T01", "S00-W04-T02", "S00-W04-T03", "S00-W04-T04", "Project owner approval 2026-11-24"],
-      "affected_paths": ["docs/e04_decision_set_v1.json", "docs/E04_DECISION_SET_V1.md", "docs/e04_test_vector_v1.json", "docs/verify-e04-decision-v1.mjs", "docs/planning/DECISIONS_TO_CONFIRM.md", ".github/workflows/backend.yml"],
-      "requirement_ids": ["FR-001", "FR-020", "SEC-003"],
-      "impact": {"player": "توزیع، Cut، Timeout و Audit رنک قرارداد دقیق و قابل ممیزی دارند", "compatibility": "پیاده‌سازی runtime به S02 موکول است و قرارداد ناشناخته ایجاد رنک را رد می‌کند", "data": "بدون migration", "operations": "بردار رسمی E04-TV-001 در CI بازتولید می‌شود"},
-      "risk_flags": ["ranked_integrity", "hidden_information"],
-      "approvals": [
-        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-24T17:43:38Z", "evidence": "مالک پروژه صریحاً انتخاب مقادیر امن، قابل ممیزی و fail-closed و بستن S00-W04 را تصویب کرد"},
-        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-24T17:43:38Z", "evidence": "server authority، یک Cut، توزیع 5+4+4 و عدم reshuffle"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-24T17:43:38Z", "evidence": "verifier مستقل و بردار رسمی شامل deck، commit، cut و first 12"}
+      "source_refs": [
+        "S00-W04-T01",
+        "S00-W04-T02",
+        "S00-W04-T03",
+        "S00-W04-T04",
+        "Project owner approval 2026-11-24"
       ],
-      "acceptance_criteria": ["Dealer/Cutter/Direction/FirstReceiver نسخه‌دار باشند", "Cut و deadline/fallback مصوب باشند", "Algorithm ID و Canonical Encoding و Endianness ثابت باشند", "E04-TV-001 بازتولید شود", "Reveal قبل از ROUND_CLOSED ممنوع و retention مصوب باشد"],
-      "test_plan": ["E-04 decision verifier", "official cryptographic vector reproduction", "Change Control verifier", "full repository CI"],
+      "affected_paths": [
+        "docs/e04_decision_set_v1.json",
+        "docs/E04_DECISION_SET_V1.md",
+        "docs/e04_test_vector_v1.json",
+        "docs/verify-e04-decision-v1.mjs",
+        "docs/planning/DECISIONS_TO_CONFIRM.md",
+        ".github/workflows/backend.yml"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "FR-020",
+        "SEC-003"
+      ],
+      "impact": {
+        "player": "توزیع، Cut، Timeout و Audit رنک قرارداد دقیق و قابل ممیزی دارند",
+        "compatibility": "پیاده‌سازی runtime به S02 موکول است و قرارداد ناشناخته ایجاد رنک را رد می‌کند",
+        "data": "بدون migration",
+        "operations": "بردار رسمی E04-TV-001 در CI بازتولید می‌شود"
+      },
+      "risk_flags": [
+        "ranked_integrity",
+        "hidden_information"
+      ],
+      "approvals": [
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T17:43:38Z",
+          "evidence": "مالک پروژه صریحاً انتخاب مقادیر امن، قابل ممیزی و fail-closed و بستن S00-W04 را تصویب کرد"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-24T17:43:38Z",
+          "evidence": "server authority، یک Cut، توزیع 5+4+4 و عدم reshuffle"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T17:43:38Z",
+          "evidence": "verifier مستقل و بردار رسمی شامل deck، commit، cut و first 12"
+        }
+      ],
+      "acceptance_criteria": [
+        "Dealer/Cutter/Direction/FirstReceiver نسخه‌دار باشند",
+        "Cut و deadline/fallback مصوب باشند",
+        "Algorithm ID و Canonical Encoding و Endianness ثابت باشند",
+        "E04-TV-001 بازتولید شود",
+        "Reveal قبل از ROUND_CLOSED ممنوع و retention مصوب باشد"
+      ],
+      "test_plan": [
+        "E-04 decision verifier",
+        "official cryptographic vector reproduction",
+        "Change Control verifier",
+        "full repository CI"
+      ],
       "rollback_plan": "Revert the reviewed source commit; Ranked must remain disabled for unknown/missing E-04 contract IDs. No production or data mutation is included.",
       "migration_plan": null,
       "security_review": "Seed/Deck/Hand در لاگ عمومی ممنوع؛ Reveal فقط پس از بسته‌شدن غیرقابل Resume، Secret رمزگذاری‌شده 30 روز و hash غیرمحرمانه 365 روز؛ RNG مستقل از MMR/پرداخت/اسکین است.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -179,27 +572,98 @@
       "decision_id": "DEC-2026-0007",
       "title": "تثبیت قرارداد Monorepo، گیت CI و نسخه‌بندی",
       "status": "VERIFIED",
-      "category": ["rules", "api"],
+      "category": [
+        "rules",
+        "api"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-24T18:33:34Z",
-      "source_refs": ["S01-W01-T01", "S01-W01-T02", "S01-W01-T03", "Project owner continuation request 2026-11-24"],
-      "affected_paths": ["repository.contract.json", "version-contract.json", "Directory.Build.props", "Hokmnameh.sln", "tools/verify-repository-contract.mjs", "docs/adr/0003-versioning-and-breaking-changes.md", ".github/CODEOWNERS", ".github/workflows/backend.yml", ".github/pull_request_template.md", "README.md"],
-      "requirement_ids": ["FR-018", "NFR-002", "NFR-005", "DATA-001", "OPS-001", "OPS-002", "OPS-003"],
-      "impact": {"player": "بدون تغییر رفتار بازی", "compatibility": "قواعد breaking change برای API/Core/Rules/DB/Event صریح و ماشین‌خوان می‌شود", "data": "بدون migration", "operations": "PR با contract/lint/build/smoke ناموفق قابل ادغام تلقی نمی‌شود"},
+      "source_refs": [
+        "S01-W01-T01",
+        "S01-W01-T02",
+        "S01-W01-T03",
+        "Project owner continuation request 2026-11-24"
+      ],
+      "affected_paths": [
+        "repository.contract.json",
+        "version-contract.json",
+        "Directory.Build.props",
+        "Hokmnameh.sln",
+        "tools/verify-repository-contract.mjs",
+        "docs/adr/0003-versioning-and-breaking-changes.md",
+        ".github/CODEOWNERS",
+        ".github/workflows/backend.yml",
+        ".github/pull_request_template.md",
+        "README.md"
+      ],
+      "requirement_ids": [
+        "FR-018",
+        "NFR-002",
+        "NFR-005",
+        "DATA-001",
+        "OPS-001",
+        "OPS-002",
+        "OPS-003"
+      ],
+      "impact": {
+        "player": "بدون تغییر رفتار بازی",
+        "compatibility": "قواعد breaking change برای API/Core/Rules/DB/Event صریح و ماشین‌خوان می‌شود",
+        "data": "بدون migration",
+        "operations": "PR با contract/lint/build/smoke ناموفق قابل ادغام تلقی نمی‌شود"
+      },
       "risk_flags": [],
       "approvals": [
-        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "درخواست صریح ادامه پروژه و اجرای Work بعدی"},
-        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "Core مشترک یک‌منبع و immutable RuleSet IDs"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "repository verifier و CI چهاربخشی"},
-        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "API major، package SemVer و forward-only migration"},
-        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-24T18:33:34Z", "evidence": "API ناسازگار نیازمند major route جدید و contract tests است"}
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T18:33:34Z",
+          "evidence": "درخواست صریح ادامه پروژه و اجرای Work بعدی"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-24T18:33:34Z",
+          "evidence": "Core مشترک یک‌منبع و immutable RuleSet IDs"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T18:33:34Z",
+          "evidence": "repository verifier و CI چهاربخشی"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T18:33:34Z",
+          "evidence": "API major، package SemVer و forward-only migration"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T18:33:34Z",
+          "evidence": "API ناسازگار نیازمند major route جدید و contract tests است"
+        }
       ],
-      "acceptance_criteria": ["ماژول‌ها مسیر و مالک صریح داشته باشند", "فایل حساس یا build artifact در Git نباشد", "CI contract/lint/build/smoke را اجرا کند", "Breaking change در ADR و قرارداد نسخه ثبت شود"],
-      "test_plan": ["repository contract verifier", "solution build with warnings as errors", "shared smoke tests", "full repository CI"],
+      "acceptance_criteria": [
+        "ماژول‌ها مسیر و مالک صریح داشته باشند",
+        "فایل حساس یا build artifact در Git نباشد",
+        "CI contract/lint/build/smoke را اجرا کند",
+        "Breaking change در ADR و قرارداد نسخه ثبت شود"
+      ],
+      "test_plan": [
+        "repository contract verifier",
+        "solution build with warnings as errors",
+        "shared smoke tests",
+        "full repository CI"
+      ],
       "rollback_plan": "Revert the reviewed source commit; no runtime, production or database mutation is included.",
       "migration_plan": null,
       "security_review": "Verifier فایل‌های secret و artifactهای تولیدی tracked را رد می‌کند؛ CI فقط contents:read دارد و deployment خودکار ندارد.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -207,27 +671,103 @@
       "decision_id": "DEC-2026-0008",
       "title": "تثبیت قرارداد امن VPS، کاربر عملیاتی و rollback",
       "status": "VERIFIED",
-      "category": ["api"],
+      "category": [
+        "api"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-24T22:00:00Z",
-      "source_refs": ["S01-W02-T01", "S01-W02-T02", "S01-W02-T03", "Project owner continuation request 2026-11-25"],
-      "affected_paths": ["backend/Dockerfile", "docker-compose.yml", "deploy/security-contract.json", "deploy/scripts/preflight-host.sh", "deploy/scripts/deploy.sh", "deploy/scripts/rollback.sh", "deploy/ssh/sshd_config.hokmnameh.example", "docs/DEPLOYMENT.md", "docs/operations/S01_SERVER_RUNBOOK.md", "docs/stages/S01_W02_EVIDENCE.md", "tools/verify-vps-security-contract.mjs", ".github/workflows/backend.yml"],
-      "requirement_ids": ["NFR-002", "NFR-005", "SEC-003", "OPS-001", "OPS-002", "OPS-003"],
-      "impact": {"player": "بدون تغییر قواعد یا تجربه بازی", "compatibility": "مسیر عمومی /hokmnameh و پورت داخلی API ثابت می‌ماند", "data": "بدون migration؛ rollback دیتابیس عمداً ممنوع و migrationها forward-only هستند", "operations": "اجرای deployment فقط با hokmdeploy، Docker بدون root، secret محافظت‌شده، health gate و rollback صریح مجاز است"},
-      "risk_flags": ["production_gateway"],
-      "approvals": [
-        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "base path و upstream ثابت، Compose داخلی و قرارداد ماشین‌خوان"},
-        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "endpointهای live/ready و مسیر عمومی بدون breaking change حفظ شدند"},
-        {"role": "security_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "key-only SSH، منع root، rootless Docker، UID ثابت و secret mode 0600"},
-        {"role": "operations_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "preflight بدون mutation، تأیید صریح production/rollback و recovery در شکست health"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-24T22:00:00Z", "evidence": "verifier ماشین‌خوان، shell syntax، Compose validation و image user assertion در CI"}
+      "source_refs": [
+        "S01-W02-T01",
+        "S01-W02-T02",
+        "S01-W02-T03",
+        "Project owner continuation request 2026-11-25"
       ],
-      "acceptance_criteria": ["API فقط روی localhost:5080 منتشر شود", "PostgreSQL و Valkey پورت عمومی نداشته باشند", "SSH فقط key-based و پردازش API غیرریشه باشد", "secret با مالک hokmdeploy و mode 0600 محافظت شود", "rollback کد با تأیید صریح و health gate قابل اجرا باشد"],
-      "test_plan": ["VPS security contract verifier", "Docker Compose normalized contract validation", "shell syntax and JSON validation", "API image runtime user assertion", "Change Control registry/self-test", "full repository CI"],
+      "affected_paths": [
+        "backend/Dockerfile",
+        "docker-compose.yml",
+        "deploy/security-contract.json",
+        "deploy/scripts/preflight-host.sh",
+        "deploy/scripts/deploy.sh",
+        "deploy/scripts/rollback.sh",
+        "deploy/ssh/sshd_config.hokmnameh.example",
+        "docs/DEPLOYMENT.md",
+        "docs/operations/S01_SERVER_RUNBOOK.md",
+        "docs/stages/S01_W02_EVIDENCE.md",
+        "tools/verify-vps-security-contract.mjs",
+        ".github/workflows/backend.yml"
+      ],
+      "requirement_ids": [
+        "NFR-002",
+        "NFR-005",
+        "SEC-003",
+        "OPS-001",
+        "OPS-002",
+        "OPS-003"
+      ],
+      "impact": {
+        "player": "بدون تغییر قواعد یا تجربه بازی",
+        "compatibility": "مسیر عمومی /hokmnameh و پورت داخلی API ثابت می‌ماند",
+        "data": "بدون migration؛ rollback دیتابیس عمداً ممنوع و migrationها forward-only هستند",
+        "operations": "اجرای deployment فقط با hokmdeploy، Docker بدون root، secret محافظت‌شده، health gate و rollback صریح مجاز است"
+      },
+      "risk_flags": [
+        "production_gateway"
+      ],
+      "approvals": [
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T22:00:00Z",
+          "evidence": "base path و upstream ثابت، Compose داخلی و قرارداد ماشین‌خوان"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T22:00:00Z",
+          "evidence": "endpointهای live/ready و مسیر عمومی بدون breaking change حفظ شدند"
+        },
+        {
+          "role": "security_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T22:00:00Z",
+          "evidence": "key-only SSH، منع root، rootless Docker، UID ثابت و secret mode 0600"
+        },
+        {
+          "role": "operations_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T22:00:00Z",
+          "evidence": "preflight بدون mutation، تأیید صریح production/rollback و recovery در شکست health"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-24T22:00:00Z",
+          "evidence": "verifier ماشین‌خوان، shell syntax، Compose validation و image user assertion در CI"
+        }
+      ],
+      "acceptance_criteria": [
+        "API فقط روی localhost:5080 منتشر شود",
+        "PostgreSQL و Valkey پورت عمومی نداشته باشند",
+        "SSH فقط key-based و پردازش API غیرریشه باشد",
+        "secret با مالک hokmdeploy و mode 0600 محافظت شود",
+        "rollback کد با تأیید صریح و health gate قابل اجرا باشد"
+      ],
+      "test_plan": [
+        "VPS security contract verifier",
+        "Docker Compose normalized contract validation",
+        "shell syntax and JSON validation",
+        "API image runtime user assertion",
+        "Change Control registry/self-test",
+        "full repository CI"
+      ],
       "rollback_plan": "Revert the reviewed source commit. On a host already deployed from this revision, use the recorded image only through CONFIRM_ROLLBACK=YES and verify both health endpoints; database migrations stay forward-only.",
       "migration_plan": null,
       "security_review": "No host address, credential or private key is committed. Deployment as root, rootful Docker, wrong secret permissions, sample credentials, public database ports and unhealthy rollback all fail closed.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -235,28 +775,115 @@
       "decision_id": "DEC-2026-0009",
       "title": "تثبیت عملیات نسخه‌دار دیتابیس، بازیابی و پایش سلامت",
       "status": "VERIFIED",
-      "category": ["api", "database"],
+      "category": [
+        "api",
+        "database"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-25T08:42:20Z",
-      "source_refs": ["S01-W03-T01", "S01-W03-T02", "S01-W03-T03", "Project owner continuation request 2026-11-25"],
-      "affected_paths": ["backend/db/migrations/", "backend/src/Hokmnameh.Api/Program.cs", "docker-compose.yml", "deploy/operations-contract.json", "deploy/security-contract.json", "deploy/scripts/backup.sh", "deploy/scripts/migrate.sh", "deploy/scripts/restore-drill.sh", "deploy/scripts/watch-health.sh", "deploy/systemd/hokmnameh-health.service", "docs/DEPLOYMENT.md", "docs/operations/", "docs/stages/S01_W03_EVIDENCE.md", "tools/test-health-monitor.mjs", "tools/verify-repository-contract.mjs", "tools/verify-s01-operations.mjs", "tools/verify-vps-security-contract.mjs", ".github/workflows/backend.yml"],
-      "requirement_ids": ["FR-018", "NFR-002", "NFR-005", "DATA-001", "OPS-001", "OPS-002", "OPS-003"],
-      "impact": {"player": "بدون تغییر قواعد بازی؛ درخواست‌های بیش از سقف با 429 کنترل می‌شوند", "compatibility": "endpointهای موجود حفظ و Retry-After به پاسخ محدودسازی افزوده می‌شود", "data": "schema جدیدی اضافه نمی‌شود؛ manifest نسخه 001 و دفتر checksum موجود تثبیت می‌شوند", "operations": "بکاپ رمزگذاری‌شده، restore جدا، health alert و شواهد CI الزامی می‌شوند"},
-      "risk_flags": ["production_gateway"],
-      "approvals": [
-        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "سه rate policy مستقل بر IP مورد اعتماد پراکسی و health contract سازگار"},
-        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "endpoint حذف نشده و پاسخ استاندارد 429 با Retry-After در CI آزموده می‌شود"},
-        {"role": "data_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "manifest پیوسته، checksum immutable و forward-only recovery"},
-        {"role": "operations_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "بکاپ age، checksum، metadata، restore ایزوله و زمان ثبت‌شده"},
-        {"role": "security_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "بدون dump خام، بدون bearer یا webhook در لاگ، receiver HTTPS و systemd سخت‌سازی‌شده"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-25T08:42:20Z", "evidence": "verifier قطعی، tamper test، restore واقعی، rate test و alert receiver test در CI"}
+      "source_refs": [
+        "S01-W03-T01",
+        "S01-W03-T02",
+        "S01-W03-T03",
+        "Project owner continuation request 2026-11-25"
       ],
-      "acceptance_criteria": ["فهرست migration پیوسته و checksum هر نسخه ممیزی شود", "بکاپ رمزگذاری‌شده در PostgreSQL جدا بازیابی و زمان نتیجه ثبت شود", "سقف درخواست، live/ready و تحویل هشدار خرابی دیتابیس به‌صورت اجرایی آزموده شوند"],
-      "test_plan": ["S01 operations contract verifier", "migration idempotency and checksum tamper rejection", "encrypted backup and isolated restore drill", "runtime 201/429/Retry-After test", "simulated health alert delivery", "full repository CI"],
+      "affected_paths": [
+        "backend/db/migrations/",
+        "backend/src/Hokmnameh.Api/Program.cs",
+        "docker-compose.yml",
+        "deploy/operations-contract.json",
+        "deploy/security-contract.json",
+        "deploy/scripts/backup.sh",
+        "deploy/scripts/migrate.sh",
+        "deploy/scripts/restore-drill.sh",
+        "deploy/scripts/watch-health.sh",
+        "deploy/systemd/hokmnameh-health.service",
+        "docs/DEPLOYMENT.md",
+        "docs/operations/",
+        "docs/stages/S01_W03_EVIDENCE.md",
+        "tools/test-health-monitor.mjs",
+        "tools/verify-repository-contract.mjs",
+        "tools/verify-s01-operations.mjs",
+        "tools/verify-vps-security-contract.mjs",
+        ".github/workflows/backend.yml"
+      ],
+      "requirement_ids": [
+        "FR-018",
+        "NFR-002",
+        "NFR-005",
+        "DATA-001",
+        "OPS-001",
+        "OPS-002",
+        "OPS-003"
+      ],
+      "impact": {
+        "player": "بدون تغییر قواعد بازی؛ درخواست‌های بیش از سقف با 429 کنترل می‌شوند",
+        "compatibility": "endpointهای موجود حفظ و Retry-After به پاسخ محدودسازی افزوده می‌شود",
+        "data": "schema جدیدی اضافه نمی‌شود؛ manifest نسخه 001 و دفتر checksum موجود تثبیت می‌شوند",
+        "operations": "بکاپ رمزگذاری‌شده، restore جدا، health alert و شواهد CI الزامی می‌شوند"
+      },
+      "risk_flags": [
+        "production_gateway"
+      ],
+      "approvals": [
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T08:42:20Z",
+          "evidence": "سه rate policy مستقل بر IP مورد اعتماد پراکسی و health contract سازگار"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T08:42:20Z",
+          "evidence": "endpoint حذف نشده و پاسخ استاندارد 429 با Retry-After در CI آزموده می‌شود"
+        },
+        {
+          "role": "data_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T08:42:20Z",
+          "evidence": "manifest پیوسته، checksum immutable و forward-only recovery"
+        },
+        {
+          "role": "operations_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T08:42:20Z",
+          "evidence": "بکاپ age، checksum، metadata، restore ایزوله و زمان ثبت‌شده"
+        },
+        {
+          "role": "security_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T08:42:20Z",
+          "evidence": "بدون dump خام، بدون bearer یا webhook در لاگ، receiver HTTPS و systemd سخت‌سازی‌شده"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T08:42:20Z",
+          "evidence": "verifier قطعی، tamper test، restore واقعی، rate test و alert receiver test در CI"
+        }
+      ],
+      "acceptance_criteria": [
+        "فهرست migration پیوسته و checksum هر نسخه ممیزی شود",
+        "بکاپ رمزگذاری‌شده در PostgreSQL جدا بازیابی و زمان نتیجه ثبت شود",
+        "سقف درخواست، live/ready و تحویل هشدار خرابی دیتابیس به‌صورت اجرایی آزموده شوند"
+      ],
+      "test_plan": [
+        "S01 operations contract verifier",
+        "migration idempotency and checksum tamper rejection",
+        "encrypted backup and isolated restore drill",
+        "runtime 201/429/Retry-After test",
+        "simulated health alert delivery",
+        "full repository CI"
+      ],
       "rollback_plan": "Revert the reviewed source commit. No production mutation is included; applied database migrations remain forward-only and are recovered by a subsequent migration or verified restore, never destructive rollback.",
       "migration_plan": "No new schema migration is introduced. Existing 001_core.sql is registered with its immutable SHA-256; future changes require the next contiguous numbered migration and a manifest update.",
       "security_review": "Encrypted dumps never touch disk as plaintext; restore has no network; unverified bearer values cannot create limiter partitions; webhook URL and secrets are not logged; real production receiver and off-host custody remain an operator gate.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -264,35 +891,117 @@
       "decision_id": "DEC-2026-0010",
       "title": "اجرای قواعد E-04 و مدل رویداد و نمای خصوصی صندلی",
       "status": "VERIFIED",
-      "category": ["rules", "api", "database"],
+      "category": [
+        "rules",
+        "api",
+        "database"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-25T18:00:00Z",
-      "source_refs": ["DEC-2026-0006", "S02-W01-T01..T03", "S02-W02-T01..T03", "Project owner request 2026-11-25"],
-      "affected_paths": ["unity/Packages/com.hokmnameh.core/Runtime/", "backend/src/Hokmnameh.Api/", "backend/db/migrations/", "docs/API.md", "docs/stages/S02_W01_W02_EVIDENCE.md", "docker-compose.yml", ".env.example", ".github/workflows/backend.yml", "deploy/scripts/deploy.sh"],
-      "requirement_ids": ["FR-001", "SEC-003", "DATA-001", "OPS-002"],
+      "source_refs": [
+        "DEC-2026-0006",
+        "S02-W01-T01..T03",
+        "S02-W02-T01..T03",
+        "Project owner request 2026-11-25"
+      ],
+      "affected_paths": [
+        "unity/Packages/com.hokmnameh.core/Runtime/",
+        "backend/src/Hokmnameh.Api/",
+        "backend/db/migrations/",
+        "docs/API.md",
+        "docs/stages/S02_W01_W02_EVIDENCE.md",
+        "docker-compose.yml",
+        ".env.example",
+        ".github/workflows/backend.yml",
+        "deploy/scripts/deploy.sh"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "SEC-003",
+        "DATA-001",
+        "OPS-002"
+      ],
       "impact": {
         "player": "جهت و بسته‌های توزیع مطابق E-04 و وضعیت فقط برای صندلی صاحب درخواست است",
         "compatibility": "فیلدهای game/state حفظ و snapshotProof اضافه می‌شود؛ ترتیب کارت هر راند تغییر می‌کند",
         "data": "migration 002 جدول رویداد با ترتیب و ActionId یکتا، proof رمزگذاری‌شده و checksum ثبت می‌کند؛ schema پیشین تغییر مخرب ندارد",
         "operations": "کلید AES-256 خارج از Git در محیط سرویس لازم است؛ کلید امضای وضعیت در حافظهٔ Room می‌ماند؛ recovery راند پس از restart در S02-W03 است"
       },
-      "risk_flags": ["hidden_information", "ranked_integrity"],
-      "approvals": [
-        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-25T20:23:06Z", "evidence": "درخواست صریح مالک در گفت‌وگوی جاری: نگهداری امن بذر، ثبت پایدار رویداد و تأیید Change Request را کامل کن؛ CODEOWNERS فعلاً فقط مالک را تعیین می‌کند"},
-        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-25T20:23:06Z", "evidence": "بازبینی فنی ProjectMaker: DEC-2026-0006، Ruleset ثابت، بردار E04-TV-001 و cursorهای ۲۰/۳۶/۵۲ در .NET smoke موفق"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-25T20:23:06Z", "evidence": "بازبینی تست ProjectMaker: GitHub Actions run 45694139070 پنج job موفق؛ ۳۶ حرکت، ۳۹ رویداد، آزمون Cut و جداسازی چهار صندلی"},
-        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-25T20:23:06Z", "evidence": "بازبینی معماری ProjectMaker: رویداد ترتیبی اتمیک در PostgreSQL و quarantine هنگام شکست ثبت؛ replay/rejoin در S02-W03 جداست"},
-        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-25T20:23:06Z", "evidence": "بازبینی قرارداد مصرف‌کننده ProjectMaker: game/state حفظ و snapshotProof افزوده شد؛ تست HTTP/WS چهار صندلی و مسیرهای موجود CI موفق"},
-        {"role": "data_owner", "decision": "APPROVE", "at": "2026-11-25T20:23:06Z", "evidence": "بازبینی داده ProjectMaker: migration شماره‌دار 002، checksum در manifest، UNIQUE(action_id)، قفل version و restore drill با ۸ جدول و ۲ migration"},
-        {"role": "operations_owner", "decision": "APPROVE", "at": "2026-11-25T20:23:06Z", "evidence": "بازبینی عملیات ProjectMaker: کلید .env محافظت‌شده، preflight، بکاپ age و restore ایزوله ۳ ثانیه؛ استقرار تولید انجام نشده"},
-        {"role": "security_owner", "decision": "APPROVE", "at": "2026-11-25T20:23:06Z", "evidence": "بازبینی امنیت ProjectMaker: AES-256-GCM با AAD، کلید خارج Git، عدم افشای دست دیگران در HTTP/WS و اثبات فقط پس از round-closed؛ نگهداری backup/پاکسازی پیش از production gate"}
+      "risk_flags": [
+        "hidden_information",
+        "ranked_integrity"
       ],
-      "acceptance_criteria": ["بردار رسمی E-04 در C# پاس شود", "توزیع ۵+۴+۴ با cursorهای ۲۰/۳۶/۵۲ و جهت خلاف ساعت", "رویداد و proof رمزگذاری‌شده اتمیک و نسخه‌دار باشند", "آزمون منع نشت چهار صندلی و شکست ثبت پایدار پاس شود"],
-      "test_plan": ["dotnet build -warnaserror", "shared rules smoke", "isolated PostgreSQL event/proof drill", "full repository CI", "security review of per-seat serialization and encrypted proof"],
+      "approvals": [
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T20:23:06Z",
+          "evidence": "درخواست صریح مالک در گفت‌وگوی جاری: نگهداری امن بذر، ثبت پایدار رویداد و تأیید Change Request را کامل کن؛ CODEOWNERS فعلاً فقط مالک را تعیین می‌کند"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-25T20:23:06Z",
+          "evidence": "بازبینی فنی ProjectMaker: DEC-2026-0006، Ruleset ثابت، بردار E04-TV-001 و cursorهای ۲۰/۳۶/۵۲ در .NET smoke موفق"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T20:23:06Z",
+          "evidence": "بازبینی تست ProjectMaker: GitHub Actions run 45694139070 پنج job موفق؛ ۳۶ حرکت، ۳۹ رویداد، آزمون Cut و جداسازی چهار صندلی"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T20:23:06Z",
+          "evidence": "بازبینی معماری ProjectMaker: رویداد ترتیبی اتمیک در PostgreSQL و quarantine هنگام شکست ثبت؛ replay/rejoin در S02-W03 جداست"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T20:23:06Z",
+          "evidence": "بازبینی قرارداد مصرف‌کننده ProjectMaker: game/state حفظ و snapshotProof افزوده شد؛ تست HTTP/WS چهار صندلی و مسیرهای موجود CI موفق"
+        },
+        {
+          "role": "data_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T20:23:06Z",
+          "evidence": "بازبینی داده ProjectMaker: migration شماره‌دار 002، checksum در manifest، UNIQUE(action_id)، قفل version و restore drill با ۸ جدول و ۲ migration"
+        },
+        {
+          "role": "operations_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T20:23:06Z",
+          "evidence": "بازبینی عملیات ProjectMaker: کلید .env محافظت‌شده، preflight، بکاپ age و restore ایزوله ۳ ثانیه؛ استقرار تولید انجام نشده"
+        },
+        {
+          "role": "security_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-25T20:23:06Z",
+          "evidence": "بازبینی امنیت ProjectMaker: AES-256-GCM با AAD، کلید خارج Git، عدم افشای دست دیگران در HTTP/WS و اثبات فقط پس از round-closed؛ نگهداری backup/پاکسازی پیش از production gate"
+        }
+      ],
+      "acceptance_criteria": [
+        "بردار رسمی E-04 در C# پاس شود",
+        "توزیع ۵+۴+۴ با cursorهای ۲۰/۳۶/۵۲ و جهت خلاف ساعت",
+        "رویداد و proof رمزگذاری‌شده اتمیک و نسخه‌دار باشند",
+        "آزمون منع نشت چهار صندلی و شکست ثبت پایدار پاس شود"
+      ],
+      "test_plan": [
+        "dotnet build -warnaserror",
+        "shared rules smoke",
+        "isolated PostgreSQL event/proof drill",
+        "full repository CI",
+        "security review of per-seat serialization and encrypted proof"
+      ],
       "rollback_plan": "Revert the source commit; migration 002 is forward-only and retained. Production rollback of code uses the recorded image with health gate; never drop audit tables or erase proof during rollback.",
       "migration_plan": "Append checksummed 002_match_audit.sql after 001_core; apply once under migrate.sh transaction and advisory lock; backup before production migration; no destructive down migration.",
       "security_review": "بازبینی فنی ProjectMaker زیر CODEOWNERS تک‌مالک: Seed/Nonce با AES-256-GCM و AAD دامنه‌دار در PostgreSQL نگهداری می‌شوند؛ کلید خارج Git است. تست چهار صندلی و HTTP/WS، امضا، رد عضو غیرمجاز و quarantine در CI پاس شد. دست‌ها، Seed و key در event/log/API نیستند. فقط برای ادغام کد تأیید شد؛ پاکسازی قطعی پس از ۳۰ روز در دیتابیس و تمام بکاپ‌ها و تحویل proof به شرکت‌کنندگان گیت جداگانهٔ production در S02-W04/W05 است. بازبینی مستقل انسانی انجام نشده؛ CODEOWNERS فعلاً فقط مالک مخزن است.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -300,32 +1009,100 @@
       "decision_id": "DEC-2026-0011",
       "title": "بازپخش داخلی نسخه‌دار و آزمون مستقل E-04",
       "status": "VERIFIED",
-      "category": ["api", "rules"],
+      "category": [
+        "api",
+        "rules"
+      ],
       "requester": "project-owner",
       "created_at": "2026-11-26T09:49:24Z",
-      "source_refs": ["S02-W03-T01..T03", "S02-W04-T01..T05", "DEC-2026-0006", "Project owner request to continue 2026-11-26"],
-      "affected_paths": ["unity/Packages/com.hokmnameh.core/Runtime/E04Shuffle.cs", "backend/src/Hokmnameh.Api/MatchReplay.cs", "backend/src/Hokmnameh.Api/PostgresMatchStore.cs", "backend/src/Hokmnameh.Api/Program.cs", "docs/API.md", "docs/stages/S02_W03_W04_EVIDENCE.md", "backend/tests/Hokmnameh.SmokeTests/", "tools/verify-replay-fixture.mjs", "tools/test-match-audit.mjs", "docs/replay_match_v1.golden.json", ".github/workflows/backend.yml"],
-      "requirement_ids": ["FR-001", "FR-002", "DATA-002", "SEC-002"],
+      "source_refs": [
+        "S02-W03-T01..T03",
+        "S02-W04-T01..T05",
+        "DEC-2026-0006",
+        "Project owner request to continue 2026-11-26"
+      ],
+      "affected_paths": [
+        "unity/Packages/com.hokmnameh.core/Runtime/E04Shuffle.cs",
+        "backend/src/Hokmnameh.Api/MatchReplay.cs",
+        "backend/src/Hokmnameh.Api/PostgresMatchStore.cs",
+        "backend/src/Hokmnameh.Api/Program.cs",
+        "docs/API.md",
+        "docs/stages/S02_W03_W04_EVIDENCE.md",
+        "backend/tests/Hokmnameh.SmokeTests/",
+        "tools/verify-replay-fixture.mjs",
+        "tools/test-match-audit.mjs",
+        "docs/replay_match_v1.golden.json",
+        ".github/workflows/backend.yml"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "DATA-002",
+        "SEC-002"
+      ],
       "impact": {
         "player": "مسیر عمومی جدیدی اضافه نمی‌شود؛ بازپخش فقط در CLI داخلی است",
         "compatibility": "فرمت replay-v1 و ruleset classic-v1 ثابت است؛ نسخه ناشناخته رد می‌شود",
         "data": "از رویداد و proof migration 002 خوانده می‌شود؛ schema جدید یا تغییر دادهٔ زنده ندارد",
         "operations": "اجرای CLI فقط برای اپراتور دارای دسترسی به کانتینر و کلید؛ خروجی صرفاً نتیجهٔ عمومی"
       },
-      "risk_flags": ["hidden_information", "ranked_integrity"],
-      "approvals": [
-        {"role": "product_owner", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "درخواست ادامهٔ پروژه در همین گفت‌وگو با ترجیح ثبت‌شدهٔ انجام دو Work؛ سیاست E-04 قبلاً توسط مالک تصویب شده است"},
-        {"role": "game_architect", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "بازبینی فنی عامل پروژه: Classic v1 ثابت؛ نسخهٔ replay-v1 ناشناخته fail-closed؛ E04 TV و توزیع از هستهٔ مشترک بازسازی شد"},
-        {"role": "qa_owner", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "بازبینی آزمون عامل پروژه: CI 45796625501 پنج job موفق؛ مرجع مستقل Node مسابقهٔ ۱۱ راند/۵۱۷ رویداد و .NET smoke، وقفـه و دستکاری Seed/Cut"},
-        {"role": "architecture_owner", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "بازبینی معماری عامل پروژه: ReadOnly snapshot با RepeatableRead، validate ترتیبی و CLI داخلی بدون endpoint عمومی"},
-        {"role": "api_consumer_owner", "decision": "APPROVE", "at": "2026-11-26T09:57:56Z", "evidence": "بازبینی قرارداد عامل پروژه: API HTTP/WS بدون تغییر؛ CLI فقط خروجی عمومی و بدون Seed/Nonce یا دست پنهان"}
+      "risk_flags": [
+        "hidden_information",
+        "ranked_integrity"
       ],
-      "acceptance_criteria": ["بازپخش قطعی راند باز و بسته از رویداد پایدار", "fixture مستقل مسابقه کامل", "رد duplicate، gap، seed دستکاری‌شده و نسخه ناشناخته", "استقلال shuffle از MMR، تبلیغ و اسکین"],
-      "test_plan": ["Node reference fixture", ".NET smoke", "isolated PostgreSQL online replay drill", "GitHub Actions 5 jobs", "protected-path Change Request guard"],
+      "approvals": [
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T09:57:56Z",
+          "evidence": "درخواست ادامهٔ پروژه در همین گفت‌وگو با ترجیح ثبت‌شدهٔ انجام دو Work؛ سیاست E-04 قبلاً توسط مالک تصویب شده است"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-26T09:57:56Z",
+          "evidence": "بازبینی فنی عامل پروژه: Classic v1 ثابت؛ نسخهٔ replay-v1 ناشناخته fail-closed؛ E04 TV و توزیع از هستهٔ مشترک بازسازی شد"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T09:57:56Z",
+          "evidence": "بازبینی آزمون عامل پروژه: CI 45796625501 پنج job موفق؛ مرجع مستقل Node مسابقهٔ ۱۱ راند/۵۱۷ رویداد و .NET smoke، وقفـه و دستکاری Seed/Cut"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T09:57:56Z",
+          "evidence": "بازبینی معماری عامل پروژه: ReadOnly snapshot با RepeatableRead، validate ترتیبی و CLI داخلی بدون endpoint عمومی"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T09:57:56Z",
+          "evidence": "بازبینی قرارداد عامل پروژه: API HTTP/WS بدون تغییر؛ CLI فقط خروجی عمومی و بدون Seed/Nonce یا دست پنهان"
+        }
+      ],
+      "acceptance_criteria": [
+        "بازپخش قطعی راند باز و بسته از رویداد پایدار",
+        "fixture مستقل مسابقه کامل",
+        "رد duplicate، gap، seed دستکاری‌شده و نسخه ناشناخته",
+        "استقلال shuffle از MMR، تبلیغ و اسکین"
+      ],
+      "test_plan": [
+        "Node reference fixture",
+        ".NET smoke",
+        "isolated PostgreSQL online replay drill",
+        "GitHub Actions 5 jobs",
+        "protected-path Change Request guard"
+      ],
       "rollback_plan": "Revert code/CLI only; event and proof tables stay intact. Never erase live audit data in a rollback.",
       "migration_plan": null,
       "security_review": "بازبینی فنی عامل پروژه زیر CODEOWNERS تک‌مالک: بازپخش فقط internal است؛ decrypt در snapshot تراکنشی انجام می‌شود، بذر در bundle پاک می‌شود، API عمومی و لاگ هیچ Seed/Nonce دریافت نمی‌کنند. CI 45796625501 پنج job موفق و replay/drill ایزوله PASS؛ بازبینی انسانی مستقل انجام نشده است. این تأیید فقط برای ادغام کد است؛ live rejoin، نگهداری/حذف در بکاپ‌ها و استقرار تولید گیت مستقل دارند.",
-      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
       "supersedes": null
     },
     {
@@ -497,6 +1274,193 @@
       "rollback_plan": "Revert reviewed v2 handler and pending-cut source through a new PR; leave immutable audit rows intact, no production run or migration.",
       "migration_plan": null,
       "security_review": "Deck و Seed فقط نزد authority در RAM می‌مانند؛ پاسخ v2 فقط وضعیت، deadline و نسخه را می‌دهد. رویداد عمومی فقط اندیس Cut دارد؛ proof رمزگذاری‌شده و post-close است. Pending state پس از restart بازیابی ندارد و production gate جداگانه می‌خواهد.",
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
+      "supersedes": null
+    },
+    {
+      "id": "CR-2026-0014",
+      "decision_id": "DEC-2026-0014",
+      "title": "قفل یکتایی Cut و قرارداد fallback E04",
+      "status": "IMPLEMENTING",
+      "category": [
+        "rules",
+        "api",
+        "database"
+      ],
+      "requester": "project-owner",
+      "created_at": "2026-11-26T17:24:27.176656Z",
+      "source_refs": [
+        "DEC-2026-0006 owner-approved E04 contract",
+        "User requested two Works from latest deployment-center log 2026-11-26"
+      ],
+      "affected_paths": [
+        "backend/db/migrations/",
+        "backend/src/Hokmnameh.Api/",
+        "unity/Packages/com.hokmnameh.core/Runtime/HokmBot.cs",
+        "backend/tests/Hokmnameh.SmokeTests/",
+        "tools/test-match-audit.mjs",
+        ".github/workflows/backend.yml"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "SEC-003"
+      ],
+      "impact": {
+        "player": "Authorized E04 cut and five-four-four hand distribution",
+        "compatibility": "V1 replay and immediate-deal API remain supported; V2 uses staged events",
+        "data": "Forward-only checked migration 003 for per-round cut uniqueness",
+        "operations": "Isolated CI PostgreSQL and API drill; no production deployment"
+      },
+      "risk_flags": [
+        "ranked_integrity",
+        "hidden_information"
+      ],
+      "approvals": [
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "data_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "operations_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        }
+      ],
+      "acceptance_criteria": [
+        "Single accepted cut per round; deterministic fallback and audited proof"
+      ],
+      "test_plan": [
+        "shared .NET smoke",
+        "isolated PostgreSQL/API replay and race drill",
+        "five CI jobs and changed-files verifier"
+      ],
+      "rollback_plan": "Revert source through reviewed PR; retain immutable audit rows; do not down-migrate production.",
+      "migration_plan": "Apply 003 in forward-only runner; hash and backfill pre-existing cut events atomically.",
+      "security_review": "Seed/deck remain authority-only; public events contain no private hand; independent human production review not claimed.",
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
+      "supersedes": null
+    },
+    {
+      "id": "CR-2026-0015",
+      "decision_id": "DEC-2026-0015",
+      "title": "مراحل ۵، ۴، ۴ توزیع با cursor نسخه‌دار",
+      "status": "IMPLEMENTING",
+      "category": [
+        "rules",
+        "api"
+      ],
+      "requester": "project-owner",
+      "created_at": "2026-11-26T17:24:27.176656Z",
+      "source_refs": [
+        "DEC-2026-0006 owner-approved E04 contract",
+        "User requested two Works from latest deployment-center log 2026-11-26"
+      ],
+      "affected_paths": [
+        "unity/Packages/com.hokmnameh.core/Runtime/E04DealPlan.cs",
+        "unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs",
+        "backend/src/Hokmnameh.Api/",
+        "backend/tests/Hokmnameh.SmokeTests/",
+        "tools/test-match-audit.mjs",
+        "docs/API.md"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "SEC-003"
+      ],
+      "impact": {
+        "player": "Authorized E04 cut and five-four-four hand distribution",
+        "compatibility": "V1 replay and immediate-deal API remain supported; V2 uses staged events",
+        "data": "Only append-only stage cursor events",
+        "operations": "Isolated CI PostgreSQL and API drill; no production deployment"
+      },
+      "risk_flags": [
+        "ranked_integrity",
+        "hidden_information"
+      ],
+      "approvals": [
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T17:24:27.176656Z",
+          "evidence": "Owner-approved DEC-2026-0006; ProjectMaker technical review against E04 contract, not an independent human approval"
+        }
+      ],
+      "acceptance_criteria": [
+        "Versioned 5/4/4, cursor 20/36/52, one deck and replay"
+      ],
+      "test_plan": [
+        "shared .NET smoke",
+        "isolated PostgreSQL/API replay and race drill",
+        "five CI jobs and changed-files verifier"
+      ],
+      "rollback_plan": "Revert source through reviewed PR; retain immutable audit rows; do not down-migrate production.",
+      "migration_plan": null,
+      "security_review": "Seed/deck remain authority-only; public events contain no private hand; independent human production review not claimed.",
       "emergency": {
         "enabled": false,
         "reason": null,

@@ -26,6 +26,14 @@ Assert(game.ShuffleCommitment.Length == 64 && game.ShuffleAlgorithmId == E04Shuf
     "E04 commitment and version established before first deal");
 Assert(game.CutIndex >= 1 && game.CutIndex <= 51, "E04 fallback cut range");
 Assert(game.DealCursors.SequenceEqual(new[] { 20 }), "E04 preliminary cursor 20");
+Assert(E04DealPlan.Version == "E04-DEAL-5-4-4-CCW-v1" &&
+    Enumerable.Range(0, 3).Select(E04DealPlan.PacketSize).SequenceEqual(new[] { 5, 4, 4 }) &&
+    Enumerable.Range(0, 3).Select(E04DealPlan.Cursor).SequenceEqual(new[] { 20, 36, 52 }),
+    "approved immutable deal plan");
+for (int hakem = 0; hakem < 4; hakem++)
+    Assert(Enumerable.Range(0, 4).Select(offset => E04DealPlan.Seat(hakem, offset))
+        .SequenceEqual(new[] { hakem, (hakem + 3) % 4, (hakem + 2) % 4, (hakem + 1) % 4 }),
+        "counterclockwise seat order " + hakem);
 Assert(game.Snapshot(0).shuffleCommitment == game.ShuffleCommitment, "commitment visible after preliminary deal");
 for (int i = 0; i < 4; ++i) Assert(game.Snapshot(i).hand.Length == 5, "Five cards seat=" + i);
 int suit = HokmBot.PickTrump(game, 0);
@@ -39,6 +47,21 @@ for (int i = 0; i < 4; ++i)
     foreach (var card in hand) Assert(seen.Add(card), "unique card " + card);
 }
 Assert(seen.Count == 52, "all cards distributed exactly once");
+var staged = new HokmGame();
+staged.StartRound(2);
+Assert(staged.Snapshot(2).dealCursor == 20 && staged.Snapshot(2).dealPlanVersion == E04DealPlan.Version,
+    "preliminary cursor is versioned in private snapshot");
+staged.SelectTrump(2, 3);
+Assert(staged.Phase == GamePhase.DealingSecond && staged.DealCursors.SequenceEqual(new[] { 20 }),
+    "trump decision does not consume the shuffled deck");
+staged.AdvanceDeal();
+Assert(staged.Phase == GamePhase.DealingFinal && staged.DealCursors.SequenceEqual(new[] { 20, 36 }) &&
+    Enumerable.Range(0, 4).All(seat => staged.Snapshot(seat).hand.Length == 9), "durable second-stage cursor");
+staged.AdvanceDeal();
+Assert(staged.Phase == GamePhase.Playing && staged.DealCursors.SequenceEqual(new[] { 20, 36, 52 }) &&
+    Enumerable.Range(0, 4).SelectMany(seat => staged.Snapshot(seat).hand).Distinct().Count() == 52,
+    "final-stage cursor, 52 unique cards, one shuffle");
+AssertRuleError(() => staged.AdvanceDeal(), "stage cannot advance twice");
 var partial = game.Snapshot(0);
 Assert(partial.hand.Length == 13 && partial.handCounts.Length == 4, "private snapshot");
 // Exercise full game to the first scored round and validate every turn transition.
@@ -190,19 +213,31 @@ AssertCutError(() => cutRoom.Cut(cutPlayers[3], chosenCut with { StateVersion = 
 AssertCutError(() => cutRoom.Cut(cutPlayers[3], chosenCut with { CutIndex = 0 }), "invalid_cut_index", 400);
 Assert(cutStore.Events.Count == 0, "rejected cut commands never enter audit");
 cutRoom.Cut(cutPlayers[3], chosenCut);
-Assert(cutStore.Events.Count == 2 && cutStore.Events[0].Kind == "cut-selected" &&
+Assert(cutStore.Events.Count == 3 && cutStore.Events[0].Kind == "cut-selected" &&
     cutStore.Events[0].ActionId == chosenCutAction && cutStore.Events[0].ActorSeat == 3 &&
     cutStore.Events[0].PublicValue == 17 && cutStore.Events[1].Kind == "round-started" &&
-    cutStore.Proofs.Single().Cut == 17, "accepted cut and proof persisted in event order");
+    cutStore.Events[2].Kind == "deal-initial" && cutStore.Events[2].PublicValue == 20 &&
+    cutStore.Proofs.Single().Cut == 17, "accepted cut, proof and first cursor persisted in event order");
 AssertCutError(() => cutRoom.Cut(cutPlayers[3], chosenCut), "duplicate_cut_action", 409);
 AssertCutError(() => cutRoom.Cut(cutPlayers[3], chosenCut with { ActionId = Guid.NewGuid() }), "cut_not_pending", 409);
 using (var replayCut = new ReplayBundleV1(cutRoom.Id, ClassicRules.ImmutableId,
-    cutStore.Events.Count, cutStore.Events, cutStore.Proofs))
+    cutStore.Events.Count, cutStore.Events, cutStore.Proofs.Select(p =>
+        new ReplayRoundSecretV1(p.Round, (byte[])p.Seed.Clone(), (byte[])p.Nonce.Clone(),
+            p.Commitment, p.Cut, p.Algorithm)).ToArray()))
 {
     var recoveredCut = MatchReplay.Rebuild(replayCut);
     Assert(recoveredCut.Game.CutIndex == 17 && recoveredCut.Game.Phase == GamePhase.ChoosingTrump,
         "authorized cut can be reconstructed from audit and encrypted proof contract");
 }
+cutRoom.ChooseTrump(cutPlayers[0], 2);
+Assert(cutStore.Events.TakeLast(3).Select(e => e.Kind).SequenceEqual(new[] {
+    "trump-staged", "deal-second", "deal-final" }) &&
+    cutStore.Events.TakeLast(2).Select(e => e.PublicValue).SequenceEqual(new int?[] { 36, 52 }),
+    "trump and each stage have an ordered durable audit cursor");
+using (var replayStaged = new ReplayBundleV1(cutRoom.Id, ClassicRules.ImmutableId,
+    cutStore.Events.Count, cutStore.Events, cutStore.Proofs))
+    Assert(MatchReplay.Rebuild(replayStaged).Game.DealCursors.SequenceEqual(new[] { 20, 36, 52 }),
+        "v2 deal reconstructs from persisted cursor events");
 var fallbackClock = new ManualTimeProvider(DateTimeOffset.Parse("2026-01-02T00:00:00Z"));
 var fallbackCutPlayers = Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray();
 var fallbackCutStore = new CapturingCutStore();
@@ -219,6 +254,21 @@ AssertCutError(() => fallbackCutRoom.Cut(fallbackCutPlayers[3], new CutCardReque
 Assert(fallbackCutRoom.Tick() && fallbackCutStore.Events[0].Kind == "cut-fallback" &&
     fallbackCutStore.Events[0].ActorSeat == -1 && fallbackCutStore.Proofs.Single().Cut is >= 1 and <= 51 &&
     fallbackCutRoom.View().CutPhase == null, "timeout records deterministic fallback before deal");
+var fallbackProof = fallbackCutStore.Proofs.Single();
+using (var derived = E04Shuffle.Create(fallbackCutRoom.Id, 1, ClassicRules.ImmutableId,
+    fallbackProof.Seed, fallbackProof.Nonce))
+    Assert(derived.CutIndex == fallbackProof.Cut && derived.CommitmentHex == fallbackProof.Commitment,
+        "fallback uses sealed HMAC domain and matches committed proof");
+var expectedFallbackSuit = HokmBot.PickTrump(MatchReplay.Rebuild(new ReplayBundleV1(
+    fallbackCutRoom.Id, ClassicRules.ImmutableId, fallbackCutStore.Events.Count, fallbackCutStore.Events,
+    fallbackCutStore.Proofs)).Game, 0);
+fallbackClock.Advance(TimeSpan.FromSeconds(20));
+AssertCutError(() => fallbackCutRoom.ChooseTrump(fallbackCutPlayers[0], 0), "trump_deadline_expired", 410);
+Assert(fallbackCutRoom.Tick() && fallbackCutStore.Events.TakeLast(3).Select(e => e.Kind)
+    .SequenceEqual(new[] { "trump-staged-fallback", "deal-second", "deal-final" }) &&
+    fallbackCutStore.Events[^3].PublicValue == expectedFallbackSuit,
+    "20-second hokm timeout chooses maximum suit count with stable tie order");
+fallbackProof.Dispose();
 var players = Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray();
 var privateRoom = new GameRoom(Guid.NewGuid(), "PRIVATE", "free", players[0], 30, ClassicRules.ImmutableId);
 for (int i = 1; i < 4; ++i) privateRoom.Join(players[i]);

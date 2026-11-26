@@ -10,7 +10,8 @@ namespace Hokmnameh.Core
         {
             var cards = game.CardsInHandForAuthority(seat);
             var power = new int[4];
-            foreach (int card in cards) power[HokmGame.SuitOf(card)] += 2 + HokmGame.RankOf(card) - 2;
+            // DEC-2026-0006: maximum suit count in the initial five; ties use suit order 0..3.
+            foreach (int card in cards) power[HokmGame.SuitOf(card)]++;
             int best = 0;
             for (int suit = 1; suit < 4; ++suit) if (power[suit] > power[best]) best = suit;
             return best;
