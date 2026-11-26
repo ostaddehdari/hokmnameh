@@ -327,6 +327,86 @@
       "security_review": "بازبینی فنی عامل پروژه زیر CODEOWNERS تک‌مالک: بازپخش فقط internal است؛ decrypt در snapshot تراکنشی انجام می‌شود، بذر در bundle پاک می‌شود، API عمومی و لاگ هیچ Seed/Nonce دریافت نمی‌کنند. CI 45796625501 پنج job موفق و replay/drill ایزوله PASS؛ بازبینی انسانی مستقل انجام نشده است. این تأیید فقط برای ادغام کد است؛ live rejoin، نگهداری/حذف در بکاپ‌ها و استقرار تولید گیت مستقل دارند.",
       "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0012",
+      "decision_id": "DEC-2026-0012",
+      "title": "استخراج CardCut مشترک با چرخش دقیق ۵۲ کارت",
+      "status": "IMPLEMENTING",
+      "category": [
+        "rules"
+      ],
+      "requester": "project-owner",
+      "created_at": "2026-11-26T13:32:57Z",
+      "source_refs": [
+        "DEC-2026-0006 approved E-04 contract",
+        "S02-W05-T01 acceptance in deployment-center plan",
+        "ProjectMaker continuation request 2026-11-26"
+      ],
+      "affected_paths": [
+        "unity/Packages/com.hokmnameh.core/Runtime/CardCut.cs",
+        "unity/Packages/com.hokmnameh.core/Runtime/E04Shuffle.cs",
+        "backend/src/Hokmnameh.Api/Hokmnameh.Api.csproj",
+        "backend/tests/Hokmnameh.SmokeTests/Hokmnameh.SmokeTests.csproj",
+        "backend/tests/Hokmnameh.SmokeTests/Program.cs",
+        "docs/stages/S02_W05_T01_EVIDENCE.md"
+      ],
+      "requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-006",
+        "DATA-002",
+        "SEC-002"
+      ],
+      "impact": {
+        "player": "چرخش deck مصوب بدون تغییر خروجی بردار طلایی E-04",
+        "compatibility": "هسته مشترک در Unity و API به یک تابع مستقل منتقل می‌شود؛ هیچ قرارداد عمومی تغییر نمی‌کند",
+        "data": "بدون مهاجرت",
+        "operations": "صرفاً سورس و CI؛ بدون اجرای production"
+      },
+      "risk_flags": [
+        "ranked_integrity",
+        "hidden_information"
+      ],
+      "approvals": [
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T13:32:57Z",
+          "evidence": "تصمیم مصوب DEC-2026-0006 درباره cut(deck,k) و درخواست ادامه تسک‌های برنامه"
+        },
+        {
+          "role": "game_architect",
+          "decision": "APPROVE",
+          "at": "2026-11-26T13:32:57Z",
+          "evidence": "بازبینی پیاده‌سازی pure C# و حفظ domain/fixture؛ بررسی توسط ProjectMaker در نقش معماری، بدون بازبین مستقل"
+        },
+        {
+          "role": "qa_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T13:32:57Z",
+          "evidence": "بازبینی سناریوهای ۵۱ اندیس، deck معیوب و golden؛ CI هنوز باید نتیجه دهد، بدون بازبین مستقل"
+        }
+      ],
+      "acceptance_criteria": [
+        "cut(deck,k)=deck[k:]+deck[:k] برای هر k از ۱ تا ۵۱، با حفظ ۵۲ کارت یکتا",
+        "هیچ deck یا Seed به cutter در قرارداد عمومی افزوده نشود"
+      ],
+      "test_plan": [
+        "dotnet build -warnaserror و اجرای smoke در CI",
+        "verify-e04-decision-v1.mjs",
+        "verify-replay-fixture.mjs",
+        "verify-change-control.mjs --changed-files"
+      ],
+      "rollback_plan": "Revert source commit on branch before any deployment; no data changes.",
+      "migration_plan": null,
+      "security_review": "Cutter فقط اندیس را می‌دهد؛ CardCut روی deck private متعلق به authority اجرا می‌شود؛ هیچ API یا payload عمومی جدیدی اضافه نشده است.",
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
+      "supersedes": null
     }
   ]
 }

@@ -10,5 +10,6 @@
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs" Link="Rules/HokmGame.cs" />
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/HokmBot.cs" Link="Rules/HokmBot.cs" />
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/E04Shuffle.cs" Link="Rules/E04Shuffle.cs" />
+    <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/CardCut.cs" Link="Rules/CardCut.cs" />
   </ItemGroup>
 </Project>

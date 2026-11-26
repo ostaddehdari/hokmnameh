@@ -101,6 +101,24 @@ var vector = E04Shuffle.Create(Guid.Parse(input.GetProperty("matchId").GetString
 Assert(vector.CommitmentHex == expected.GetProperty("commitmentHex").GetString(), "E04 official commitment");
 Assert(vector.Deck.SequenceEqual(expected.GetProperty("cutDeck").EnumerateArray().Select(x => x.GetInt32())), "E04 official 52-card cut deck");
 Assert(vector.Deck.Distinct().Count() == 52 && vector.Deck.Min() == 0 && vector.Deck.Max() == 51, "E04 permutation invariant");
+var uncutDeck = Enumerable.Range(0, 52).Reverse().ToArray();
+for (int cut = 1; cut <= 51; ++cut)
+{
+    var rotated = CardCut.Rotate(uncutDeck, cut);
+    Assert(rotated.SequenceEqual(uncutDeck.Skip(cut).Concat(uncutDeck.Take(cut))) &&
+        rotated.Distinct().Count() == 52 && uncutDeck.SequenceEqual(Enumerable.Range(0, 52).Reverse()),
+        "CardCut rotation, uniqueness and input immutability " + cut);
+}
+foreach (int invalidCut in new[] { 0, -1, 52, int.MaxValue })
+{
+    try { _ = CardCut.Rotate(uncutDeck, invalidCut); throw new Exception("FAILED: invalid CardCut index " + invalidCut); }
+    catch (ArgumentOutOfRangeException) { Console.WriteLine("PASS: invalid CardCut index " + invalidCut); }
+}
+try { _ = CardCut.Rotate(uncutDeck.Take(51).ToArray(), 1); throw new Exception("FAILED: short deck"); }
+catch (ArgumentException) { Console.WriteLine("PASS: short deck rejected"); }
+var duplicateDeck = (int[])uncutDeck.Clone(); duplicateDeck[0] = duplicateDeck[1];
+try { _ = CardCut.Rotate(duplicateDeck, 1); throw new Exception("FAILED: duplicate card"); }
+catch (ArgumentException) { Console.WriteLine("PASS: duplicate card rejected"); }
 var changedSeed = Convert.FromHexString(input.GetProperty("seedHex").GetString()!);
 changedSeed[0] ^= 1;
 var different = E04Shuffle.Create(Guid.Parse(input.GetProperty("matchId").GetString()!), 7,
