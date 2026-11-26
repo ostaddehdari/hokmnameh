@@ -29,6 +29,15 @@ let state = await request(`/api/v1/rooms/${room.id}`, tokens[0]);
 assert.equal(state.game.phase, 1);
 assert.equal(state.game.hand.length, 5);
 assert.equal(state.game.shuffleCommitment.length, 64);
+const replay = () => {
+  const cmd = spawnSync('docker', ['compose', 'exec', '-T', 'api',
+    'dotnet', 'Hokmnameh.Api.dll', '--verify-replay', room.id], { encoding: 'utf8' });
+  assert.equal(cmd.status, 0, 'isolated authority replay failed');
+  return JSON.parse(cmd.stdout.trim());
+};
+let recovered = replay();
+assert.equal(recovered.phase, state.game.phase);
+assert.equal(recovered.commitment, state.game.shuffleCommitment);
 state = await request(`/api/v1/rooms/${room.id}/trump`, tokens[0], 'POST',
   { suit: Math.floor(state.game.hand[0] / 13) });
 let moves = 0;
@@ -43,6 +52,19 @@ while (state.game.phase === 2 && moves < 52) {
   moves++;
 }
 assert.ok(moves >= 28 && (state.game.phase === 0 || state.game.phase === 3));
+// The ticker may start round 2 immediately after the round-closed response.
+// Compare two fresh reads of the same authority, retrying only the boundary race.
+let matchingLiveState = false;
+for (let attempt = 0; attempt < 4; attempt++) {
+  recovered = replay();
+  const live = (await request(`/api/v1/rooms/${room.id}`, tokens[0])).game;
+  matchingLiveState = recovered.phase === live.phase && recovered.round === live.round &&
+    recovered.commitment === live.shuffleCommitment &&
+    JSON.stringify(recovered.score) === JSON.stringify(live.matchPoints);
+  if (matchingLiveState) break;
+}
+assert.ok(matchingLiveState, 'replay and live room must converge at a stable boundary');
+assert.equal(recovered.closedRounds, 1);
 
 const db = sql => {
   const cmd = spawnSync('docker', ['compose', 'exec', '-T', 'postgres', 'sh', '-c',
@@ -86,5 +108,5 @@ const recomputed = createHash('sha256').update(Buffer.concat([
 ])).digest('hex');
 assert.equal(recomputed, rows[6].trim());
 proof.fill(0); key.fill(0);
-console.log(JSON.stringify({ work: 'S02-W01/S02-W02', eventCount: Number(rows[1]),
-  moves, encryptedProof: true, closedRoundVerified: true, status: 'PASS' }));
+console.log(JSON.stringify({ work: 'S02-W03/S02-W04', eventCount: Number(rows[1]),
+  moves, encryptedProof: true, closedRoundVerified: true, replayVerified: true, status: 'PASS' }));

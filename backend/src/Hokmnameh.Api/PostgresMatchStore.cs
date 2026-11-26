@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Data;
 using Hokmnameh.Core;
 using Npgsql;
 using NpgsqlTypes;
@@ -7,7 +8,7 @@ using NpgsqlTypes;
 namespace Hokmnameh.Api;
 
 // The event ledger and encrypted proof commit in the same PostgreSQL transaction.
-// Match actors are fail-stopped if persistence fails; replay/rejoin is scheduled for S02-W03.
+// Match actors are fail-stopped if persistence fails. Replay data is internal-only.
 public sealed class PostgresMatchStore : IMatchEventStore
 {
     private readonly string _connectionString;
@@ -115,6 +116,73 @@ public sealed class PostgresMatchStore : IMatchEventStore
             insert.ExecuteNonQuery();
         }
         finally { CryptographicOperations.ZeroMemory(plaintext); }
+    }
+
+    // Consistent snapshot of the event stream and sealed secrets for internal recovery/audit.
+    // Never route this operation to a public endpoint or return its bundle to a client.
+    internal ReplayBundleV1 LoadReplay(Guid matchId)
+    {
+        using var c = new NpgsqlConnection(_connectionString); c.Open();
+        using var tx = c.BeginTransaction(IsolationLevel.RepeatableRead);
+        string ruleset; long sequence;
+        using (var cmd = new NpgsqlCommand(
+            "SELECT ruleset_version,audit_sequence FROM recorded_matches WHERE id=@id", c, tx))
+        {
+            cmd.Parameters.AddWithValue("id", matchId);
+            using var reader = cmd.ExecuteReader();
+            if (!reader.Read()) throw new GameRuleException("Match replay not found");
+            ruleset = reader.GetString(0); sequence = reader.GetInt64(1);
+        }
+        var events = new List<MatchEventV1>();
+        using (var cmd = new NpgsqlCommand("""
+            SELECT sequence,action_id,actor_seat,ruleset_version,happened_at,state_version,kind,public_value
+            FROM match_events_v1 WHERE match_id=@id ORDER BY sequence
+            """, c, tx))
+        {
+            cmd.Parameters.AddWithValue("id", matchId);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read()) events.Add(new MatchEventV1(reader.GetInt64(0), reader.GetGuid(1),
+                reader.GetInt16(2), reader.GetString(3), reader.GetFieldValue<DateTimeOffset>(4),
+                reader.GetInt64(5), reader.GetString(6), reader.IsDBNull(7) ? null : reader.GetInt32(7)));
+        }
+        var rounds = new List<ReplayRoundSecretV1>();
+        try
+        {
+            using (var cmd = new NpgsqlCommand("""
+                SELECT round_number,shuffle_algorithm_id,commitment_hex,cut_index,
+                    encryption_nonce,ciphertext,auth_tag
+                FROM round_proofs_v1 WHERE match_id=@id AND expires_at>now() ORDER BY round_number
+                """, c, tx))
+            {
+                cmd.Parameters.AddWithValue("id", matchId);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var number = reader.GetInt64(0);
+                    var algorithm = reader.GetString(1);
+                    var commitment = reader.GetString(2).Trim();
+                    var cut = reader.GetInt16(3);
+                    var encryptedNonce = reader.GetFieldValue<byte[]>(4);
+                    var ciphertext = reader.GetFieldValue<byte[]>(5);
+                    var tag = reader.GetFieldValue<byte[]>(6);
+                    var plaintext = new byte[48];
+                    try
+                    {
+                        using (var aes = new AesGcm(_key, 16))
+                            aes.Decrypt(encryptedNonce, ciphertext, tag, plaintext,
+                                AssociatedData(matchId, checked((ulong)number), commitment));
+                        var seed = new byte[32]; var nonce = new byte[16];
+                        Buffer.BlockCopy(plaintext, 0, seed, 0, 32);
+                        Buffer.BlockCopy(plaintext, 32, nonce, 0, 16);
+                        rounds.Add(new ReplayRoundSecretV1(number, seed, nonce, commitment, cut, algorithm));
+                    }
+                    finally { CryptographicOperations.ZeroMemory(plaintext); }
+                }
+            }
+            tx.Commit();
+            return new ReplayBundleV1(matchId, ruleset, sequence, events, rounds);
+        }
+        catch { foreach (var round in rounds) round.Dispose(); throw; }
     }
 
     // Internal auditor-only operation. Never call this from a public route or live analytics.

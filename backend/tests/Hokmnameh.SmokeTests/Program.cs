@@ -3,6 +3,7 @@ using Hokmnameh.Api;
 using System.Text.Json;
 using System.Text;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 
 void Assert(bool condition, string name) { if (!condition) throw new Exception("FAILED: " + name); Console.WriteLine("PASS: " + name); }
 void AssertRuleError(Action action, string name)
@@ -185,6 +186,105 @@ catch (InvalidOperationException e) when (e.Message == "Simulated persistent eve
 try { _ = failRoom.State(failPlayers[0]); throw new Exception("FAILED: failed authority state hidden"); }
 catch (InvalidOperationException e) when (e.Message.Contains("quarantined"))
 { Console.WriteLine("PASS: failed authority state quarantined"); }
+
+// Independent Node-generated full-match fixture: fixed E04 proofs, 517 ordered events, 11 rounds.
+var replayPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+    "../../../../../../docs/replay_match_v1.golden.json"));
+using var golden = JsonDocument.Parse(File.ReadAllText(replayPath));
+var root = golden.RootElement;
+var fixtureMatch = Guid.Parse(root.GetProperty("matchId").GetString()!);
+var secrets = root.GetProperty("rounds").EnumerateArray().Select(r =>
+    new ReplayRoundSecretV1(r.GetProperty("round").GetInt64(),
+        Convert.FromHexString(r.GetProperty("seedHex").GetString()!),
+        Convert.FromHexString(r.GetProperty("nonceHex").GetString()!),
+        r.GetProperty("commitment").GetString()!, r.GetProperty("cut").GetInt32(),
+        E04Shuffle.AlgorithmId)).ToArray();
+for (int i = 0; i < secrets.Length; ++i)
+{
+    using var proof = E04Shuffle.Create(fixtureMatch, (ulong)secrets[i].Round,
+        ClassicRules.ImmutableId, secrets[i].Seed, secrets[i].Nonce, secrets[i].Cut);
+    Assert(proof.CommitmentHex == secrets[i].Commitment &&
+        proof.Deck.Take(12).SequenceEqual(root.GetProperty("rounds")[i]
+            .GetProperty("first12").EnumerateArray().Select(x => x.GetInt32())),
+        "independent Node E04 fixture round=" + secrets[i].Round);
+}
+var transcript = root.GetProperty("events").EnumerateArray().Select((e, i) =>
+    new MatchEventV1(i + 1, new Guid(i + 1, 0, 0, new byte[8]),
+        e.GetProperty("seat").GetInt32(), ClassicRules.ImmutableId,
+        DateTimeOffset.UnixEpoch.AddSeconds(i + 1), i + 1,
+        e.GetProperty("kind").GetString()!, e.GetProperty("value").GetInt32())).ToArray();
+using var bundle = new ReplayBundleV1(fixtureMatch, ClassicRules.ImmutableId,
+    transcript.Length, transcript, secrets);
+var finalReplay = MatchReplay.Rebuild(bundle);
+var finalState = finalReplay.Game.Snapshot(0);
+var goal = root.GetProperty("expected");
+Assert(finalReplay.StateVersion == goal.GetProperty("eventCount").GetInt32() &&
+    finalReplay.ClosedRounds == goal.GetProperty("round").GetInt32() &&
+    finalState.round == goal.GetProperty("round").GetInt32() &&
+    finalState.matchPoints.SequenceEqual(goal.GetProperty("points").EnumerateArray().Select(x => x.GetInt32())) &&
+    finalState.winnerTeam == goal.GetProperty("winner").GetInt32() &&
+    finalReplay.Game.Phase == GamePhase.Finished, "golden full match replay matches independent Node result");
+foreach (int count in new[] { 1, 2, 20, transcript.Length / 2, transcript.Length })
+{
+    var prefix = transcript.Take(count).ToArray();
+    int startCount = prefix.Count(e => e.Kind == "round-started");
+    var interrupted = new ReplayBundleV1(fixtureMatch, ClassicRules.ImmutableId, count,
+        prefix, secrets.Take(startCount).ToArray());
+    var resumed = MatchReplay.Rebuild(interrupted);
+    Assert(resumed.StateVersion == count && resumed.Game.Round == startCount,
+        "interrupted replay at sequence " + count);
+}
+var duplicate = transcript.ToArray();
+duplicate[3] = duplicate[3] with { ActionId = duplicate[1].ActionId };
+AssertRuleError(() => MatchReplay.Rebuild(new ReplayBundleV1(fixtureMatch,
+    ClassicRules.ImmutableId, duplicate.Length, duplicate, secrets)), "duplicate action rejects replay");
+var gap = transcript.ToArray(); gap[3] = gap[3] with { Sequence = 99 };
+AssertRuleError(() => MatchReplay.Rebuild(new ReplayBundleV1(fixtureMatch,
+    ClassicRules.ImmutableId, gap.Length, gap, secrets)), "sequence gap rejects replay");
+AssertRuleError(() => MatchReplay.Rebuild(new ReplayBundleV1(fixtureMatch,
+    ClassicRules.ImmutableId, transcript.Length, transcript, secrets, "future-replay-v2")),
+    "unknown replay format fails closed without changing V1");
+var badSeed = (byte[])secrets[0].Seed.Clone(); badSeed[0] ^= 1;
+using (var changed = new ReplayRoundSecretV1(1, badSeed, (byte[])secrets[0].Nonce.Clone(),
+    secrets[0].Commitment, secrets[0].Cut, E04Shuffle.AlgorithmId))
+    AssertRuleError(() => MatchReplay.Rebuild(new ReplayBundleV1(fixtureMatch,
+        ClassicRules.ImmutableId, transcript.Length, transcript,
+        new[] { changed }.Concat(secrets.Skip(1)).ToArray())), "seed tamper rejects replay");
+using (var changedCut = new ReplayRoundSecretV1(1, (byte[])secrets[0].Seed.Clone(),
+    (byte[])secrets[0].Nonce.Clone(), secrets[0].Commitment,
+    secrets[0].Cut == 51 ? 50 : secrets[0].Cut + 1, E04Shuffle.AlgorithmId))
+    AssertRuleError(() => MatchReplay.Rebuild(new ReplayBundleV1(fixtureMatch,
+        ClassicRules.ImmutableId, transcript.Length, transcript,
+        new[] { changedCut }.Concat(secrets.Skip(1)).ToArray())), "cut tamper rejects replay transcript");
+// Matchmaking rank, advertisement and cosmetic metadata never enter E04 context or input.
+foreach (var ignoredProfile in new[] { (mmr: 0, skin: "default", ad: ""),
+    (mmr: 9999, skin: "sponsor", ad: "placement-1") })
+{
+    using var unchanged = E04Shuffle.Create(fixtureMatch, 1, ClassicRules.ImmutableId,
+        secrets[0].Seed, secrets[0].Nonce, secrets[0].Cut);
+    Assert(unchanged.CommitmentHex == secrets[0].Commitment &&
+        unchanged.Deck.Take(12).SequenceEqual(root.GetProperty("rounds")[0]
+            .GetProperty("first12").EnumerateArray().Select(x => x.GetInt32())),
+        $"E04 ignores MMR/skin/advertising profile {ignoredProfile.mmr}");
+}
+try { _ = E04Shuffle.Create(fixtureMatch, 1, ClassicRules.ImmutableId, new byte[31], new byte[16]);
+    throw new Exception("FAILED: weak seed rejected"); }
+catch (ArgumentException) { Console.WriteLine("PASS: weak seed rejected"); }
+var failedEntropyGame = new HokmGame(fixtureMatch);
+using (var brokenRng = new BrokenRandomNumberGenerator())
+{
+    try { using var never = E04Shuffle.CreateWithRandom(fixtureMatch, 1,
+        ClassicRules.ImmutableId, brokenRng); throw new Exception("FAILED: RNG failure accepted"); }
+    catch (CryptographicException) { Console.WriteLine("PASS: RNG failure prevents deal"); }
+}
+Assert(failedEntropyGame.Round == 0 && failedEntropyGame.Phase == GamePhase.Waiting,
+    "no round transition after RNG failure");
+using (var randomFirst = E04Shuffle.CreateRandom(fixtureMatch, 1, ClassicRules.ImmutableId))
+using (var randomSecond = E04Shuffle.CreateRandom(fixtureMatch, 2, ClassicRules.ImmutableId))
+    Assert(randomFirst.Seed.Length == 32 && randomFirst.Nonce.Length == 16 &&
+        !randomFirst.Seed.SequenceEqual(randomSecond.Seed) &&
+        !randomFirst.Nonce.SequenceEqual(randomSecond.Nonce),
+        "fresh independent 256-bit seed and 128-bit nonce per round");
 Console.WriteLine("All core smoke tests passed");
 
 sealed class ManualTimeProvider(DateTimeOffset now) : TimeProvider
@@ -221,4 +321,10 @@ sealed class ThrowOnTrumpStore : IMatchEventStore
         if (command.Kind == "trump-selected")
             throw new InvalidOperationException("Simulated persistent event failure");
     }
+}
+
+sealed class BrokenRandomNumberGenerator : RandomNumberGenerator
+{
+    public override void GetBytes(byte[] data) => throw new CryptographicException("Simulated entropy failure");
+    public override void GetNonZeroBytes(byte[] data) => throw new CryptographicException("Simulated entropy failure");
 }

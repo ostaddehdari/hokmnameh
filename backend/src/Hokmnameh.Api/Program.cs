@@ -6,6 +6,26 @@ using System.Net.WebSockets;
 using Hokmnameh.Api;
 using Hokmnameh.Core;
 
+// Operator-only container CLI. No replay or raw proof is exposed through HTTP/WS.
+if (args is ["--verify-replay", var matchText])
+{
+    if (!Guid.TryParse(matchText, out var matchId)) throw new ArgumentException("Invalid match ID");
+    var settings = new ConfigurationBuilder().AddEnvironmentVariables().Build();
+    var store = new PostgresMatchStore(settings.GetConnectionString("Postgres") ?? "",
+        settings["Hokm:AuditKeyBase64"] ?? "", "free");
+    using var bundle = store.LoadReplay(matchId);
+    var replay = MatchReplay.Rebuild(bundle);
+    var snapshot = replay.Game.Snapshot(0);
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
+    {
+        format = ReplayBundleV1.Format, matchId,
+        stateVersion = replay.StateVersion, closedRounds = replay.ClosedRounds,
+        phase = snapshot.phase, round = snapshot.round, score = snapshot.matchPoints,
+        commitment = snapshot.shuffleCommitment
+    }));
+    return;
+}
+
 static string RatePartition(HttpContext context) =>
     $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
 

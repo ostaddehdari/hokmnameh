@@ -1,0 +1,2836 @@
+{
+  "schemaVersion": 1,
+  "formatId": "hokmnameh-match-replay-v1",
+  "matchId": "00112233-4455-6677-8899-aabbccddeeff",
+  "ruleset": "iranian-hokm-classic-v1",
+  "rounds": [
+    {
+      "round": 1,
+      "seedHex": "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20",
+      "nonceHex": "efeeedecebeae9e8e7e6e5e4e3e2e1e0",
+      "cut": 2,
+      "commitment": "db5c99cba25339246bec3655e7d7abc0caba16d4656e6fadbdc4ce7e876d0156",
+      "first12": [
+        12,
+        42,
+        16,
+        19,
+        38,
+        14,
+        34,
+        37,
+        29,
+        39,
+        49,
+        50
+      ]
+    },
+    {
+      "round": 2,
+      "seedHex": "02030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021",
+      "nonceHex": "eeedecebeae9e8e7e6e5e4e3e2e1e0df",
+      "cut": 3,
+      "commitment": "d9f40a352e0d398e37da7f437a86763e473589d92dc8fe181ab9aa3b53f88354",
+      "first12": [
+        2,
+        18,
+        44,
+        17,
+        30,
+        42,
+        10,
+        21,
+        36,
+        16,
+        24,
+        29
+      ]
+    },
+    {
+      "round": 3,
+      "seedHex": "030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122",
+      "nonceHex": "edecebeae9e8e7e6e5e4e3e2e1e0dfde",
+      "cut": 4,
+      "commitment": "9d004d78d9700782cfe03bbc0e03e5d026d2537fa0fce2d13ea89ec0874007da",
+      "first12": [
+        10,
+        9,
+        26,
+        29,
+        28,
+        46,
+        20,
+        16,
+        38,
+        18,
+        35,
+        6
+      ]
+    },
+    {
+      "round": 4,
+      "seedHex": "0405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20212223",
+      "nonceHex": "ecebeae9e8e7e6e5e4e3e2e1e0dfdedd",
+      "cut": 5,
+      "commitment": "51d99401717212574accf96d6ad85f23b0f3a8785bae96275040a00b29cfe57c",
+      "first12": [
+        30,
+        29,
+        51,
+        18,
+        20,
+        37,
+        39,
+        31,
+        19,
+        40,
+        22,
+        9
+      ]
+    },
+    {
+      "round": 5,
+      "seedHex": "05060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324",
+      "nonceHex": "ebeae9e8e7e6e5e4e3e2e1e0dfdedddc",
+      "cut": 6,
+      "commitment": "893bb96b88af0a5e05647523f84d349e2075e1906953b4efb767da723737c9db",
+      "first12": [
+        24,
+        14,
+        48,
+        4,
+        22,
+        51,
+        2,
+        23,
+        25,
+        27,
+        19,
+        41
+      ]
+    },
+    {
+      "round": 6,
+      "seedHex": "060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425",
+      "nonceHex": "eae9e8e7e6e5e4e3e2e1e0dfdedddcdb",
+      "cut": 7,
+      "commitment": "6cec7c5f65785d0884ee99c82dac07fdb8e83735584624991dfa9f49b9b1d21c",
+      "first12": [
+        8,
+        13,
+        32,
+        15,
+        14,
+        3,
+        12,
+        51,
+        48,
+        21,
+        28,
+        49
+      ]
+    },
+    {
+      "round": 7,
+      "seedHex": "0708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20212223242526",
+      "nonceHex": "e9e8e7e6e5e4e3e2e1e0dfdedddcdbda",
+      "cut": 8,
+      "commitment": "ddf402e93846695ce0118760fdd1436460058e4fdd068deb93fedad5a626f4e2",
+      "first12": [
+        6,
+        34,
+        23,
+        49,
+        37,
+        3,
+        26,
+        0,
+        38,
+        51,
+        10,
+        24
+      ]
+    },
+    {
+      "round": 8,
+      "seedHex": "08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324252627",
+      "nonceHex": "e8e7e6e5e4e3e2e1e0dfdedddcdbdad9",
+      "cut": 9,
+      "commitment": "87d2e26b68f2f3a4d54ca34288427e95f7b15abeb490d95bc59307da8110fba1",
+      "first12": [
+        0,
+        17,
+        42,
+        21,
+        3,
+        47,
+        38,
+        33,
+        51,
+        15,
+        48,
+        49
+      ]
+    },
+    {
+      "round": 9,
+      "seedHex": "090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728",
+      "nonceHex": "e7e6e5e4e3e2e1e0dfdedddcdbdad9d8",
+      "cut": 10,
+      "commitment": "6a18fcb7a40562df476edc6dc996db17274230d915d0fad9025cf9ae5b9e4cfc",
+      "first12": [
+        8,
+        17,
+        3,
+        25,
+        11,
+        10,
+        0,
+        18,
+        48,
+        31,
+        50,
+        4
+      ]
+    },
+    {
+      "round": 10,
+      "seedHex": "0a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20212223242526272829",
+      "nonceHex": "e6e5e4e3e2e1e0dfdedddcdbdad9d8d7",
+      "cut": 11,
+      "commitment": "87c7563e00b4093bdff3d6d25d2ee9155817ac0feee0e17e1485c38b855240b5",
+      "first12": [
+        23,
+        32,
+        40,
+        7,
+        17,
+        25,
+        29,
+        37,
+        38,
+        36,
+        1,
+        51
+      ]
+    },
+    {
+      "round": 11,
+      "seedHex": "0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a",
+      "nonceHex": "e5e4e3e2e1e0dfdedddcdbdad9d8d7d6",
+      "cut": 12,
+      "commitment": "c40c4d2335204b318315f65c17f72f90a245ee54dda2c5b1657addf2a703e169",
+      "first12": [
+        14,
+        30,
+        13,
+        19,
+        2,
+        27,
+        49,
+        4,
+        35,
+        29,
+        6,
+        10
+      ]
+    }
+  ],
+  "events": [
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 1
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 0,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 12
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 11
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 42
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 21
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 14
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 26
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 33
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 19
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 20
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 15
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 4
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 5
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 50
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 47
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 23
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 36
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 28
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 9
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 13
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 35
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 41
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 46
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 1
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 2
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 1,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 12
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 14
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 21
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 18
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 36
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 35
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 42
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 26
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 47
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 28
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 17
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 13
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 15
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 2
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 3
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 2,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 9
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 26
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 35
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 46
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 47
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 23
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 20
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 13
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 15
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 17
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 22
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 28
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 33
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 18
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 45
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 50
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 19
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 3
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 4
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 2,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 33
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 46
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 45
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 28
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 22
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 19
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 18
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 41
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 50
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 20
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 9
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 13
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 14
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 36
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 5
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 26
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 35
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 42
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 4
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 5
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 3,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 18
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 19
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 23
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 14
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 17
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 41
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 4
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 46
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 33
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 22
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 5
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 12
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 15
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 42
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 21
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 20
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 9
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 28
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 5
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 6
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 0,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 9
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 28
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 13
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 22
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 21
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 19
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 15
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 42
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 12
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 47
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 45
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 11
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 4
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 14
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 50
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 17
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 36
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 26
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 6
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 7
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 1,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 21
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 23
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 22
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 50
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 26
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 36
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 33
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 5
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 47
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 17
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 19
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 28
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 15
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 18
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 4
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 35
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 7
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 8
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 1,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 12
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 47
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 42
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 45
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 17
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 50
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 36
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 33
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 26
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 20
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 19
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 15
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 21
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 18
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 13
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 4
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 5
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 41
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 9
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 14
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 35
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 22
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 28
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 8
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 9
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 2,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 4
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 5
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 50
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 47
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 36
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 26
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 17
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 18
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 13
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 20
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 11
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 28
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 9
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 41
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 46
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 45
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 33
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 21
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 42
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 14
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 12
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 22
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 15
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 35
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 19
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 23
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 9
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 10
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 3,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 23
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 13
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 22
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 33
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 35
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 4
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 41
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 46
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 47
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 42
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 45
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 28
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 26
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 36
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 17
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 20
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 15
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 14
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 21
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 18
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 9
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 5
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 11
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 10
+    },
+    {
+      "kind": "round-started",
+      "seat": -1,
+      "value": 11
+    },
+    {
+      "kind": "trump-selected",
+      "seat": 3,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 14
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 17
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 18
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 16
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 6
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 4
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 2
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 3
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 10
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 9
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 5
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 38
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 1
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 0
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 11
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 21
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 45
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 47
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 49
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 42
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 27
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 30
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 37
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 31
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 48
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 51
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 50
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 41
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 7
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 35
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 13
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 44
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 19
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 20
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 15
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 24
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 29
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 28
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 34
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 32
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 43
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 8
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 46
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 39
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 33
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 26
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 40
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 36
+    },
+    {
+      "kind": "card-played",
+      "seat": 1,
+      "value": 12
+    },
+    {
+      "kind": "card-played",
+      "seat": 2,
+      "value": 22
+    },
+    {
+      "kind": "card-played",
+      "seat": 3,
+      "value": 25
+    },
+    {
+      "kind": "card-played",
+      "seat": 0,
+      "value": 23
+    },
+    {
+      "kind": "round-closed",
+      "seat": -1,
+      "value": 11
+    }
+  ],
+  "expected": {
+    "round": 11,
+    "points": [
+      4,
+      7
+    ],
+    "winner": 1,
+    "eventCount": 517,
+    "transcriptSha256": "e721d204a0420a52b119e93aebf4b875e740a7901b1bd1b8c74db2d01b973552"
+  }
+}
