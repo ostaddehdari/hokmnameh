@@ -332,7 +332,7 @@
       "id": "CR-2026-0012",
       "decision_id": "DEC-2026-0012",
       "title": "استخراج CardCut مشترک با چرخش دقیق ۵۲ کارت",
-      "status": "IMPLEMENTING",
+      "status": "VERIFIED",
       "category": [
         "rules"
       ],
@@ -385,7 +385,7 @@
           "role": "qa_owner",
           "decision": "APPROVE",
           "at": "2026-11-26T13:32:57Z",
-          "evidence": "بازبینی سناریوهای ۵۱ اندیس، deck معیوب و golden؛ CI هنوز باید نتیجه دهد، بدون بازبین مستقل"
+          "evidence": "بازبینی سناریوهای ۵۱ اندیس، deck معیوب و golden؛ CI PR 45830611436 و CI ادغام 45834069136 هر پنج job موفق؛ بدون بازبین مستقل"
         }
       ],
       "acceptance_criteria": [
@@ -398,9 +398,9 @@
         "verify-replay-fixture.mjs",
         "verify-change-control.mjs --changed-files"
       ],
-      "rollback_plan": "Revert source commit on branch before any deployment; no data changes.",
+      "rollback_plan": "Revert merged source commit through a reviewed PR; no migration or production action.",
       "migration_plan": null,
-      "security_review": "Cutter فقط اندیس را می‌دهد؛ CardCut روی deck private متعلق به authority اجرا می‌شود؛ هیچ API یا payload عمومی جدیدی اضافه نشده است.",
+      "security_review": "Cutter فقط اندیس را می‌دهد؛ CardCut روی deck private متعلق به authority اجرا می‌شود؛ هیچ API یا payload عمومی جدیدی اضافه نشده است. PR #15 ادغام شد و CI 45834069136 پنج job موفق؛ بازبینی انسانی مستقل انجام نشده است.",
       "emergency": {
         "enabled": false,
         "reason": null,
