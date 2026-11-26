@@ -18,7 +18,8 @@ if (args is ["--verify-replay", var matchText])
     var snapshot = replay.Game.Snapshot(0);
     Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
     {
-        format = ReplayBundleV1.Format, matchId, replay.StateVersion, replay.ClosedRounds,
+        format = ReplayBundleV1.Format, matchId,
+        stateVersion = replay.StateVersion, closedRounds = replay.ClosedRounds,
         phase = snapshot.phase, round = snapshot.round, score = snapshot.matchPoints,
         commitment = snapshot.shuffleCommitment
     }));

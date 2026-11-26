@@ -250,6 +250,12 @@ using (var changed = new ReplayRoundSecretV1(1, badSeed, (byte[])secrets[0].Nonc
     AssertRuleError(() => MatchReplay.Rebuild(new ReplayBundleV1(fixtureMatch,
         ClassicRules.ImmutableId, transcript.Length, transcript,
         new[] { changed }.Concat(secrets.Skip(1)).ToArray())), "seed tamper rejects replay");
+using (var changedCut = new ReplayRoundSecretV1(1, (byte[])secrets[0].Seed.Clone(),
+    (byte[])secrets[0].Nonce.Clone(), secrets[0].Commitment,
+    secrets[0].Cut == 51 ? 50 : secrets[0].Cut + 1, E04Shuffle.AlgorithmId))
+    AssertRuleError(() => MatchReplay.Rebuild(new ReplayBundleV1(fixtureMatch,
+        ClassicRules.ImmutableId, transcript.Length, transcript,
+        new[] { changedCut }.Concat(secrets.Skip(1)).ToArray())), "cut tamper rejects replay transcript");
 // Matchmaking rank, advertisement and cosmetic metadata never enter E04 context or input.
 foreach (var ignoredProfile in new[] { (mmr: 0, skin: "default", ad: ""),
     (mmr: 9999, skin: "sponsor", ad: "placement-1") })
