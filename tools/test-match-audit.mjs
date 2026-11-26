@@ -26,6 +26,21 @@ async function request(path, token, method = 'GET', body) {
   }
   throw new Error('Unreachable request retry state');
 }
+const db = sql => {
+  const cmd = spawnSync('docker', ['compose', 'exec', '-T', 'postgres', 'sh', '-c',
+    'exec psql -X -Atq -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "$1"', 'sh', sql],
+  { encoding: 'utf8' });
+  assert.equal(cmd.status, 0, 'isolated PostgreSQL query failed');
+  return cmd.stdout.trim();
+};
+
+const replay = matchId => {
+  const cmd = spawnSync('docker', ['compose', 'exec', '-T', 'api',
+    'dotnet', 'Hokmnameh.Api.dll', '--verify-replay', matchId], { encoding: 'utf8' });
+  assert.equal(cmd.status, 0, 'isolated authority replay failed');
+  return JSON.parse(cmd.stdout.trim());
+};
+
 const identities = [];
 for (let i = 0; i < 4; i++) identities.push(await request('/api/v1/identity/guest', null, 'POST'));
 const tokens = identities.map(x => x.accessToken);
@@ -63,6 +78,30 @@ await expectCutError(tokens[3], cutCommand, 409, 'duplicate_cut_action');
 const otherCutState = await request(`/api/v1/rooms/${cutRoom.id}`, tokens[1]);
 assert.equal(otherCutState.game.hand.length, 5);
 assert.equal(JSON.stringify(otherCutState).toLowerCase().includes('seed'), false);
+assert.equal(db(`SELECT count(*) FROM match_participants WHERE match_id='${cutRoom.id}'`), '4');
+assert.equal(db(`SELECT count(*) FROM round_cut_actions_v1 WHERE match_id='${cutRoom.id}'`), '1');
+assert.equal(db(`SELECT count(*) FROM round_proofs_v1 WHERE match_id='${cutRoom.id}'`), '1');
+assert.equal(db(`SELECT string_agg(kind || ':' || coalesce(public_value::text,''),',' ORDER BY sequence)
+ FROM match_events_v1 WHERE match_id='${cutRoom.id}'`),
+ 'cut-selected:17,round-started:1,deal-initial:20');
+assert.equal(replay(cutRoom.id).phase, acceptedCut.game.phase);
+const stagedRoom = await request(`/api/v1/rooms/${cutRoom.id}/trump`, tokens[0], 'POST', { suit: 2 });
+assert.equal(stagedRoom.game.dealCursor, 52);
+assert.equal(stagedRoom.game.hand.length, 13);
+assert.equal(db(`SELECT string_agg(kind || ':' || coalesce(public_value::text,''),',' ORDER BY sequence)
+ FROM match_events_v1 WHERE match_id='${cutRoom.id}'`),
+ 'cut-selected:17,round-started:1,deal-initial:20,trump-staged:2,deal-second:36,deal-final:52');
+assert.equal(replay(cutRoom.id).phase, stagedRoom.game.phase);
+// A fresh test API process starts the long V1 round with its own rate window.
+const splitRestart = spawnSync('docker', ['compose', 'restart', 'api'], { encoding: 'utf8' });
+assert.equal(splitRestart.status, 0, 'isolated V2/V1 split restart failed');
+let splitReady = false;
+for (let attempt = 0; attempt < 30; attempt++) {
+  try { splitReady = (await fetch(base + '/health/ready')).ok; } catch { /* container starting */ }
+  if (splitReady) break;
+  await new Promise(resolve => setTimeout(resolve, 200));
+}
+assert.ok(splitReady, 'API did not recover before V1 round');
 const created = await request('/api/v1/rooms', tokens[0], 'POST', { mode: 'free' });
 const room = created.room;
 assert.match(room.id, /^[0-9a-f-]{36}$/i);
@@ -74,13 +113,7 @@ let state = await request(`/api/v1/rooms/${room.id}`, tokens[0]);
 assert.equal(state.game.phase, 1);
 assert.equal(state.game.hand.length, 5);
 assert.equal(state.game.shuffleCommitment.length, 64);
-const replay = (matchId = room.id) => {
-  const cmd = spawnSync('docker', ['compose', 'exec', '-T', 'api',
-    'dotnet', 'Hokmnameh.Api.dll', '--verify-replay', matchId], { encoding: 'utf8' });
-  assert.equal(cmd.status, 0, 'isolated authority replay failed');
-  return JSON.parse(cmd.stdout.trim());
-};
-let recovered = replay();
+let recovered = replay(room.id);
 assert.equal(recovered.phase, state.game.phase);
 assert.equal(recovered.commitment, state.game.shuffleCommitment);
 state = await request(`/api/v1/rooms/${room.id}/trump`, tokens[0], 'POST',
@@ -101,7 +134,7 @@ assert.ok(moves >= 28 && (state.game.phase === 0 || state.game.phase === 3));
 // Compare two fresh reads of the same authority, retrying only the boundary race.
 let matchingLiveState = false;
 for (let attempt = 0; attempt < 4; attempt++) {
-  recovered = replay();
+  recovered = replay(room.id);
   const live = (await request(`/api/v1/rooms/${room.id}`, tokens[0])).game;
   matchingLiveState = recovered.phase === live.phase && recovered.round === live.round &&
     recovered.commitment === live.shuffleCommitment &&
@@ -111,14 +144,6 @@ for (let attempt = 0; attempt < 4; attempt++) {
 assert.ok(matchingLiveState, 'replay and live room must converge at a stable boundary');
 assert.equal(recovered.closedRounds, 1);
 
-const db = sql => {
-  const cmd = spawnSync('docker', ['compose', 'exec', '-T', 'postgres', 'sh', '-c',
-    'exec psql -X -Atq -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "$1"', 'sh', sql],
-  { encoding: 'utf8' });
-  assert.equal(cmd.status, 0, 'isolated PostgreSQL query failed');
-  return cmd.stdout.trim();
-};
-assert.equal(db(`SELECT count(*) FROM match_participants WHERE match_id='${cutRoom.id}'`), '4');
 assert.equal(db(`SELECT count(*) FROM match_participants WHERE match_id='${room.id}'`), '4');
 const xpMatch = randomUUID();
 db(`INSERT INTO recorded_matches(id,ruleset_version,game_mode,started_at)
@@ -136,19 +161,6 @@ const rejectedAward = spawnSync('docker', ['compose', 'exec', '-T', 'postgres', 
   'sh', `INSERT INTO xp_awards_v1(match_id,event_sequence,account_id,amount)
     VALUES ('${xpMatch}',1,'${identities[1].accountId}',10)`], { encoding: 'utf8' });
 assert.notEqual(rejectedAward.status, 0, 'nonparticipant must never receive XP');
-assert.equal(db(`SELECT count(*) FROM round_cut_actions_v1 WHERE match_id='${cutRoom.id}'`), '1');
-assert.equal(db(`SELECT count(*) FROM round_proofs_v1 WHERE match_id='${cutRoom.id}'`), '1');
-assert.equal(db(`SELECT string_agg(kind || ':' || coalesce(public_value::text,''),',' ORDER BY sequence)
- FROM match_events_v1 WHERE match_id='${cutRoom.id}'`),
- 'cut-selected:17,round-started:1,deal-initial:20');
-assert.equal(replay(cutRoom.id).phase, acceptedCut.game.phase);
-const stagedRoom = await request(`/api/v1/rooms/${cutRoom.id}/trump`, tokens[0], 'POST', { suit: 2 });
-assert.equal(stagedRoom.game.dealCursor, 52);
-assert.equal(stagedRoom.game.hand.length, 13);
-assert.equal(db(`SELECT string_agg(kind || ':' || coalesce(public_value::text,''),',' ORDER BY sequence)
- FROM match_events_v1 WHERE match_id='${cutRoom.id}'`),
- 'cut-selected:17,round-started:1,deal-initial:20,trump-staged:2,deal-second:36,deal-final:52');
-assert.equal(replay(cutRoom.id).phase, stagedRoom.game.phase);
 const id = room.id;
 const rows = db(`SELECT r.audit_sequence,(SELECT count(*) FROM match_events_v1 e WHERE e.match_id=r.id),
   (SELECT count(*) FROM match_events_v1 e WHERE e.match_id=r.id AND e.kind='round-closed'),
