@@ -1470,6 +1470,187 @@
         "post_review_due_at": null
       },
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0016",
+      "decision_id": "DEC-2026-0016",
+      "title": "زیرساخت هویت تلفنی و لغو نشست",
+      "status": "IMPLEMENTING",
+      "category": [
+        "api",
+        "database"
+      ],
+      "requester": "project-owner",
+      "created_at": "2026-11-26T19:03:53.291276Z",
+      "source_refs": [
+        "User request to continue two Works 2026-11-26",
+        "S03-W01/W02 plan revision 1; unresolved SMS and XP policy noted in proposal"
+      ],
+      "affected_paths": [
+        "backend/db/migrations/004_identity_progress.sql",
+        "backend/db/migrations/manifest.json",
+        "backend/src/Hokmnameh.Api/AuthService.cs",
+        "backend/src/Hokmnameh.Api/Program.cs",
+        "docs/API.md",
+        "tools/test-match-audit.mjs",
+        ".github/workflows/backend.yml"
+      ],
+      "requirement_ids": [
+        "FR-003",
+        "FR-004",
+        "SEC-001"
+      ],
+      "impact": {
+        "player": "Guest logout and read-only progress; phone upgrade and XP policy not active",
+        "compatibility": "Existing guest sessions and gameplay remain valid",
+        "data": "Forward-only migration 004 adds nullable phone and isolated XP records",
+        "operations": "CI only; no production migration or SMS send"
+      },
+      "risk_flags": [
+        "pii"
+      ],
+      "approvals": [
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        },
+        {
+          "role": "data_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        },
+        {
+          "role": "operations_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        }
+      ],
+      "acceptance_criteria": [
+        "Synthetic CI verifies revocation and data guard; no unapproved SMS or XP issuance"
+      ],
+      "test_plan": [
+        "migration checksum and isolated PostgreSQL",
+        "five CI jobs and authenticated API smoke",
+        "changed-files gate"
+      ],
+      "rollback_plan": "Revert application code via reviewed PR; preserve forward-only schema, revoke unused routes; no destructive rollback.",
+      "migration_plan": "Apply 004 via checksum verified forward-only migrator only in isolated CI; production requires separate approval.",
+      "security_review": "Phone data schema remains unused until provider/retention/consent decisions; OTP MAC only, no codes at rest, no SMS sent; XP source constrained. No independent human production review.",
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
+      "supersedes": null
+    },
+    {
+      "id": "CR-2026-0017",
+      "decision_id": "DEC-2026-0017",
+      "title": "دفتر XP معتبر و مستقل از رنک و سکه",
+      "status": "IMPLEMENTING",
+      "category": [
+        "api",
+        "database",
+        "economy"
+      ],
+      "requester": "project-owner",
+      "created_at": "2026-11-26T19:03:53.291276Z",
+      "source_refs": [
+        "User request to continue two Works 2026-11-26",
+        "S03-W01/W02 plan revision 1; unresolved SMS and XP policy noted in proposal"
+      ],
+      "affected_paths": [
+        "backend/db/migrations/004_identity_progress.sql",
+        "backend/db/migrations/manifest.json",
+        "backend/src/Hokmnameh.Api/XpLedger.cs",
+        "backend/src/Hokmnameh.Api/Program.cs",
+        "docs/API.md",
+        "tools/test-match-audit.mjs",
+        ".github/workflows/backend.yml"
+      ],
+      "requirement_ids": [
+        "FR-003",
+        "FR-004",
+        "SEC-001"
+      ],
+      "impact": {
+        "player": "Guest logout and read-only progress; phone upgrade and XP policy not active",
+        "compatibility": "Existing guest sessions and gameplay remain valid",
+        "data": "Forward-only migration 004 adds nullable phone and isolated XP records",
+        "operations": "CI only; no production migration or SMS send"
+      },
+      "risk_flags": [],
+      "approvals": [
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        },
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        },
+        {
+          "role": "data_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        },
+        {
+          "role": "economy_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        },
+        {
+          "role": "operations_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        },
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        },
+        {
+          "role": "security_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-26T19:03:53.291276Z",
+          "evidence": "Owner authorized code continuation; ProjectMaker reviewed implementation scope, not an independent human review or production approval"
+        }
+      ],
+      "acceptance_criteria": [
+        "Synthetic CI verifies revocation and data guard; no unapproved SMS or XP issuance"
+      ],
+      "test_plan": [
+        "migration checksum and isolated PostgreSQL",
+        "five CI jobs and authenticated API smoke",
+        "changed-files gate"
+      ],
+      "rollback_plan": "Revert application code via reviewed PR; preserve forward-only schema, revoke unused routes; no destructive rollback.",
+      "migration_plan": "Apply 004 via checksum verified forward-only migrator only in isolated CI; production requires separate approval.",
+      "security_review": "Phone data schema remains unused until provider/retention/consent decisions; OTP MAC only, no codes at rest, no SMS sent; XP source constrained. No independent human production review.",
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
+      "supersedes": null
     }
   ]
 }

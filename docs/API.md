@@ -7,6 +7,8 @@ Public base path: `/hokmnameh` (`https://srun.ir/hokmnameh` AFTER server deploym
 - `POST /api/v1/identity/guest` -> `201` `{ accountId, nickname, accessToken, expiresAt }`. Token is generated using 256-bit CSPRNG and only SHA-256 is stored in PostgreSQL.
 - `GET /api/v1/identity/me` with header `Authorization: Bearer <accessToken>` -> identity.
 - Guest tokens are long-lived (30 days) for the prototype. Store in Android keystore/secure storage in a production client, provide rotation/revocation and abuse controls before launch.
+- `POST /api/v1/identity/logout` revokes the current bearer session (204); a revoked or unknown token returns 401.
+- `GET /api/v1/profile/progress` requires a valid bearer and returns only that account's `accountId`, `xp`, and `level`. XP issuance remains internal and is gated by a recorded round closure and participant. No phone challenge route or level award policy is active yet.
 
 ## Rooms
 

@@ -78,4 +78,21 @@ public sealed class AuthService
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         return await reader.ReadAsync(ct) ? new Identity(reader.GetGuid(0), reader.GetString(1)) : null;
     }
+
+    public async Task<bool> LogoutAsync(HttpRequest request, CancellationToken ct)
+    {
+        var authorization = request.Headers.Authorization.ToString();
+        if (!authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) return false;
+        var token = authorization.Substring(7).Trim();
+        if (token.Length < 40 || token.Length > 256) return false;
+        var hash = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token));
+        await using var c = new NpgsqlConnection(_connectionString);
+        await c.OpenAsync(ct);
+        await using var cmd = new NpgsqlCommand("""
+            UPDATE auth_sessions SET revoked_at=now(),revoked_reason='user-logout'
+            WHERE token_hash=@hash AND revoked_at IS NULL AND expires_at>now()
+            """, c);
+        cmd.Parameters.AddWithValue("hash", hash);
+        return await cmd.ExecuteNonQueryAsync(ct) == 1;
+    }
 }
