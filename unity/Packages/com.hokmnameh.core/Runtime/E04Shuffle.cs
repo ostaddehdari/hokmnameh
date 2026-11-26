@@ -110,8 +110,7 @@ namespace Hokmnameh.Core
                     int swap = deck[i]; deck[i] = deck[j]; deck[j] = swap;
                 }
                 int cut = cutIndex ?? FallbackCut(key, context);
-                var result = new int[52];
-                for (int i = 0; i < 52; ++i) result[i] = deck[(i + cut) % 52];
+                var result = CardCut.Rotate(deck, cut);
                 return new E04Round(result, BitConverter.ToString(commitment).Replace("-", "").ToLowerInvariant(),
                     cut, matchId, roundNumber, seed, nonce);
             }
