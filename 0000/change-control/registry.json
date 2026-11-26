@@ -1576,7 +1576,10 @@
         "backend/src/Hokmnameh.Api/Program.cs",
         "docs/API.md",
         "tools/test-match-audit.mjs",
-        ".github/workflows/backend.yml"
+        ".github/workflows/backend.yml",
+        "backend/src/Hokmnameh.Api/MatchAudit.cs",
+        "backend/src/Hokmnameh.Api/PostgresMatchStore.cs",
+        "backend/src/Hokmnameh.Api/Rooms.cs"
       ],
       "requirement_ids": [
         "FR-003",
@@ -1640,7 +1643,8 @@
       "test_plan": [
         "migration checksum and isolated PostgreSQL",
         "five CI jobs and authenticated API smoke",
-        "changed-files gate"
+        "changed-files gate",
+        "persist real room participants before round start; isolated PostgreSQL checks four seats"
       ],
       "rollback_plan": "Revert application code via reviewed PR; preserve forward-only schema, revoke unused routes; no destructive rollback.",
       "migration_plan": "Apply 004 via checksum verified forward-only migrator only in isolated CI; production requires separate approval.",
