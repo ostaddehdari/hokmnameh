@@ -77,6 +77,22 @@ public sealed class PostgresMatchStore : IMatchEventStore
             insert.Parameters.Add("value", NpgsqlDbType.Integer).Value = (object?)publicValue ?? DBNull.Value;
             insert.ExecuteNonQuery();
         }
+        if (command.Kind is "cut-selected" or "cut-fallback")
+        {
+            using var insertCut = new NpgsqlCommand("""
+                INSERT INTO round_cut_actions_v1(match_id,round_number,action_id,kind,actor_seat,cut_index,state_version,happened_at)
+                SELECT @id,1+count(*),@action,@kind,@seat,@cut,@version,@at
+                FROM match_events_v1 WHERE match_id=@id AND kind='round-started'
+                """, connection, tx);
+            insertCut.Parameters.AddWithValue("id", roomId);
+            insertCut.Parameters.AddWithValue("action", command.ActionId);
+            insertCut.Parameters.AddWithValue("kind", command.Kind);
+            insertCut.Parameters.AddWithValue("seat", (short)command.ActorSeat);
+            insertCut.Parameters.AddWithValue("cut", checked((short)(publicValue ?? throw new GameRuleException("Cut index missing"))));
+            insertCut.Parameters.AddWithValue("version", command.Sequence);
+            insertCut.Parameters.AddWithValue("at", command.Timestamp);
+            insertCut.ExecuteNonQuery();
+        }
         if (preparedRound != null) StoreProof(connection, tx, roomId, preparedRound);
         using (var update = new NpgsqlCommand(
             "UPDATE recorded_matches SET audit_sequence=@version WHERE id=@id", connection, tx))

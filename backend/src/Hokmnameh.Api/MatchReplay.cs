@@ -53,6 +53,7 @@ internal static class MatchReplay
         var roundIndex = 0;
         var closed = 0;
         int? pendingCut = null;
+        int stagedProgress = 0; // 1 initial, 2 trump, 3 second, 4 final, 5 playing
         var actions = new HashSet<Guid>();
         for (var i = 0; i < bundle.Events.Count; i++)
         {
@@ -62,6 +63,12 @@ internal static class MatchReplay
                 e.RulesetVersion != bundle.Ruleset || e.Timestamp == default ||
                 e.Timestamp.Offset != TimeSpan.Zero || e.ActorSeat is < -1 or > 3)
                 throw new GameRuleException("Invalid replay event envelope");
+            if ((stagedProgress == 1 && e.Kind != "deal-initial") ||
+                (stagedProgress == 2 && e.Kind is not ("trump-staged" or "trump-staged-fallback")) ||
+                (stagedProgress == 3 && e.Kind != "deal-second") ||
+                (stagedProgress == 4 && e.Kind != "deal-final") ||
+                (stagedProgress == 5 && e.Kind is "trump-selected" or "trump-fallback"))
+                throw new GameRuleException("Incomplete or out-of-order staged deal");
             switch (e.Kind)
             {
                 case "cut-selected":
@@ -77,6 +84,7 @@ internal static class MatchReplay
                     if (e.ActorSeat != -1 || e.PublicValue != game.Round + 1 || roundIndex >= bundle.Rounds.Count)
                         throw new GameRuleException("Invalid round start");
                     var proof = bundle.Rounds[roundIndex++];
+                    stagedProgress = pendingCut.HasValue ? 1 : 0;
                     if (proof.Round != e.PublicValue || proof.Algorithm != E04Shuffle.AlgorithmId ||
                         proof.Seed.Length != 32 || proof.Nonce.Length != 16 || proof.Cut is < 1 or > 51 ||
                         (pendingCut.HasValue && proof.Cut != pendingCut.Value))
@@ -92,9 +100,32 @@ internal static class MatchReplay
                     break;
                 case "trump-selected":
                 case "trump-fallback":
+                    if (stagedProgress != 0) throw new GameRuleException("Legacy trump in staged round");
                     if (e.ActorSeat != game.Hakem || e.PublicValue is not (>= 0 and <= 3))
                         throw new GameRuleException("Invalid replay trump");
                     game.ChooseTrump(e.ActorSeat, e.PublicValue.Value);
+                    break;
+                case "deal-initial":
+                    if (stagedProgress != 1 || e.ActorSeat != -1 || e.PublicValue != E04DealPlan.Cursor(0) ||
+                        game.Phase != GamePhase.ChoosingTrump || game.DealCursors.Length != 1)
+                        throw new GameRuleException("Invalid initial deal cursor");
+                    stagedProgress = 2;
+                    break;
+                case "trump-staged":
+                case "trump-staged-fallback":
+                    if (stagedProgress != 2 || e.ActorSeat != game.Hakem || e.PublicValue is not (>= 0 and <= 3))
+                        throw new GameRuleException("Invalid staged trump");
+                    game.SelectTrump(e.ActorSeat, e.PublicValue.Value);
+                    stagedProgress = 3;
+                    break;
+                case "deal-second":
+                case "deal-final":
+                    if (stagedProgress != (e.Kind == "deal-second" ? 3 : 4) ||
+                        e.ActorSeat != -1 || e.PublicValue != E04DealPlan.Cursor(e.Kind == "deal-second" ? 1 : 2) ||
+                        game.Phase != (e.Kind == "deal-second" ? GamePhase.DealingSecond : GamePhase.DealingFinal))
+                        throw new GameRuleException("Invalid staged deal cursor");
+                    game.AdvanceDeal();
+                    stagedProgress = e.Kind == "deal-second" ? 4 : 5;
                     break;
                 case "card-played":
                 case "card-auto-played":
@@ -117,7 +148,10 @@ internal static class MatchReplay
                  bundle.Events[i + 1].Kind != "round-closed" && closed < game.Round))
                 throw new GameRuleException("Replay round boundary mismatch");
         }
-        if (pendingCut.HasValue || roundIndex != bundle.Rounds.Count || game.Round != roundIndex || closed > roundIndex ||
+        if (pendingCut.HasValue || stagedProgress is 1 or 3 or 4 ||
+            (stagedProgress == 2 && game.Phase != GamePhase.ChoosingTrump) ||
+            game.Phase is GamePhase.DealingSecond or GamePhase.DealingFinal ||
+            roundIndex != bundle.Rounds.Count || game.Round != roundIndex || closed > roundIndex ||
             (game.Phase is GamePhase.Waiting or GamePhase.Finished && closed != roundIndex))
             throw new GameRuleException("Replay proof or closing event missing");
         return new ReplayResultV1(game, bundle.AuditSequence, closed);

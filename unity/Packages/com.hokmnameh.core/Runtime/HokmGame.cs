@@ -6,7 +6,7 @@ namespace Hokmnameh.Core
 {
     // One rules engine shared by ASP.NET match workers and Android LAN-hosted Unity games.
     // All card values are integers 0..51. Only the match authority owns hidden hands.
-    public enum GamePhase { Waiting = 0, ChoosingTrump = 1, Playing = 2, Finished = 3 }
+    public enum GamePhase { Waiting = 0, ChoosingTrump = 1, Playing = 2, Finished = 3, DealingSecond = 4, DealingFinal = 5 }
     public enum Suit { Spades = 0, Hearts = 1, Diamonds = 2, Clubs = 3 }
 
     [Serializable]
@@ -40,6 +40,8 @@ namespace Hokmnameh.Core
         public string shuffleAlgorithmId = E04Shuffle.AlgorithmId;
         public string shuffleCommitment = "";
         public int cutIndex;
+        public string dealPlanVersion = E04DealPlan.Version;
+        public int dealCursor;
     }
 
     public sealed class GameRuleException : Exception
@@ -132,7 +134,7 @@ namespace Hokmnameh.Core
         public void StartRound(int hakem, E04Round shuffle)
         {
             if (hakem < 0 || hakem > 3) throw new ArgumentOutOfRangeException("hakem");
-            if (Phase == GamePhase.Playing || Phase == GamePhase.ChoosingTrump) throw new GameRuleException("Round already active");
+            if (Phase != GamePhase.Waiting) throw new GameRuleException("Round already active");
             if (Phase == GamePhase.Finished) throw new GameRuleException("Match finished");
             if (shuffle == null || shuffle.MatchId != matchId || shuffle.RoundNumber != (ulong)(Round + 1) ||
                 shuffle.Deck.Length != 52 || shuffle.Seed.Length != 32 || shuffle.Nonce.Length != 16)
@@ -144,27 +146,38 @@ namespace Hokmnameh.Core
             foreach (var h in hands) h.Clear();
             // The commitment is fixed before any seat receives a card. No seed enters a snapshot.
             ShuffleCommitment = shuffle.CommitmentHex; CutIndex = shuffle.CutIndex;
-            for (int offset = 0; offset < 4; ++offset)
-                for (int card = 0; card < 5; ++card)
-                    hands[(Hakem - offset + 4) % 4].Add(shuffle.Deck[offset * 5 + card]);
-            for (int i = 20; i < 52; ++i) undealt.Enqueue(shuffle.Deck[i]);
-            dealCursors.Add(20);
+            for (int i = 0; i < 52; ++i) undealt.Enqueue(shuffle.Deck[i]);
+            DealPacket(E04DealPlan.PacketSize(0));
+            dealCursors.Add(E04DealPlan.Cursor(0));
             Phase = GamePhase.ChoosingTrump;
             AssertInvariant();
         }
 
         public void ChooseTrump(int seat, int suit)
         {
+            SelectTrump(seat, suit);
+            AdvanceDeal();
+            AdvanceDeal();
+        }
+
+        // V2 authorities persist each transition separately; V1 can use the atomic wrapper above.
+        public void SelectTrump(int seat, int suit)
+        {
             if (Phase != GamePhase.ChoosingTrump || seat != Hakem) throw new GameRuleException("Only hakem chooses trump now");
             if (suit < 0 || suit > 3) throw new GameRuleException("Invalid trump suit");
             Trump = suit;
-            // Approved packet order is 5 + 4 + 4, counter-clockwise from Hakem.
-            DealPacket(4);
-            dealCursors.Add(36);
-            foreach (var hand in hands) if (hand.Count != 9) throw new InvalidOperationException("E04 stage two invariant");
-            DealPacket(4);
-            dealCursors.Add(52);
-            Phase = GamePhase.Playing; Turn = Hakem;
+            Phase = GamePhase.DealingSecond;
+            AssertInvariant();
+        }
+
+        public void AdvanceDeal()
+        {
+            int stage = Phase == GamePhase.DealingSecond ? 1 : Phase == GamePhase.DealingFinal ? 2 : -1;
+            if (stage < 0) throw new GameRuleException("No deal stage pending");
+            DealPacket(E04DealPlan.PacketSize(stage));
+            dealCursors.Add(E04DealPlan.Cursor(stage));
+            Phase = stage == 1 ? GamePhase.DealingFinal : GamePhase.Playing;
+            if (Phase == GamePhase.Playing) Turn = Hakem;
             AssertInvariant();
         }
 
@@ -172,7 +185,7 @@ namespace Hokmnameh.Core
         {
             for (int offset = 0; offset < 4; ++offset)
                 for (int card = 0; card < cardsPerSeat; ++card)
-                    hands[(Hakem - offset + 4) % 4].Add(undealt.Dequeue());
+                    hands[E04DealPlan.Seat(Hakem, offset)].Add(undealt.Dequeue());
         }
 
         public int[] LegalCards(int seat)
@@ -238,6 +251,7 @@ namespace Hokmnameh.Core
             v.trump = Trump; v.round = Round; v.winnerTeam = WinnerTeam;
             v.shuffleAlgorithmId = ShuffleAlgorithmId;
             v.shuffleCommitment = ShuffleCommitment; v.cutIndex = CutIndex;
+            v.dealCursor = dealCursors.Count == 0 ? 0 : dealCursors[dealCursors.Count - 1];
             v.lastTrickWinner = LastTrickWinner;
             v.hand = hands[seat].ToArray();
             for (int i = 0; i < 4; i++) v.handCounts[i] = hands[i].Count;
@@ -269,6 +283,18 @@ namespace Hokmnameh.Core
             }
             if (Phase != GamePhase.Waiting || Round > 0)
                 if (total != 52) throw new InvalidOperationException("Cards missing from round");
+            if (Round > 0 && Phase is (GamePhase.ChoosingTrump or GamePhase.DealingSecond or GamePhase.DealingFinal or GamePhase.Playing))
+            {
+                int stage = dealCursors.Count - 1;
+                if (stage < 0 || stage > 2 || dealCursors[stage] != E04DealPlan.Cursor(stage) ||
+                    undealt.Count != 52 - E04DealPlan.Cursor(stage))
+                    throw new InvalidOperationException("E04 deal cursor invariant");
+                int expected = stage == 0 ? 5 : stage == 1 ? 9 : 13;
+                for (int seat = 0; seat < 4; seat++)
+                    if (hands[seat].Count > ClassicRules.CardsPerSeat ||
+                        (Phase != GamePhase.Playing || played.Count == 0) && hands[seat].Count != expected)
+                        throw new InvalidOperationException("E04 hand count invariant");
+            }
         }
     }
 }

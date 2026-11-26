@@ -1,0 +1,11 @@
+# S02-W05 + S02-W06 — E04 cut and staged deal
+
+This change implements the owner-approved `DEC-2026-0006` contract. The stale `PENDING_APPROVAL` labels for W05-T04 and W06-T03 in deployment-center refer to decisions that are now explicitly resolved by that checked-in decision set: eight-second Cut deadline, HMAC-domain fallback index 1..51, counterclockwise 5/4/4 packets and cursors 20/36/52.
+
+W05: opt-in v2 keeps the cutter seat, typed rejection, one-use action and fixed deadline. Forward-only migration `003_round_cut_actions.sql` backfills historical cut events and enforces one accepted human or fallback Cut per `(match_id,round_number)` in the same transaction as the versioned event. The encrypted proof and the accepted cut match on replay. The fallback uses only the independently derived HMAC cut domain and cannot be replaced by a later action. The v2 20-second Hokm deadline rejects late human selection and chooses maximum suit count from the five initial cards, breaking ties by suit order.
+
+W06: `E04DealPlan.Version` fixes packet sizes, counterclockwise seats, and immutable cursors; the shared rules core exposes `SelectTrump` and `AdvanceDeal`. V2 records `deal-initial`, `trump-staged`, `deal-second` and `deal-final` independently in the append-only match ledger; replay reconstructs each transition. V1 fixtures and event format remain accepted. The only shuffled deck is prepared once before the initial five; later stages dequeue from the same deck. The private snapshot exposes only the caller's hand plus the public plan ID and cursor.
+
+Validation: shared .NET smoke verifies seat order, exact counts and uniqueness, unauthorized and duplicate Cut, timeout proof, staged cursor replay and late Hokm fallback. Isolated PostgreSQL/API CI checks two simultaneous Cut submissions (exactly one success), the per-round unique row, stage event order, proof and replay; five CI jobs and migration checksum gates are required before declaring either Work complete.
+
+Limit: `CUT_PENDING` room state and pending Seed currently live only in process memory. A worker restart during that eight-second window cannot resume the pending Cut; no Ranked or production release, full process recovery or independent human review is claimed. A separate durable room/secret recovery gate is still required.
