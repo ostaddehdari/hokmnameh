@@ -213,8 +213,11 @@ app.Use(async (ctx, next) =>
         {
             ctx.Response.StatusCode = e.StatusCode;
             ctx.Response.ContentType = "application/problem+json";
-            await ctx.Response.WriteAsJsonAsync(new { type = "https://srun.ir/hokmnameh/problems/cut-command",
-                title = "Cut command rejected", status = e.StatusCode, code = e.Code });
+            await ctx.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                type = "https://srun.ir/hokmnameh/problems/cut-command",
+                title = "Cut command rejected", status = e.StatusCode, code = e.Code
+            }));
         }
     }
     catch (GameRuleException e)
