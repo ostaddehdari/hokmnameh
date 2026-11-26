@@ -48,7 +48,7 @@ Open `unity/` with a Unity **6.3 LTS** Editor with Android Build Support. Click 
 
 ## Roadmap and limitations
 
-**Not yet implemented:** user login via SMS, ranked ladders, coins, sponsorship billing, social systems, deterministic match replay/rejoin, strong bots/ISMCTS, production hosting telemetry, Redis/Valkey orchestration, 1000+ player load certification, LAN cryptographic authentication, and final UI/UX. Online rooms now write versioned events and encrypted round proofs to PostgreSQL, but an active room is still in memory and cannot resume after process restart. This is an engineering bootstrap, not a completed game.
+**Not yet implemented:** user login via SMS, ranked ladders, coins, sponsorship billing, social systems, live room rejoin after restart, strong bots/ISMCTS, production hosting telemetry, Redis/Valkey orchestration, 1000+ player load certification, LAN cryptographic authentication, and final UI/UX. Online rooms write versioned events and encrypted round proofs to PostgreSQL. An internal operator CLI can deterministically reconstruct the match for audit, but an active room is still in memory and cannot resume after process restart. This is an engineering bootstrap, not a completed game.
 
 ## Stage S01 implementation (2026-11-20)
 

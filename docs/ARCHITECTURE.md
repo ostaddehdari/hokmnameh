@@ -29,7 +29,7 @@
 
 ## Exactly what scales today vs later
 
-The current v0.1 API can handle a small number of rooms; each active room is in memory and all matches are on one process. Versioned match events and encrypted E-04 round proofs are persisted in PostgreSQL, but the live room cannot be rehydrated after a crash until S02-W03 replay/rejoin is built. NO load-test evidence exists for 1000s of connected players. The server's Timer uses a room-by-room tick, which must be profiled before any large-scale launch.
+The current v0.1 API can handle a small number of rooms; each active room is in memory and all matches are on one process. Versioned match events and encrypted E-04 round proofs are persisted in PostgreSQL. The internal V1 replay verifies and reconstructs stored game state for an operator; room roster, deadlines, snapshot signing key and live registration are not persisted, so the live room cannot resume after a crash. NO load-test evidence exists for 1000s of connected players. The server's Timer uses a room-by-room tick, which must be profiled before any large-scale launch.
 
 **Phase 2 for thousands of concurrent users:** stateless auth/API nodes; a match-placement directory and per-match single-writer worker ownership; process-local room actors under bounded scheduling; atomic checkpoint/event log into PostgreSQL; Valkey for ephemeral presence, queues and matchmaking; sticky WS connection routing or event pub/sub; bounded backpressure; reconnect tokens; metrics for simultaneous connections, turn p95 latency, match CPU, heap, DB pool; chaos testing.
 

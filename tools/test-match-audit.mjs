@@ -29,6 +29,15 @@ let state = await request(`/api/v1/rooms/${room.id}`, tokens[0]);
 assert.equal(state.game.phase, 1);
 assert.equal(state.game.hand.length, 5);
 assert.equal(state.game.shuffleCommitment.length, 64);
+const replay = () => {
+  const cmd = spawnSync('docker', ['compose', 'exec', '-T', 'api',
+    'dotnet', 'Hokmnameh.Api.dll', '--verify-replay', room.id], { encoding: 'utf8' });
+  assert.equal(cmd.status, 0, 'isolated authority replay failed');
+  return JSON.parse(cmd.stdout.trim());
+};
+let recovered = replay();
+assert.equal(recovered.phase, state.game.phase);
+assert.equal(recovered.commitment, state.game.shuffleCommitment);
 state = await request(`/api/v1/rooms/${room.id}/trump`, tokens[0], 'POST',
   { suit: Math.floor(state.game.hand[0] / 13) });
 let moves = 0;
@@ -43,6 +52,12 @@ while (state.game.phase === 2 && moves < 52) {
   moves++;
 }
 assert.ok(moves >= 28 && (state.game.phase === 0 || state.game.phase === 3));
+recovered = replay();
+assert.equal(recovered.phase, state.game.phase);
+assert.equal(recovered.round, state.game.round);
+assert.deepEqual(recovered.score, state.game.matchPoints);
+assert.equal(recovered.commitment, state.game.shuffleCommitment);
+assert.equal(recovered.closedRounds, 1);
 
 const db = sql => {
   const cmd = spawnSync('docker', ['compose', 'exec', '-T', 'postgres', 'sh', '-c',
@@ -87,4 +102,4 @@ const recomputed = createHash('sha256').update(Buffer.concat([
 assert.equal(recomputed, rows[6].trim());
 proof.fill(0); key.fill(0);
 console.log(JSON.stringify({ work: 'S02-W01/S02-W02', eventCount: Number(rows[1]),
-  moves, encryptedProof: true, closedRoundVerified: true, status: 'PASS' }));
+  moves, encryptedProof: true, closedRoundVerified: true, replayVerified: true, status: 'PASS' }));
