@@ -18,6 +18,19 @@ async function request(path, token, method = 'GET', body) {
 const identities = [];
 for (let i = 0; i < 4; i++) identities.push(await request('/api/v1/identity/guest', null, 'POST'));
 const tokens = identities.map(x => x.accessToken);
+const initialProgress = await request('/api/v1/profile/progress', tokens[0]);
+assert.equal(initialProgress.accountId, identities[0].accountId);
+assert.equal(initialProgress.xp, 0);
+assert.equal(initialProgress.level, 1);
+const temporary = await request('/api/v1/identity/guest', null, 'POST');
+const signedOut = await fetch(base + '/api/v1/identity/logout', {
+  method: 'POST', headers: { authorization: `Bearer ${temporary.accessToken}` }
+});
+assert.equal(signedOut.status, 204);
+const revoked = await fetch(base + '/api/v1/identity/me', {
+  headers: { authorization: `Bearer ${temporary.accessToken}` }
+});
+assert.equal(revoked.status, 401);
 const cutCreated = await request('/api/v2/rooms', tokens[0], 'POST', { mode: 'free' });
 const cutRoom = cutCreated.room;
 for (let seat = 1; seat < 4; seat++)
@@ -107,6 +120,23 @@ const db = sql => {
   assert.equal(cmd.status, 0, 'isolated PostgreSQL query failed');
   return cmd.stdout.trim();
 };
+assert.equal(db(`SELECT revoked_reason FROM auth_sessions WHERE account_id='${temporary.accountId}'`), 'user-logout');
+const xpMatch = randomUUID();
+db(`INSERT INTO recorded_matches(id,ruleset_version,game_mode,started_at)
+ VALUES ('${xpMatch}','iranian-hokm-classic-v1','practice',now());
+ INSERT INTO match_participants(match_id,account_id,seat) VALUES ('${xpMatch}','${identities[0].accountId}',0);
+ INSERT INTO match_events_v1(match_id,sequence,action_id,actor_seat,ruleset_version,happened_at,state_version,kind,public_value)
+ VALUES ('${xpMatch}',1,'${randomUUID()}',-1,'iranian-hokm-classic-v1',now(),1,'round-closed',1);
+ INSERT INTO xp_awards_v1(match_id,event_sequence,account_id,amount)
+ VALUES ('${xpMatch}',1,'${identities[0].accountId}',10) ON CONFLICT DO NOTHING;
+ INSERT INTO xp_awards_v1(match_id,event_sequence,account_id,amount)
+ VALUES ('${xpMatch}',1,'${identities[0].accountId}',10) ON CONFLICT DO NOTHING;`);
+assert.equal(db(`SELECT count(*) FROM xp_awards_v1 WHERE match_id='${xpMatch}'`), '1');
+const rejectedAward = spawnSync('docker', ['compose', 'exec', '-T', 'postgres', 'sh', '-c',
+  'exec psql -X -v ON_ERROR_STOP=1 -Atq -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "$1"',
+  'sh', `INSERT INTO xp_awards_v1(match_id,event_sequence,account_id,amount)
+    VALUES ('${xpMatch}',1,'${identities[1].accountId}',10)`], { encoding: 'utf8' });
+assert.notEqual(rejectedAward.status, 0, 'nonparticipant must never receive XP');
 assert.equal(db(`SELECT count(*) FROM round_cut_actions_v1 WHERE match_id='${cutRoom.id}'`), '1');
 assert.equal(db(`SELECT count(*) FROM round_proofs_v1 WHERE match_id='${cutRoom.id}'`), '1');
 assert.equal(db(`SELECT string_agg(kind || ':' || coalesce(public_value::text,''),',' ORDER BY sequence)

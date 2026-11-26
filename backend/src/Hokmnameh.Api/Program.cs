@@ -40,6 +40,8 @@ static RateLimitPartition<string> FixedWindow(string key, int permits, TimeSpan 
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton(sp => new XpLedger(sp.GetRequiredService<IConfiguration>()
+    .GetConnectionString("Postgres") ?? throw new InvalidOperationException("PostgreSQL required")));
 builder.Services.AddSingleton<RoomDirectory>();
 builder.Services.AddHostedService<MatchTicker>();
 builder.Services.AddHealthChecks();
@@ -95,6 +97,19 @@ api.MapGet("/api/v1/identity/me", async (HttpRequest req, AuthService auth, Canc
 {
     var identity = await auth.ValidateAsync(req, ct);
     return identity == null ? Results.Unauthorized() : Results.Ok(identity);
+}).RequireRateLimiting("authenticated-command");
+
+api.MapPost("/api/v1/identity/logout", async (HttpRequest req, AuthService auth, CancellationToken ct) =>
+    await auth.LogoutAsync(req, ct) ? Results.NoContent() : Results.Unauthorized())
+    .RequireRateLimiting("authenticated-command");
+
+api.MapGet("/api/v1/profile/progress", async (HttpRequest req, AuthService auth,
+    XpLedger progress, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(req, ct);
+    if (identity == null) return Results.Unauthorized();
+    var value = await progress.ReadAsync(identity.AccountId, ct);
+    return value == null ? Results.NotFound() : Results.Ok(value);
 }).RequireRateLimiting("authenticated-command");
 
 api.MapPost("/api/v1/rooms", async (HttpRequest req, CreateRoomRequest body, AuthService auth,

@@ -16,6 +16,11 @@
       "version": "003_round_cut_actions",
       "file": "003_round_cut_actions.sql",
       "sha256": "1e967425961e68ac48b0ef23a91520b221aeea2d4fbe5e2d378cbc804cc642ed"
+    },
+    {
+      "version": "004_identity_progress",
+      "file": "004_identity_progress.sql",
+      "sha256": "c0eda725ce292b0350d3befc5debef72fed6c17332c61e249a131b0130337af0"
     }
   ]
 }

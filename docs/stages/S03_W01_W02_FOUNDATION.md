@@ -1,0 +1,9 @@
+# S03-W01/W02 foundation — identity and progress
+
+The source migration `004_identity_progress.sql` adds nullable verified phone identity, a unique verified-phone index, session device/revoke metadata, versioned consent, short-lived challenge custody, a source-constrained XP award ledger, and separate player profile, reputation and league records. Old guest accounts and sessions remain valid. No phone number, code or access token is logged by this change.
+
+`POST /api/v1/identity/logout` revokes the presented session hash. `GET /api/v1/profile/progress` returns only the authenticated account's XP and level. The internal XP service inserts once per `(match,event,account)` and increments XP in the same transaction; it accepts only a persisted `round-closed` event for a recorded participant. No client-facing award endpoint exists. Level remains at the legacy default until an approved threshold schedule exists; XP rewards are not automatically issued from rooms yet.
+
+This is an **in-progress** foundation, not completion of either Work. Phone upgrade and phone login require a selected SMS delivery adapter, consent/retention policy and OTP anti-abuse verification before the challenge schema can be activated. Progress policy must specify award amounts and level thresholds; avatar/nickname/reputation/league APIs and Android RTL display still need implementation and device testing. The account ID is the stable key for every profile and award, so a later verified-phone upgrade can retain existing progress without copying it.
+
+CI evidence required: forward-only checksum/migration gate, .NET build, authenticated progress/logout drill, revoked-token rejection, XP source and duplicate guards in an isolated PostgreSQL instance. No production migration, SMS send or Android device test has been run.
