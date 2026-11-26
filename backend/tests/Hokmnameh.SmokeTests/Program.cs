@@ -132,6 +132,25 @@ var vector = E04Shuffle.Create(Guid.Parse(input.GetProperty("matchId").GetString
 Assert(vector.CommitmentHex == expected.GetProperty("commitmentHex").GetString(), "E04 official commitment");
 Assert(vector.Deck.SequenceEqual(expected.GetProperty("cutDeck").EnumerateArray().Select(x => x.GetInt32())), "E04 official 52-card cut deck");
 Assert(vector.Deck.Distinct().Count() == 52 && vector.Deck.Min() == 0 && vector.Deck.Max() == 51, "E04 permutation invariant");
+for (int cut = 1; cut <= 51; cut++)
+    for (int hakem = 0; hakem < 4; hakem++)
+    {
+        var id = Guid.NewGuid();
+        using var prepared = E04Shuffle.Create(id, 1, ClassicRules.ImmutableId,
+            Convert.FromHexString(input.GetProperty("seedHex").GetString()!),
+            Convert.FromHexString(input.GetProperty("nonceHex").GetString()!), cut);
+        var propertyGame = new HokmGame(id);
+        propertyGame.StartRound(hakem, prepared);
+        propertyGame.AssertInvariant();
+        propertyGame.SelectTrump(hakem, 0);
+        propertyGame.AdvanceDeal();
+        propertyGame.AssertInvariant();
+        propertyGame.AdvanceDeal();
+        propertyGame.AssertInvariant();
+        Assert(propertyGame.DealCursors.SequenceEqual(new[] { 20, 36, 52 }) &&
+            Enumerable.Range(0, 4).SelectMany(s => propertyGame.Snapshot(s).hand).Distinct().Count() == 52,
+            "E04 deal property cut=" + cut + " hakem=" + hakem);
+    }
 var uncutDeck = Enumerable.Range(0, 52).Reverse().ToArray();
 for (int cut = 1; cut <= 51; ++cut)
 {
@@ -230,14 +249,25 @@ using (var replayCut = new ReplayBundleV1(cutRoom.Id, ClassicRules.ImmutableId,
         "authorized cut can be reconstructed from audit and encrypted proof contract");
 }
 cutRoom.ChooseTrump(cutPlayers[0], 2);
+var reconnectVersion = cutStore.Events.Count;
+_ = cutRoom.State(cutPlayers[0]);
+_ = cutRoom.State(cutPlayers[3]);
+Assert(cutStore.Events.Count == reconnectVersion, "seat reconnection and UI reads do not advance deal");
 Assert(cutStore.Events.TakeLast(3).Select(e => e.Kind).SequenceEqual(new[] {
     "trump-staged", "deal-second", "deal-final" }) &&
     cutStore.Events.TakeLast(2).Select(e => e.PublicValue).SequenceEqual(new int?[] { 36, 52 }),
     "trump and each stage have an ordered durable audit cursor");
 using (var replayStaged = new ReplayBundleV1(cutRoom.Id, ClassicRules.ImmutableId,
-    cutStore.Events.Count, cutStore.Events, cutStore.Proofs))
+    cutStore.Events.Count, cutStore.Events, cutStore.Proofs.Select(p =>
+        new ReplayRoundSecretV1(p.Round, (byte[])p.Seed.Clone(), (byte[])p.Nonce.Clone(),
+            p.Commitment, p.Cut, p.Algorithm)).ToArray()))
     Assert(MatchReplay.Rebuild(replayStaged).Game.DealCursors.SequenceEqual(new[] { 20, 36, 52 }),
         "v2 deal reconstructs from persisted cursor events");
+using (var incomplete = new ReplayBundleV1(cutRoom.Id, ClassicRules.ImmutableId,
+    cutStore.Events.Count - 1, cutStore.Events.Take(cutStore.Events.Count - 1).ToArray(),
+    cutStore.Proofs.Select(p => new ReplayRoundSecretV1(p.Round, (byte[])p.Seed.Clone(),
+        (byte[])p.Nonce.Clone(), p.Commitment, p.Cut, p.Algorithm)).ToArray()))
+    AssertRuleError(() => MatchReplay.Rebuild(incomplete), "incomplete staged cursor fails closed");
 var fallbackClock = new ManualTimeProvider(DateTimeOffset.Parse("2026-01-02T00:00:00Z"));
 var fallbackCutPlayers = Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray();
 var fallbackCutStore = new CapturingCutStore();

@@ -289,8 +289,10 @@ namespace Hokmnameh.Core
                 if (stage < 0 || stage > 2 || dealCursors[stage] != E04DealPlan.Cursor(stage) ||
                     undealt.Count != 52 - E04DealPlan.Cursor(stage))
                     throw new InvalidOperationException("E04 deal cursor invariant");
+                int expected = stage == 0 ? 5 : stage == 1 ? 9 : 13;
                 for (int seat = 0; seat < 4; seat++)
-                    if (hands[seat].Count > ClassicRules.CardsPerSeat)
+                    if (hands[seat].Count > ClassicRules.CardsPerSeat ||
+                        (Phase != GamePhase.Playing || played.Count == 0) && hands[seat].Count != expected)
                         throw new InvalidOperationException("E04 hand count invariant");
             }
         }
