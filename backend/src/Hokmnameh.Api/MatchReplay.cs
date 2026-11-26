@@ -52,6 +52,7 @@ internal static class MatchReplay
         var game = new HokmGame(bundle.MatchId);
         var roundIndex = 0;
         var closed = 0;
+        int? pendingCut = null;
         var actions = new HashSet<Guid>();
         for (var i = 0; i < bundle.Events.Count; i++)
         {
@@ -63,12 +64,22 @@ internal static class MatchReplay
                 throw new GameRuleException("Invalid replay event envelope");
             switch (e.Kind)
             {
+                case "cut-selected":
+                case "cut-fallback":
+                    if (game.Phase != GamePhase.Waiting || pendingCut.HasValue ||
+                        e.PublicValue is < 1 or > 51 || e.PublicValue == null ||
+                        (e.Kind == "cut-selected" && e.ActorSeat != (game.Hakem + 3) % 4) ||
+                        (e.Kind == "cut-fallback" && e.ActorSeat != -1))
+                        throw new GameRuleException("Invalid replay cut");
+                    pendingCut = e.PublicValue;
+                    break;
                 case "round-started":
                     if (e.ActorSeat != -1 || e.PublicValue != game.Round + 1 || roundIndex >= bundle.Rounds.Count)
                         throw new GameRuleException("Invalid round start");
                     var proof = bundle.Rounds[roundIndex++];
                     if (proof.Round != e.PublicValue || proof.Algorithm != E04Shuffle.AlgorithmId ||
-                        proof.Seed.Length != 32 || proof.Nonce.Length != 16 || proof.Cut is < 1 or > 51)
+                        proof.Seed.Length != 32 || proof.Nonce.Length != 16 || proof.Cut is < 1 or > 51 ||
+                        (pendingCut.HasValue && proof.Cut != pendingCut.Value))
                         throw new GameRuleException("Invalid replay proof");
                     using (var prepared = E04Shuffle.Create(bundle.MatchId, (ulong)proof.Round,
                         bundle.Ruleset, proof.Seed, proof.Nonce, proof.Cut))
@@ -77,6 +88,7 @@ internal static class MatchReplay
                             throw new GameRuleException("Replay commitment mismatch");
                         game.StartRound(game.Round == 0 ? 0 : game.Hakem, prepared);
                     }
+                    pendingCut = null;
                     break;
                 case "trump-selected":
                 case "trump-fallback":
@@ -105,7 +117,7 @@ internal static class MatchReplay
                  bundle.Events[i + 1].Kind != "round-closed" && closed < game.Round))
                 throw new GameRuleException("Replay round boundary mismatch");
         }
-        if (roundIndex != bundle.Rounds.Count || game.Round != roundIndex || closed > roundIndex ||
+        if (pendingCut.HasValue || roundIndex != bundle.Rounds.Count || game.Round != roundIndex || closed > roundIndex ||
             (game.Phase is GamePhase.Waiting or GamePhase.Finished && closed != roundIndex))
             throw new GameRuleException("Replay proof or closing event missing");
         return new ReplayResultV1(game, bundle.AuditSequence, closed);

@@ -17,6 +17,13 @@ Public base path: `/hokmnameh` (`https://srun.ir/hokmnameh` AFTER server deploym
 - `POST /api/v1/rooms/{uuid}/play`, bearer + JSON `{ "card": 0 }` (card 0..51: suit=floor(card/13), rank=(card mod 13)+2). Must follow led suit.
 - `GET /health/live`, `GET /health/ready`.
 
+### Opt-in E-04 Cut room (v2 creation)
+
+- `POST /api/v2/rooms`, bearer + `{ "mode": "free" }` creates a room using the Cut protocol. Existing v1 room creation continues to deal immediately for prototype compatibility. Once all four seats join, the v2 room exposes `room.cutPhase: "CUT_PENDING"`, an eight-second `room.cutDeadline`, and `cutStateVersion` in the authenticated seat state. `game` is null until Cut completes. For this incremental version, join/state/trump/play remain on the existing `/api/v1/rooms/...` routes.
+- The Cutter is `(hakemSeat + 3) % 4`. Only that authenticated room member may call `POST /api/v2/rooms/{uuid}/cut` with `{ "cutIndex": 17, "actionId": "<new UUID>", "stateVersion": 0 }`. The value of `stateVersion` must be read from the current pending state. Submit an index in `1..51` once, before the deadline. No Deck or Seed is accepted or exposed. A successful command returns the caller's seat-specific state after the authority records the cut event, sealed proof and round start.
+- Typed `application/problem+json` responses include `code`: `cut_not_member` / `wrong_cutter` (403), `invalid_cut_action_id` / `invalid_cut_index` (400), `duplicate_cut_action` / `cut_not_pending` / `stale_cut_state` (409), and `cut_deadline_expired` (410). At timeout, the authority records a deterministic HMAC-domain fallback and deals; disconnect does not extend the deadline. An unavailable room remains 404, and missing authentication remains 401.
+- Pending Cut state and Seed currently live in process memory; the cut event and encrypted proof become durable when Cut is accepted or fallback runs. Restart recovery during `CUT_PENDING` is a later task and is **not** guaranteed here. No v2 room is approved for Ranked or production use yet.
+
 ### WebSocket
 
 Connect to `wss://srun.ir/hokmnameh/ws/rooms/{uuid}` using the same bearer header. This is **server-to-client state push only**; mutations go through authenticated HTTP endpoints.

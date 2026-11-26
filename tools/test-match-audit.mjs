@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { createDecipheriv, createHash } from 'node:crypto';
+import { createDecipheriv, createHash, randomUUID } from 'node:crypto';
 
 const base = 'http://127.0.0.1:5080/hokmnameh';
 async function request(path, token, method = 'GET', body) {
@@ -18,6 +18,34 @@ async function request(path, token, method = 'GET', body) {
 const identities = [];
 for (let i = 0; i < 4; i++) identities.push(await request('/api/v1/identity/guest', null, 'POST'));
 const tokens = identities.map(x => x.accessToken);
+const cutCreated = await request('/api/v2/rooms', tokens[0], 'POST', { mode: 'free' });
+const cutRoom = cutCreated.room;
+for (let seat = 1; seat < 4; seat++)
+  await request(`/api/v1/rooms/join/${cutRoom.code}`, tokens[seat], 'POST');
+const cutPath = `/api/v2/rooms/${cutRoom.id}/cut`;
+const cutPending = await request(`/api/v1/rooms/${cutRoom.id}`, tokens[3]);
+assert.equal(cutPending.room.cutPhase, 'CUT_PENDING');
+assert.equal(cutPending.cutStateVersion, 0);
+assert.equal(cutPending.isYourCut, true);
+assert.equal(cutPending.game, null);
+const cutCommand = { cutIndex: 17, actionId: randomUUID(), stateVersion: cutPending.cutStateVersion };
+async function expectCutError(token, body, status, code) {
+  const response = await fetch(base + cutPath, { method: 'POST',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    body: JSON.stringify(body) });
+  assert.equal(response.status, status);
+  assert.match(response.headers.get('content-type') ?? '', /application\/problem\+json/);
+  assert.equal((await response.json()).code, code);
+}
+await expectCutError(tokens[0], cutCommand, 403, 'wrong_cutter');
+await expectCutError(tokens[3], { ...cutCommand, stateVersion: 999 }, 409, 'stale_cut_state');
+const acceptedCut = await request(cutPath, tokens[3], 'POST', cutCommand);
+assert.equal(acceptedCut.game.cutIndex, 17);
+assert.equal(acceptedCut.game.phase, 1);
+await expectCutError(tokens[3], cutCommand, 409, 'duplicate_cut_action');
+const otherCutState = await request(`/api/v1/rooms/${cutRoom.id}`, tokens[1]);
+assert.equal(otherCutState.game.hand.length, 5);
+assert.equal(JSON.stringify(otherCutState).toLowerCase().includes('seed'), false);
 const created = await request('/api/v1/rooms', tokens[0], 'POST', { mode: 'free' });
 const room = created.room;
 assert.match(room.id, /^[0-9a-f-]{36}$/i);

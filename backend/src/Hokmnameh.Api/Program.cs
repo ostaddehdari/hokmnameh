@@ -106,6 +106,27 @@ api.MapPost("/api/v1/rooms", async (HttpRequest req, CreateRoomRequest body, Aut
     return Results.Created($"/hokmnameh/api/v1/rooms/{room.Id}", new JoinRoomResponse(room.View(), 0));
 }).RequireRateLimiting("authenticated-command");
 
+// E-04 cut rooms are opt-in under v2, preserving the v1 immediate-deal prototype.
+api.MapPost("/api/v2/rooms", async (HttpRequest req, CreateRoomRequest body, AuthService auth,
+    RoomDirectory rooms, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(req, ct);
+    if (identity == null) return Results.Unauthorized();
+    var room = rooms.Create(identity.AccountId, (body.Mode ?? "free").ToLowerInvariant(), requireCut: true);
+    return Results.Created($"/hokmnameh/api/v1/rooms/{room.Id}", new JoinRoomResponse(room.View(), 0));
+}).RequireRateLimiting("authenticated-command");
+
+api.MapPost("/api/v2/rooms/{roomId:guid}/cut", async (Guid roomId, CutCardRequest body,
+    HttpRequest req, AuthService auth, RoomDirectory rooms, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(req, ct);
+    if (identity == null) return Results.Unauthorized();
+    var room = rooms.Get(roomId);
+    room.Cut(identity.AccountId, body);
+    await room.BroadcastAsync(ct);
+    return Results.Ok(room.State(identity.AccountId));
+}).RequireRateLimiting("authenticated-command");
+
 api.MapPost("/api/v1/rooms/join/{code}", async (string code, HttpRequest req, AuthService auth,
     RoomDirectory rooms, CancellationToken ct) =>
 {
@@ -186,6 +207,19 @@ api.MapGet("/ws/rooms/{roomId:guid}", async (Guid roomId, HttpContext context, A
 app.Use(async (ctx, next) =>
 {
     try { await next(); }
+    catch (CutCommandException e)
+    {
+        if (!ctx.Response.HasStarted)
+        {
+            ctx.Response.StatusCode = e.StatusCode;
+            ctx.Response.ContentType = "application/problem+json";
+            await ctx.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                type = "https://srun.ir/hokmnameh/problems/cut-command",
+                title = "Cut command rejected", status = e.StatusCode, code = e.Code
+            }));
+        }
+    }
     catch (GameRuleException e)
     {
         if (!ctx.Response.HasStarted) { ctx.Response.StatusCode = 400; await ctx.Response.WriteAsJsonAsync(new { error = e.Message }); }

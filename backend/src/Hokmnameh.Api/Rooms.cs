@@ -10,10 +10,18 @@ using Microsoft.Extensions.Logging;
 namespace Hokmnameh.Api;
 
 public sealed record CreateRoomRequest(string? Mode);
-public sealed record RoomView(Guid Id, string Code, string Mode, string RulesetVersion, int PlayerCount, int Phase, bool Started);
+public sealed record RoomView(Guid Id, string Code, string Mode, string RulesetVersion, int PlayerCount, int Phase, bool Started,
+    string? CutPhase = null, DateTimeOffset? CutDeadline = null);
 public sealed record JoinRoomResponse(RoomView Room, int Seat);
 public sealed record SetTrumpRequest(int Suit);
 public sealed record PlayCardRequest(int Card);
+public sealed record CutCardRequest(int CutIndex, Guid ActionId, long StateVersion);
+
+public sealed class CutCommandException(string code, int statusCode) : Exception(code)
+{
+    public string Code { get; } = code;
+    public int StatusCode { get; } = statusCode;
+}
 
 internal sealed class ClientSocket(WebSocket socket, int seat)
 {
@@ -34,6 +42,11 @@ public sealed class GameRoom
     private readonly TimeProvider _timeProvider;
     private DateTimeOffset _turnDeadline;
     private int _turnSeconds;
+    private readonly bool _requireCut;
+    private E04Round? _pendingCutRound;
+    private int _pendingHakem;
+    private DateTimeOffset _cutDeadline;
+    private readonly HashSet<Guid> _cutActions = new();
     public Guid Id { get; }
     public string Code { get; }
     public string Mode { get; }
@@ -41,7 +54,7 @@ public sealed class GameRoom
     public DateTimeOffset CreatedAt { get; }
 
     public GameRoom(Guid id, string code, string mode, Guid owner, int turnSeconds, string rulesetVersion,
-        TimeProvider? timeProvider = null, IMatchEventStore? eventStore = null)
+        TimeProvider? timeProvider = null, IMatchEventStore? eventStore = null, bool requireCut = false)
     {
         if (string.IsNullOrWhiteSpace(rulesetVersion)) throw new ArgumentException("Ruleset version is required", nameof(rulesetVersion));
         Id = id; Code = code; Mode = mode; _players[0] = owner;
@@ -49,18 +62,21 @@ public sealed class GameRoom
         _audit = new MatchAudit(id, eventStore);
         RulesetVersion = rulesetVersion;
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _requireCut = requireCut;
         CreatedAt = _timeProvider.GetUtcNow();
         _turnSeconds = Math.Clamp(turnSeconds, 10, 120);
         if (mode == "practice")
         {
             for (int i = 1; i < 4; i++) _bots[i] = true;
-            BeginRound(0); ResetDeadline();
+            BeginRound(0);
         }
     }
 
     public RoomView View()
     {
-        lock (_lock) return new RoomView(Id, Code, Mode, RulesetVersion, _players.Count(p => p.HasValue) + _bots.Count(b => b), (int)_game.Phase, _game.Round > 0);
+        lock (_lock) return new RoomView(Id, Code, Mode, RulesetVersion, _players.Count(p => p.HasValue) + _bots.Count(b => b),
+            (int)_game.Phase, _game.Round > 0 || _pendingCutRound != null,
+            _pendingCutRound == null ? null : "CUT_PENDING", _pendingCutRound == null ? null : _cutDeadline);
     }
     public int? SeatOf(Guid identity)
     {
@@ -80,7 +96,7 @@ public sealed class GameRoom
                 if (!_players[i].HasValue && !_bots[i])
                 {
                     _players[i] = identity;
-                    if (_players.All(p => p.HasValue)) { BeginRound(0); ResetDeadline(); }
+                    if (_players.All(p => p.HasValue)) BeginRound(0);
                     return new JoinRoomResponse(View(), i);
                 }
             throw new GameRuleException("Room full");
@@ -94,8 +110,29 @@ public sealed class GameRoom
             var seat = SeatOf(identity) ?? throw new GameRuleException("Not a room member");
             var signed = _game.Round > 0 ? _audit.Sign(Id, seat, _game.Snapshot(seat)) : null;
             return new { room = View(), game = signed?.Snapshot, snapshotProof = signed == null ? null : new { signed.StateVersion, signed.Signature },
-                turnDeadline = _turnDeadline, isYourTurn = _game.Turn == seat &&
+                cutStateVersion = _pendingCutRound == null ? (long?)null : _audit.StateVersion,
+                isYourCut = _pendingCutRound != null && seat == CutterSeat(_pendingHakem),
+                turnDeadline = _pendingCutRound == null ? (DateTimeOffset?)_turnDeadline : null,
+                isYourTurn = _pendingCutRound == null && _game.Turn == seat &&
                     (_game.Phase == GamePhase.ChoosingTrump || _game.Phase == GamePhase.Playing) };
+        }
+    }
+    private static int CutterSeat(int hakem) => (hakem + 3) % 4;
+
+    public void Cut(Guid identity, CutCardRequest command)
+    {
+        lock (_lock)
+        {
+            EnsureHealthy();
+            int seat = SeatOf(identity) ?? throw new CutCommandException("cut_not_member", 403);
+            if (command.ActionId == Guid.Empty) throw new CutCommandException("invalid_cut_action_id", 400);
+            if (_cutActions.Contains(command.ActionId)) throw new CutCommandException("duplicate_cut_action", 409);
+            if (_pendingCutRound == null) throw new CutCommandException("cut_not_pending", 409);
+            if (seat != CutterSeat(_pendingHakem)) throw new CutCommandException("wrong_cutter", 403);
+            if (command.StateVersion != _audit.StateVersion) throw new CutCommandException("stale_cut_state", 409);
+            if (_timeProvider.GetUtcNow() >= _cutDeadline) throw new CutCommandException("cut_deadline_expired", 410);
+            if (command.CutIndex is < 1 or > 51) throw new CutCommandException("invalid_cut_index", 400);
+            FinalizeCut(seat, command.CutIndex, command.ActionId, false);
         }
     }
     public void ChooseTrump(Guid identity, int suit)
@@ -124,11 +161,11 @@ public sealed class GameRoom
     {
         if (_faulted) throw new InvalidOperationException("Match authority is quarantined after audit failure");
     }
-    private void Record(int seat, string kind, int? value = null, E04Round? proof = null)
+    private void Record(int seat, string kind, int? value = null, E04Round? proof = null, Guid? actionId = null)
     {
         try
         {
-            _audit.Append(new CommandV1(_audit.StateVersion + 1, Guid.NewGuid(), seat, RulesetVersion,
+            _audit.Append(new CommandV1(_audit.StateVersion + 1, actionId ?? Guid.NewGuid(), seat, RulesetVersion,
                 _timeProvider.GetUtcNow(), _audit.StateVersion, kind), value, proof);
         }
         catch { _faulted = true; throw; }
@@ -136,10 +173,37 @@ public sealed class GameRoom
     private void BeginRound(int hakem)
     {
         EnsureHealthy();
-        using var prepared = E04Shuffle.CreateRandom(Id, (ulong)(_game.Round + 1), RulesetVersion);
-        Record(-1, "round-started", _game.Round + 1, prepared);
-        try { _game.StartRound(hakem, prepared); }
+        var prepared = E04Shuffle.CreateRandom(Id, (ulong)(_game.Round + 1), RulesetVersion);
+        if (_requireCut)
+        {
+            _pendingCutRound = prepared;
+            _pendingHakem = hakem;
+            _cutDeadline = _timeProvider.GetUtcNow().AddSeconds(8);
+            return;
+        }
+        using (prepared)
+        {
+            Record(-1, "round-started", _game.Round + 1, prepared);
+            try { _game.StartRound(hakem, prepared); ResetDeadline(); }
+            catch { _faulted = true; throw; }
+        }
+    }
+
+    private void FinalizeCut(int actorSeat, int index, Guid actionId, bool fallback)
+    {
+        var pending = _pendingCutRound ?? throw new InvalidOperationException("No pending cut");
+        try
+        {
+            using var prepared = E04Shuffle.Create(Id, pending.RoundNumber, RulesetVersion,
+                pending.Seed, pending.Nonce, index);
+            Record(actorSeat, fallback ? "cut-fallback" : "cut-selected", index, actionId: actionId);
+            if (!fallback) _cutActions.Add(actionId);
+            Record(-1, "round-started", _game.Round + 1, prepared);
+            _game.StartRound(_pendingHakem, prepared);
+            ResetDeadline();
+        }
         catch { _faulted = true; throw; }
+        finally { pending.Dispose(); _pendingCutRound = null; }
     }
 
     public bool Tick()
@@ -147,10 +211,17 @@ public sealed class GameRoom
         lock (_lock)
         {
             if (_faulted) return false;
+            if (_pendingCutRound != null)
+            {
+                int cutter = CutterSeat(_pendingHakem);
+                if (!_bots[cutter] && _timeProvider.GetUtcNow() < _cutDeadline) return false;
+                FinalizeCut(-1, _pendingCutRound.CutIndex, Guid.NewGuid(), true);
+                return true;
+            }
             if (_game.Round == 0 || _game.Phase == GamePhase.Finished) return false;
             if (_game.Phase == GamePhase.Waiting)
             {
-                BeginRound(_game.Hakem); ResetDeadline(); return true;
+                BeginRound(_game.Hakem); return true;
             }
             int seat = _game.Phase == GamePhase.ChoosingTrump ? _game.Hakem : _game.Turn;
             bool timerExpired = _timeProvider.GetUtcNow() >= _turnDeadline;
@@ -191,7 +262,9 @@ public sealed class GameRoom
                 var signed = _game.Round > 0 ? _audit.Sign(Id, client.Seat, _game.Snapshot(client.Seat)) : null;
                 payload = new { type = "state", roomId = Id, state = signed?.Snapshot,
                     snapshotProof = signed == null ? null : new { signed.StateVersion, signed.Signature },
-                    room = View(), turnDeadline = _turnDeadline };
+                    room = View(), cutStateVersion = _pendingCutRound == null ? (long?)null : _audit.StateVersion,
+                    isYourCut = _pendingCutRound != null && client.Seat == CutterSeat(_pendingHakem),
+                    turnDeadline = _pendingCutRound == null ? (DateTimeOffset?)_turnDeadline : null };
             }
             var bytes = JsonSerializer.SerializeToUtf8Bytes(payload, JsonOptions.Default);
             try
@@ -228,7 +301,7 @@ public sealed class RoomDirectory(IConfiguration config)
         return configured;
     }
 
-    public GameRoom Create(Guid owner, string mode)
+    public GameRoom Create(Guid owner, string mode, bool requireCut = false)
     {
         if (mode != "free" && mode != "practice") throw new GameRuleException("Supported modes: free, practice");
         if (string.IsNullOrEmpty(_connectionString) || string.IsNullOrEmpty(_auditKey))
@@ -238,7 +311,7 @@ public sealed class RoomDirectory(IConfiguration config)
         var code = id.ToString("N")[..8].ToUpperInvariant();
         // Capture once at match creation. Later configuration/default changes cannot alter an active match.
         var room = new GameRoom(id, code, mode, owner, _turnSeconds, _rulesetVersion,
-            eventStore: new PostgresMatchStore(_connectionString, _auditKey, mode));
+            eventStore: new PostgresMatchStore(_connectionString, _auditKey, mode), requireCut: requireCut);
         if (!_rooms.TryAdd(id, room)) throw new InvalidOperationException("Failed to register room");
         _codes[code] = id;
         return room;

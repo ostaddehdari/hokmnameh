@@ -36,9 +36,10 @@ public sealed class PostgresMatchStore : IMatchEventStore
         using var connection = new NpgsqlConnection(_connectionString);
         connection.Open();
         using var tx = connection.BeginTransaction();
-        if (command.Kind == "round-started")
+        if (command.Kind is "round-started" or "cut-selected" or "cut-fallback")
         {
-            if (preparedRound == null || publicValue != (int)preparedRound.RoundNumber)
+            if (command.Kind == "round-started" &&
+                (preparedRound == null || publicValue != (int)preparedRound.RoundNumber))
                 throw new GameRuleException("A round event requires a prepared proof");
             using var create = new NpgsqlCommand("""
                 INSERT INTO recorded_matches(id,ruleset_version,game_mode,started_at)
