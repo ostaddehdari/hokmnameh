@@ -23,6 +23,11 @@ public interface IMatchEventStore
     void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound);
 }
 
+public interface IMatchParticipantStore
+{
+    void RegisterParticipant(Guid roomId, Guid accountId, int seat, string rulesetVersion);
+}
+
 public sealed class MatchAudit : IDisposable
 {
     private readonly Guid _roomId;

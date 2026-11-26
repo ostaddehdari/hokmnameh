@@ -107,6 +107,8 @@ const db = sql => {
   assert.equal(cmd.status, 0, 'isolated PostgreSQL query failed');
   return cmd.stdout.trim();
 };
+assert.equal(db(`SELECT count(*) FROM match_participants WHERE match_id='${cutRoom.id}'`), '4');
+assert.equal(db(`SELECT count(*) FROM match_participants WHERE match_id='${room.id}'`), '4');
 const xpMatch = randomUUID();
 db(`INSERT INTO recorded_matches(id,ruleset_version,game_mode,started_at)
  VALUES ('${xpMatch}','iranian-hokm-classic-v1','practice',now());

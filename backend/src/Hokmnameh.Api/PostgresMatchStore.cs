@@ -9,7 +9,7 @@ namespace Hokmnameh.Api;
 
 // The event ledger and encrypted proof commit in the same PostgreSQL transaction.
 // Match actors are fail-stopped if persistence fails. Replay data is internal-only.
-public sealed class PostgresMatchStore : IMatchEventStore
+public sealed class PostgresMatchStore : IMatchEventStore, IMatchParticipantStore
 {
     private readonly string _connectionString;
     private readonly byte[] _key;
@@ -29,6 +29,37 @@ public sealed class PostgresMatchStore : IMatchEventStore
     private static byte[] AssociatedData(Guid matchId, ulong round, string commitment) =>
         Encoding.UTF8.GetBytes(FormattableString.Invariant(
             $"HOKM-E04-PROOF-v1\0{matchId:N}:{round}:{commitment}"));
+
+    public void RegisterParticipant(Guid roomId, Guid accountId, int seat, string rulesetVersion)
+    {
+        if (roomId == Guid.Empty || accountId == Guid.Empty || seat is < 0 or > 3 ||
+            rulesetVersion != ClassicRules.ImmutableId) throw new GameRuleException("Invalid match participant");
+        using var c = new NpgsqlConnection(_connectionString);
+        c.Open();
+        using var tx = c.BeginTransaction();
+        using (var match = new NpgsqlCommand("""
+            INSERT INTO recorded_matches(id,ruleset_version,game_mode,started_at)
+            VALUES (@match,@ruleset,@mode,now()) ON CONFLICT(id) DO NOTHING
+            """, c, tx))
+        {
+            match.Parameters.AddWithValue("match", roomId);
+            match.Parameters.AddWithValue("ruleset", rulesetVersion);
+            match.Parameters.AddWithValue("mode", _mode);
+            match.ExecuteNonQuery();
+        }
+        using (var participant = new NpgsqlCommand("""
+            INSERT INTO match_participants(match_id,account_id,seat) VALUES (@match,@account,@seat)
+            ON CONFLICT(match_id,seat) DO UPDATE SET account_id=EXCLUDED.account_id
+            WHERE match_participants.account_id=EXCLUDED.account_id
+            """, c, tx))
+        {
+            participant.Parameters.AddWithValue("match", roomId);
+            participant.Parameters.AddWithValue("account", accountId);
+            participant.Parameters.AddWithValue("seat", (short)seat);
+            if (participant.ExecuteNonQuery() != 1) throw new GameRuleException("Match seat already belongs to another account");
+        }
+        tx.Commit();
+    }
 
     public void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound)
     {

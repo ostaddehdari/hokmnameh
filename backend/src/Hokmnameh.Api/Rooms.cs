@@ -38,6 +38,7 @@ public sealed class GameRoom
     private readonly ConcurrentDictionary<Guid, ClientSocket> _clients = new();
     private readonly HokmGame _game;
     private readonly MatchAudit _audit;
+    private readonly IMatchParticipantStore? _participantStore;
     private bool _faulted;
     private readonly TimeProvider _timeProvider;
     private DateTimeOffset _turnDeadline;
@@ -60,6 +61,7 @@ public sealed class GameRoom
         Id = id; Code = code; Mode = mode; _players[0] = owner;
         _game = new HokmGame(id);
         _audit = new MatchAudit(id, eventStore);
+        _participantStore = eventStore as IMatchParticipantStore;
         RulesetVersion = rulesetVersion;
         _timeProvider = timeProvider ?? TimeProvider.System;
         _requireCut = requireCut;
@@ -190,6 +192,13 @@ public sealed class GameRoom
     private void BeginRound(int hakem)
     {
         EnsureHealthy();
+        try
+        {
+            for (int seat = 0; seat < 4; seat++)
+                if (_players[seat] is Guid accountId)
+                    _participantStore?.RegisterParticipant(Id, accountId, seat, RulesetVersion);
+        }
+        catch { _faulted = true; throw; }
         var prepared = E04Shuffle.CreateRandom(Id, (ulong)(_game.Round + 1), RulesetVersion);
         if (_requireCut)
         {
