@@ -6,14 +6,25 @@ import { createDecipheriv, createHash, randomUUID } from 'node:crypto';
 
 const base = 'http://127.0.0.1:5080/hokmnameh';
 async function request(path, token, method = 'GET', body) {
-  const response = await fetch(base + path, {
-    method,
-    headers: { ...(token ? { authorization: `Bearer ${token}` } : {}),
-      ...(body ? { 'content-type': 'application/json' } : {}) },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  assert.ok(response.ok, `${method} ${path} returned HTTP ${response.status}`);
-  return response.json();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const response = await fetch(base + path, {
+      method,
+      headers: { ...(token ? { authorization: `Bearer ${token}` } : {}),
+        ...(body ? { 'content-type': 'application/json' } : {}) },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (response.status === 429 && attempt < 2) {
+      const header = response.headers.get('retry-after');
+      const seconds = header == null ? 61 : Number(header);
+      assert.ok(Number.isFinite(seconds) && seconds >= 1 && seconds <= 300,
+        'rate limiter supplied an invalid Retry-After');
+      await new Promise(resolve => setTimeout(resolve, seconds * 1000 + 250));
+      continue; // The middleware rejected this request before invoking a game command.
+    }
+    assert.ok(response.ok, `${method} ${path} returned HTTP ${response.status}`);
+    return response.json();
+  }
+  throw new Error('Unreachable request retry state');
 }
 const identities = [];
 for (let i = 0; i < 4; i++) identities.push(await request('/api/v1/identity/guest', null, 'POST'));
