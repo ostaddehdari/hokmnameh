@@ -18,19 +18,6 @@ async function request(path, token, method = 'GET', body) {
 const identities = [];
 for (let i = 0; i < 4; i++) identities.push(await request('/api/v1/identity/guest', null, 'POST'));
 const tokens = identities.map(x => x.accessToken);
-const initialProgress = await request('/api/v1/profile/progress', tokens[0]);
-assert.equal(initialProgress.accountId, identities[0].accountId);
-assert.equal(initialProgress.xp, 0);
-assert.equal(initialProgress.level, 1);
-const temporary = await request('/api/v1/identity/guest', null, 'POST');
-const signedOut = await fetch(base + '/api/v1/identity/logout', {
-  method: 'POST', headers: { authorization: `Bearer ${temporary.accessToken}` }
-});
-assert.equal(signedOut.status, 204);
-const revoked = await fetch(base + '/api/v1/identity/me', {
-  headers: { authorization: `Bearer ${temporary.accessToken}` }
-});
-assert.equal(revoked.status, 401);
 const cutCreated = await request('/api/v2/rooms', tokens[0], 'POST', { mode: 'free' });
 const cutRoom = cutCreated.room;
 for (let seat = 1; seat < 4; seat++)
@@ -120,7 +107,6 @@ const db = sql => {
   assert.equal(cmd.status, 0, 'isolated PostgreSQL query failed');
   return cmd.stdout.trim();
 };
-assert.equal(db(`SELECT revoked_reason FROM auth_sessions WHERE account_id='${temporary.accountId}'`), 'user-logout');
 const xpMatch = randomUUID();
 db(`INSERT INTO recorded_matches(id,ruleset_version,game_mode,started_at)
  VALUES ('${xpMatch}','iranian-hokm-classic-v1','practice',now());
@@ -185,5 +171,29 @@ const recomputed = createHash('sha256').update(Buffer.concat([
 ])).digest('hex');
 assert.equal(recomputed, rows[6].trim());
 proof.fill(0); key.fill(0);
+// Isolate identity checks from the many game commands within the same IP rate window.
+const restart = spawnSync('docker', ['compose', 'restart', 'api'], { encoding: 'utf8' });
+assert.equal(restart.status, 0, 'isolated API restart failed');
+let ready = false;
+for (let attempt = 0; attempt < 30; attempt++) {
+  try { ready = (await fetch(base + '/health/ready')).ok; } catch { /* container starting */ }
+  if (ready) break;
+  await new Promise(resolve => setTimeout(resolve, 200));
+}
+assert.ok(ready, 'API did not recover after isolated restart');
+const initialProgress = await request('/api/v1/profile/progress', tokens[0]);
+assert.equal(initialProgress.accountId, identities[0].accountId);
+assert.equal(initialProgress.xp, 0);
+assert.equal(initialProgress.level, 1);
+const temporary = await request('/api/v1/identity/guest', null, 'POST');
+const signedOut = await fetch(base + '/api/v1/identity/logout', {
+  method: 'POST', headers: { authorization: `Bearer ${temporary.accessToken}` }
+});
+assert.equal(signedOut.status, 204);
+const revoked = await fetch(base + '/api/v1/identity/me', {
+  headers: { authorization: `Bearer ${temporary.accessToken}` }
+});
+assert.equal(revoked.status, 401);
+assert.equal(db(`SELECT revoked_reason FROM auth_sessions WHERE account_id='${temporary.accountId}'`), 'user-logout');
 console.log(JSON.stringify({ work: 'S02-W03/S02-W04', eventCount: Number(rows[1]),
   moves, encryptedProof: true, closedRoundVerified: true, replayVerified: true, status: 'PASS' }));
