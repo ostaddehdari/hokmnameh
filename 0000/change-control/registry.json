@@ -1189,7 +1189,7 @@
       "id": "CR-2026-0013",
       "decision_id": "DEC-2026-0013",
       "title": "فرمان Cut نسخه‌دار با صلاحیت Cutter و مهلت هشت‌ثانیه‌ای",
-      "status": "IMPLEMENTING",
+      "status": "VERIFIED",
       "category": [
         "rules",
         "api"
@@ -1269,7 +1269,8 @@
         "shared .NET smoke with manual clock",
         "isolated HTTP/PostgreSQL replay drill",
         "legacy E04 fixture and five CI jobs",
-        "change-control changed-files verification"
+        "change-control changed-files verification",
+        "PR #17 CI 45868090077: all five jobs SUCCESS; squash merge d8111ffff34410550e01045a5848e5b946f6159f"
       ],
       "rollback_plan": "Revert reviewed v2 handler and pending-cut source through a new PR; leave immutable audit rows intact, no production run or migration.",
       "migration_plan": null,
@@ -1285,7 +1286,7 @@
       "id": "CR-2026-0014",
       "decision_id": "DEC-2026-0014",
       "title": "قفل یکتایی Cut و قرارداد fallback E04",
-      "status": "IMPLEMENTING",
+      "status": "VERIFIED",
       "category": [
         "rules",
         "api",
@@ -1369,7 +1370,8 @@
       "test_plan": [
         "shared .NET smoke",
         "isolated PostgreSQL/API replay and race drill",
-        "five CI jobs and changed-files verifier"
+        "five CI jobs and changed-files verifier",
+        "PR #17 CI 45868090077: all five jobs SUCCESS; squash merge d8111ffff34410550e01045a5848e5b946f6159f"
       ],
       "rollback_plan": "Revert source through reviewed PR; retain immutable audit rows; do not down-migrate production.",
       "migration_plan": "Apply 003 in forward-only runner; hash and backfill pre-existing cut events atomically.",
@@ -1385,7 +1387,7 @@
       "id": "CR-2026-0015",
       "decision_id": "DEC-2026-0015",
       "title": "مراحل ۵، ۴، ۴ توزیع با cursor نسخه‌دار",
-      "status": "IMPLEMENTING",
+      "status": "VERIFIED",
       "category": [
         "rules",
         "api"
@@ -1456,7 +1458,8 @@
       "test_plan": [
         "shared .NET smoke",
         "isolated PostgreSQL/API replay and race drill",
-        "five CI jobs and changed-files verifier"
+        "five CI jobs and changed-files verifier",
+        "PR #17 CI 45868090077: all five jobs SUCCESS; squash merge d8111ffff34410550e01045a5848e5b946f6159f"
       ],
       "rollback_plan": "Revert source through reviewed PR; retain immutable audit rows; do not down-migrate production.",
       "migration_plan": null,
