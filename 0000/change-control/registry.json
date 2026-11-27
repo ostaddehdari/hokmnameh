@@ -1676,7 +1676,8 @@
       "created_at": "2026-11-27T00:00:00Z",
       "source_refs": [
         "S03-W03-T01 plan revision 1",
-        "Owner: continue two Works; phone login deferred; admin policy adjustment later"
+        "Owner: continue two Works; phone login deferred; admin policy adjustment later",
+        "S03-W02-T02 independent nickname/avatar/reputation/league version and ETag; S03-W03-T01 preview continuation"
       ],
       "affected_paths": [
         "backend/src/Hokmnameh.Api/AuthService.cs",
@@ -1686,7 +1687,9 @@
         "backend/db/migrations/manifest.json",
         "docs/API.md",
         "unity/Assets/Hokmnameh/Runtime/OnlineClient.cs",
-        "unity/Assets/Hokmnameh/Runtime/Launcher.cs"
+        "unity/Assets/Hokmnameh/Runtime/Launcher.cs",
+        "backend/db/migrations/006_profile_domains.sql",
+        "unity/Assets/Hokmnameh/Runtime/StarterAvatarPreview.cs"
       ],
       "requirement_ids": [
         "FR-003",
@@ -1695,7 +1698,7 @@
       "impact": {
         "player": "Guest may open practice without a separate sign-in step and choose nickname/avatar",
         "compatibility": "Old guest tokens and rooms continue to work",
-        "data": "Existing profiles backfilled with avatar-01 and new guests receive default avatar",
+        "data": "Forward-only migration 006 adds nickname version and backfills separate reputation/league records",
         "operations": "CI only; no production rollout"
       },
       "risk_flags": [
@@ -1747,15 +1750,17 @@
       ],
       "acceptance_criteria": [
         "Profile update is authenticated and ETag checked; nickname uniqueness and avatar allowlist enforced",
-        "Quick start creates guest on demand before online practice"
+        "Quick start creates guest on demand before online practice",
+        "Separate nickname and avatar writes advance only their own version; reputation and league read-only to players"
       ],
       "test_plan": [
         "isolated PostgreSQL/API profile read, update and stale write",
-        "Unity device and RTL visual check still pending"
+        "Unity device and RTL visual check still pending",
+        "isolated API domain ETag, stale write, and cross-domain independence assertions"
       ],
       "rollback_plan": "Revert application through reviewed PR; keep forward-only migration and existing accounts.",
-      "migration_plan": "Apply migration 005 in isolated CI; production only after operational review.",
-      "security_review": "Bearer authorization and If-Match guard; no phone verification or SMS; no independent human production review.",
+      "migration_plan": "Apply migration 006 in isolated CI via checksum verified forward-only migrator; production rollout separate.",
+      "security_review": "Player cannot mutate reputation/league; nickname/avatar require bearer and domain ETag. Procedural avatar previews contain no private Library source assets; Android RTL review remains pending.",
       "emergency": {
         "enabled": false,
         "reason": null,

@@ -11,7 +11,7 @@ namespace Hokmnameh.Unity
     [Serializable] public sealed class OnlineRoom { public string id; public string code; public string mode; public int playerCount; public int phase; public bool started; }
     [Serializable] public sealed class OnlineJoin { public OnlineRoom room; public int seat; }
     [Serializable] public sealed class OnlineState { public OnlineRoom room; public GameSnapshot game; public bool isYourTurn; }
-    [Serializable] public sealed class OnlineProfile { public string accountId; public string nickname; public string avatarId; public long version; }
+    [Serializable] public sealed class OnlineProfile { public string accountId; public string nickname; public string avatarId; public long version; public long nicknameVersion; }
     [Serializable] public sealed class ProfileUpdate { public string nickname; public string avatarId; }
 
     // HTTP-only polling fallback for the first four-device server integration test.
@@ -58,7 +58,7 @@ namespace Hokmnameh.Unity
             var update = new ProfileUpdate { nickname = nickname, avatarId = avatarId };
             _runner.StartCoroutine(Request("PUT", "/api/v1/profile", JsonUtility.ToJson(update),
                 data => { Profile = JsonUtility.FromJson<OnlineProfile>(data); Status = "Profile saved"; },
-                "\"" + Profile.version + "\""));
+                "\"" + Profile.version + ":" + Profile.nicknameVersion + "\""));
         }
         public void CreateRoom(bool practice)
         {

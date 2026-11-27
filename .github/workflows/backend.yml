@@ -86,7 +86,7 @@ jobs:
           ./deploy/scripts/migrate.sh
           ./deploy/scripts/migrate.sh
           docker compose exec -T postgres sh -c \
-            'psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT count(*) FROM public.schema_migrations"' | grep -qx '5'
+            'psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT count(*) FROM public.schema_migrations"' | grep -qx '6'
           docker compose exec -T postgres sh -c \
             'psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT count(*) FROM public.accounts"' | grep -qx '0'
       - name: Reject an edited migration checksum

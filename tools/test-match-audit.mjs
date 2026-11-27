@@ -230,20 +230,46 @@ assert.equal(profileResponse.status, 200);
 const original = await profileResponse.json();
 assert.equal(original.avatarId, 'avatar-01');
 const etag = profileResponse.headers.get('etag');
-assert.equal(etag, '"1"');
+assert.equal(etag, '"1:1"');
 const change = await fetch(base + '/api/v1/profile', {
   method: 'PUT', headers: { authorization: `Bearer ${tokens[0]}`, 'content-type': 'application/json',
     'if-match': etag }, body: JSON.stringify({ nickname: 'بازیکن نو', avatarId: 'avatar-03' })
 });
 assert.equal(change.status, 200);
-assert.equal(change.headers.get('etag'), '"2"');
+assert.equal(change.headers.get('etag'), '"2:2"');
 assert.equal((await change.json()).nickname, 'بازیکن نو');
+const field = async name => {
+  const response = await fetch(base + '/api/v1/profile/' + name,
+    { headers: { authorization: `Bearer ${tokens[0]}` } });
+  assert.equal(response.status, 200);
+  return { tag: response.headers.get('etag'), value: await response.json() };
+};
+assert.equal((await field('nickname')).tag, '"2"');
+assert.equal((await field('avatar')).value.avatarId, 'avatar-03');
+assert.deepEqual((await field('reputation')).value, { score: 0, version: 1 });
+assert.deepEqual((await field('league')).value, { leagueId: null, version: 1 });
+const nicknameOnly = await fetch(base + '/api/v1/profile/nickname', {
+  method: 'PUT', headers: { authorization: `Bearer ${tokens[0]}`, 'content-type': 'application/json',
+    'if-match': '"2"' }, body: JSON.stringify({ nickname: 'بازیکن تازه' })
+});
+assert.equal(nicknameOnly.status, 200);
+assert.equal(nicknameOnly.headers.get('etag'), '"3"');
+assert.equal((await field('avatar')).tag, '"2"', 'nickname may not change avatar version');
+const avatarOnly = await fetch(base + '/api/v1/profile/avatar', {
+  method: 'PUT', headers: { authorization: `Bearer ${tokens[0]}`, 'content-type': 'application/json',
+    'if-match': '"2"' }, body: JSON.stringify({ avatarId: 'avatar-07' })
+});
+assert.equal(avatarOnly.status, 200);
+assert.equal(avatarOnly.headers.get('etag'), '"3"');
+assert.equal((await field('nickname')).tag, '"3"', 'avatar may not change nickname version');
+assert.deepEqual((await field('reputation')).value, { score: 0, version: 1 });
+assert.deepEqual((await field('league')).value, { leagueId: null, version: 1 });
 const stale = await fetch(base + '/api/v1/profile', {
   method: 'PUT', headers: { authorization: `Bearer ${tokens[0]}`, 'content-type': 'application/json',
     'if-match': etag }, body: JSON.stringify({ nickname: 'stale', avatarId: 'avatar-04' })
 });
 assert.equal(stale.status, 412);
-assert.equal(db(`SELECT nickname FROM profiles WHERE account_id='${identities[0].accountId}'`), 'بازیکن نو');
+assert.equal(db(`SELECT nickname FROM profiles WHERE account_id='${identities[0].accountId}'`), 'بازیکن تازه');
 const temporary = await request('/api/v1/identity/guest', null, 'POST');
 const signedOut = await fetch(base + '/api/v1/identity/logout', {
   method: 'POST', headers: { authorization: `Bearer ${temporary.accessToken}` }
