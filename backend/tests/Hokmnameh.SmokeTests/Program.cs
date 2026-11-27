@@ -39,6 +39,30 @@ foreach (var width in new[] { 280f, 320f, 504f, 1280f })
 }
 try { ProfileHudLayout.Create(279,true); throw new Exception("FAILED: HUD narrow width accepted"); }
 catch (ArgumentOutOfRangeException) { Console.WriteLine("PASS: HUD narrow width rejected"); }
+foreach (var screen in new[] { (w:1080f,h:2400f,x:0f,y:80f,sw:1080f,sh:2240f),
+    (w:2400f,h:1080f,x:120f,y:0f,sw:2160f,sh:1080f) })
+{
+    var frame=SafeAreaLayout.Create(screen.w,screen.h,screen.x,screen.y,screen.sw,screen.sh);
+    Assert(frame.Scale > 0 && frame.X*frame.Scale >= screen.x &&
+        frame.Y*frame.Scale >= screen.h-screen.y-screen.sh &&
+        (frame.X+frame.Width)*frame.Scale <= screen.x+screen.sw &&
+        (frame.Y+frame.Height)*frame.Scale <= screen.h-screen.y,
+        $"HUD stays inside portrait/landscape safe area {screen.w}x{screen.h}");
+}
+var onboarding=new OnboardingFlow();
+var readyCallbacks=0;
+Assert(onboarding.RequestGuest(() => { readyCallbacks++; onboarding.BeginPractice(); }),
+    "first guest request starts network call");
+Assert(!onboarding.RequestGuest(() => { readyCallbacks++; Assert(!onboarding.BeginPractice(),
+    "duplicate practice tap waits for active save/room"); }),"concurrent guest request coalesces");
+onboarding.CompleteGuest(true);
+Assert(readyCallbacks==2,"both guest callbacks resume after profile ready");
+onboarding.EndPractice();
+Assert(onboarding.BeginPractice(),"failed or finished practice may retry");
+onboarding.EndPractice();
+Assert(onboarding.RequestGuest(() => readyCallbacks++),"guest retry starts a new request");
+onboarding.CompleteGuest(false);
+Assert(readyCallbacks==2,"failed guest request never starts a room");
 var game = new HokmGame();
 game.StartRound(0);
 Assert(game.Phase == GamePhase.ChoosingTrump, "20-card preliminary deal");
