@@ -61,10 +61,11 @@ namespace Hokmnameh.Unity
                 _title = new GUIStyle(GUI.skin.label) { fontSize = 30, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
                 _body = new GUIStyle(GUI.skin.label) { fontSize = 19, alignment = TextAnchor.MiddleCenter };
             }
-            var scale = Math.Min(Screen.width / 540f, Screen.height / 950f);
-            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
-            var width = Screen.width / scale;
-            GUILayout.BeginArea(new Rect(18, 20, width - 36, Screen.height / scale - 40));
+            var safe = Screen.safeArea;
+            var frame = SafeAreaLayout.Create(Screen.width, Screen.height,
+                safe.x, safe.y, safe.width, safe.height);
+            GUI.matrix = Matrix4x4.Scale(new Vector3(frame.Scale, frame.Scale, 1));
+            GUILayout.BeginArea(new Rect(frame.X, frame.Y, frame.Width, frame.Height));
             GUILayout.Label("HOKMNAMEH", _title);
             GUILayout.Label("Playable engineering prototype | v0.1", _body);
             if (_mode == Mode.Menu) DrawMenu();

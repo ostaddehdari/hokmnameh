@@ -25,8 +25,8 @@ namespace Hokmnameh.Unity
         private string _token = "";
         private string _roomId = "";
         private Coroutine _poller;
-        private bool _creatingGuest;
-        private bool _startingPractice;
+        private readonly OnboardingFlow _onboarding = new OnboardingFlow();
+        private bool _stopped;
         private float _lastHudRefresh = -30f;
         public string Status { get; private set; } = "Not signed in";
         public OnlineProfile Profile { get; private set; }
@@ -40,24 +40,30 @@ namespace Hokmnameh.Unity
         }
         public void CreateGuest(Action onReady = null)
         {
-            if (!string.IsNullOrEmpty(_token)) { onReady?.Invoke(); return; }
-            if (_creatingGuest) return;
-            _creatingGuest = true;
+            if (_stopped) return;
+            if (!string.IsNullOrEmpty(_token) && Profile != null) { onReady?.Invoke(); return; }
+            if (!_onboarding.RequestGuest(onReady)) return;
+            if (!string.IsNullOrEmpty(_token))
+            {
+                RefreshProfile(() => _onboarding.CompleteGuest(true),
+                    () => _onboarding.CompleteGuest(false));
+                return;
+            }
             _runner.StartCoroutine(Request("POST", "/api/v1/identity/guest", null, data =>
             {
-                _creatingGuest = false;
                 var guest = JsonUtility.FromJson<OnlineGuest>(data);
                 _token = guest.accessToken;
                 Status = "Signed in as " + guest.nickname;
-                RefreshProfile();
                 RefreshHud();
-                onReady?.Invoke();
-            }, null, () => _creatingGuest = false));
+                RefreshProfile(() => _onboarding.CompleteGuest(true),
+                    () => _onboarding.CompleteGuest(false));
+            }, null, () => _onboarding.CompleteGuest(false)));
         }
-        public void RefreshProfile()
+        public void RefreshProfile(Action onReady = null, Action onFailure = null)
         {
             if (!string.IsNullOrEmpty(_token)) _runner.StartCoroutine(Request("GET", "/api/v1/profile", null,
-                data => Profile = JsonUtility.FromJson<OnlineProfile>(data)));
+                data => { Profile = JsonUtility.FromJson<OnlineProfile>(data); onReady?.Invoke(); },
+                null, onFailure));
         }
         public void SaveProfile(string nickname, string avatarId, Action onSaved = null,
             Action onFailure = null)
@@ -73,10 +79,11 @@ namespace Hokmnameh.Unity
         }
         public void StartPractice(string nickname, string avatarId)
         {
-            if (_startingPractice || Profile == null) return;
-            _startingPractice = true;
-            SaveProfile(nickname, avatarId, () => { _startingPractice = false; CreateRoom(true); },
-                () => _startingPractice = false);
+            if (!string.IsNullOrEmpty(_roomId) || _stopped) return;
+            if (Profile == null) { CreateGuest(() => StartPractice(nickname,avatarId)); return; }
+            if (!_onboarding.BeginPractice()) return;
+            SaveProfile(nickname, avatarId, () => CreateRoom(true),
+                () => _onboarding.EndPractice());
         }
         public void RefreshHud()
         {
@@ -91,7 +98,11 @@ namespace Hokmnameh.Unity
         {
             if (string.IsNullOrEmpty(_token)) { CreateGuest(() => CreateRoom(practice)); return; }
             _runner.StartCoroutine(Request("POST", "/api/v1/rooms",
-            "{\"mode\":\"" + (practice ? "practice" : "free") + "\"}", data => SetRoom(JsonUtility.FromJson<OnlineJoin>(data))));
+            "{\"mode\":\"" + (practice ? "practice" : "free") + "\"}", data =>
+            {
+                SetRoom(JsonUtility.FromJson<OnlineJoin>(data));
+                if (practice) _onboarding.EndPractice();
+            }, null, () => { if (practice) _onboarding.EndPractice(); }));
         }
         public void Join(string code)
         {
@@ -155,13 +166,16 @@ namespace Hokmnameh.Unity
                 }
                 else
                 {
-                    try { onSuccess?.Invoke(request.downloadHandler.text); }
+                    try { if (!_stopped) onSuccess?.Invoke(request.downloadHandler.text); }
                     catch (Exception e) { Status = "Invalid server response: " + e.Message; }
                 }
             }
         }
         public void Stop()
         {
+            _stopped = true;
+            _onboarding.CompleteGuest(false);
+            _onboarding.EndPractice();
             _roomId = "";
             if (_poller != null) _runner.StopCoroutine(_poller);
             _poller = null;
