@@ -38,6 +38,14 @@ static RateLimitPartition<string> FixedWindow(string key, int permits, TimeSpan 
         AutoReplenishment = true
     });
 
+static bool TryVersion(HttpRequest request, out long version)
+{
+    var tag = request.Headers.IfMatch.ToString();
+    version = 0;
+    return tag.Length >= 3 && tag[0] == '"' && tag[^1] == '"' &&
+        long.TryParse(tag[1..^1], out version) && version > 0;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<AuthService>();
 builder.Services.AddSingleton(sp => new PlayerProfileService(sp.GetRequiredService<IConfiguration>()
@@ -121,7 +129,7 @@ api.MapGet("/api/v1/profile", async (HttpContext context, AuthService auth,
     if (identity == null) return Results.Unauthorized();
     var profile = await profiles.ReadAsync(identity.AccountId, ct);
     if (profile == null) return Results.NotFound();
-    context.Response.Headers.ETag = $"\"{profile.Version}\"";
+    context.Response.Headers.ETag = $"\"{profile.Version}:{profile.NicknameVersion}\"";
     return Results.Ok(profile);
 }).RequireRateLimiting("authenticated-command");
 
@@ -132,19 +140,101 @@ api.MapPut("/api/v1/profile", async (HttpContext context, UpdatePlayerProfileReq
     if (identity == null) return Results.Unauthorized();
     var etag = context.Request.Headers.IfMatch.ToString();
     if (string.IsNullOrEmpty(etag)) return Results.StatusCode(428);
-    if (etag.Length < 3 || etag[0] != '"' || etag[^1] != '"' ||
-        !long.TryParse(etag[1..^1], out var expected) || expected < 1)
+    var parts = etag.Trim('"').Split(':');
+    if (etag.Length < 5 || etag[0] != '"' || etag[^1] != '"' || parts.Length != 2 ||
+        !long.TryParse(parts[0], out var expected) || expected < 1 ||
+        !long.TryParse(parts[1], out var nicknameVersion) || nicknameVersion < 1)
         return Results.BadRequest(new { error = "invalid_if_match" });
     try
     {
-        var result = await profiles.UpdateAsync(identity.AccountId, expected, body, ct);
+        var result = await profiles.UpdateAsync(identity.AccountId, expected, nicknameVersion, body, ct);
         if (result == null) return Results.StatusCode(412);
-        context.Response.Headers.ETag = $"\"{result.Version}\"";
+        context.Response.Headers.ETag = $"\"{result.Version}:{result.NicknameVersion}\"";
         return Results.Ok(result);
     }
     catch (ArgumentException) { return Results.BadRequest(new { error = "invalid_profile" }); }
     catch (Npgsql.NpgsqlException e) when (e.SqlState == "23505")
     { return Results.Conflict(new { error = "nickname_taken" }); }
+}).RequireRateLimiting("authenticated-command");
+
+api.MapGet("/api/v1/profile/nickname", async (HttpContext context, AuthService auth,
+    PlayerProfileService profiles, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(context.Request,ct);
+    if (identity == null) return Results.Unauthorized();
+    var value=await profiles.ReadNicknameAsync(identity.AccountId,ct);
+    if (value == null) return Results.NotFound();
+    context.Response.Headers.ETag=$"\"{value.Version}\"";
+    return Results.Ok(value);
+}).RequireRateLimiting("authenticated-command");
+
+api.MapPut("/api/v1/profile/nickname", async (HttpContext context, UpdateNicknameRequest body,
+    AuthService auth, PlayerProfileService profiles, CancellationToken ct) =>
+{
+    var identity=await auth.ValidateAsync(context.Request,ct);
+    if (identity == null) return Results.Unauthorized();
+    if (string.IsNullOrEmpty(context.Request.Headers.IfMatch)) return Results.StatusCode(428);
+    if (!TryVersion(context.Request,out var version)) return Results.BadRequest(new { error="invalid_if_match" });
+    try
+    {
+        var value=await profiles.UpdateNicknameAsync(identity.AccountId,version,body.Nickname,ct);
+        if (value == null) return Results.StatusCode(412);
+        context.Response.Headers.ETag=$"\"{value.Version}\"";
+        return Results.Ok(value);
+    }
+    catch (ArgumentException) { return Results.BadRequest(new { error="invalid_nickname" }); }
+    catch (Npgsql.NpgsqlException e) when (e.SqlState == "23505")
+    { return Results.Conflict(new { error="nickname_taken" }); }
+}).RequireRateLimiting("authenticated-command");
+
+api.MapGet("/api/v1/profile/avatar", async (HttpContext context, AuthService auth,
+    PlayerProfileService profiles, CancellationToken ct) =>
+{
+    var identity=await auth.ValidateAsync(context.Request,ct);
+    if (identity == null) return Results.Unauthorized();
+    var value=await profiles.ReadAvatarAsync(identity.AccountId,ct);
+    if (value == null) return Results.NotFound();
+    context.Response.Headers.ETag=$"\"{value.Version}\"";
+    return Results.Ok(value);
+}).RequireRateLimiting("authenticated-command");
+
+api.MapPut("/api/v1/profile/avatar", async (HttpContext context, UpdateAvatarRequest body,
+    AuthService auth, PlayerProfileService profiles, CancellationToken ct) =>
+{
+    var identity=await auth.ValidateAsync(context.Request,ct);
+    if (identity == null) return Results.Unauthorized();
+    if (string.IsNullOrEmpty(context.Request.Headers.IfMatch)) return Results.StatusCode(428);
+    if (!TryVersion(context.Request,out var version)) return Results.BadRequest(new { error="invalid_if_match" });
+    try
+    {
+        var value=await profiles.UpdateAvatarAsync(identity.AccountId,version,body.AvatarId,ct);
+        if (value == null) return Results.StatusCode(412);
+        context.Response.Headers.ETag=$"\"{value.Version}\"";
+        return Results.Ok(value);
+    }
+    catch (ArgumentException) { return Results.BadRequest(new { error="invalid_avatar" }); }
+}).RequireRateLimiting("authenticated-command");
+
+api.MapGet("/api/v1/profile/reputation", async (HttpContext context, AuthService auth,
+    PlayerProfileService profiles, CancellationToken ct) =>
+{
+    var identity=await auth.ValidateAsync(context.Request,ct);
+    if (identity == null) return Results.Unauthorized();
+    var value=await profiles.ReadReputationAsync(identity.AccountId,ct);
+    if (value == null) return Results.NotFound();
+    context.Response.Headers.ETag=$"\"{value.Version}\"";
+    return Results.Ok(value);
+}).RequireRateLimiting("authenticated-command");
+
+api.MapGet("/api/v1/profile/league", async (HttpContext context, AuthService auth,
+    PlayerProfileService profiles, CancellationToken ct) =>
+{
+    var identity=await auth.ValidateAsync(context.Request,ct);
+    if (identity == null) return Results.Unauthorized();
+    var value=await profiles.ReadLeagueAsync(identity.AccountId,ct);
+    if (value == null) return Results.NotFound();
+    context.Response.Headers.ETag=$"\"{value.Version}\"";
+    return Results.Ok(value);
 }).RequireRateLimiting("authenticated-command");
 
 api.MapPost("/api/v1/rooms", async (HttpRequest req, CreateRoomRequest body, AuthService auth,

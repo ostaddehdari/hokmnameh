@@ -26,6 +26,11 @@
       "version": "005_xp_policy_onboarding",
       "file": "005_xp_policy_onboarding.sql",
       "sha256": "98bea0045f8b7645579a12419895ea9e75754d6e52811d9a55cd814a72e1cc1e"
+    },
+    {
+      "version": "006_profile_domains",
+      "file": "006_profile_domains.sql",
+      "sha256": "deec24305e8ba5647c3c9832f222103e37e73b8ceb8b724d9e54be08c9284541"
     }
   ]
 }

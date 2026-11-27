@@ -23,6 +23,7 @@ namespace Hokmnameh.Unity
         private string _nickname = "";
         private int _avatarChoice = 1;
         private long _seenProfileVersion;
+        private long _seenNicknameVersion;
         private GUIStyle _title;
         private GUIStyle _body;
         private Vector2 _scroll;
@@ -120,15 +121,21 @@ namespace Hokmnameh.Unity
             var profile = _online?.Profile;
             if (profile != null)
             {
-                if (_seenProfileVersion != profile.version)
+                if (_seenProfileVersion != profile.version || _seenNicknameVersion != profile.nicknameVersion)
                 {
                     _nickname = profile.nickname;
                     int.TryParse(profile.avatarId.Substring(7), out _avatarChoice);
                     _avatarChoice = Math.Max(1, Math.Min(8, _avatarChoice));
                     _seenProfileVersion = profile.version;
+                    _seenNicknameVersion = profile.nicknameVersion;
                 }
                 GUILayout.Label("Nickname and starter avatar", _body);
                 _nickname = GUILayout.TextField(_nickname, GUILayout.Height(44));
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label(StarterAvatarPreview.Get(_avatarChoice), GUILayout.Width(112), GUILayout.Height(112));
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("◀", GUILayout.Width(60), GUILayout.Height(44))) _avatarChoice = _avatarChoice == 1 ? 8 : _avatarChoice - 1;
                 GUILayout.Label("Avatar " + _avatarChoice.ToString("00"), _body);
@@ -218,6 +225,7 @@ namespace Hokmnameh.Unity
             _online?.Stop(); _online = null;
             _practice = null; _error = ""; _mode = Mode.Menu;
             _seenProfileVersion = 0;
+            _seenNicknameVersion = 0;
         }
         private static string LocalIp()
         {
