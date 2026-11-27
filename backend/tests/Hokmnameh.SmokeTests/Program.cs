@@ -1,5 +1,6 @@
 using Hokmnameh.Core;
 using Hokmnameh.Api;
+using Hokmnameh.Unity;
 using System.Text.Json;
 using System.Text;
 using System.Net.WebSockets;
@@ -19,6 +20,25 @@ void AssertCutError(Action action, string code, int status)
         Assert(e.Code == code && e.StatusCode == status, "typed cut error " + code);
     }
 }
+foreach (var width in new[] { 280f, 320f, 504f, 1280f })
+{
+    foreach (var rtl in new[] { false, true })
+    {
+        var layout=ProfileHudLayout.Create(width,rtl);
+        var slots=new[] { layout.Avatar,layout.Name,layout.Level,layout.Reputation };
+        Assert(slots.All(x => x.X >= 0 && x.Width > 0 && x.X+x.Width <= width && x.Height == 68) &&
+            slots.OrderBy(x => x.X).Zip(slots.OrderBy(x => x.X).Skip(1),
+                (a,b) => a.X+a.Width <= b.X).All(x => x),
+            $"HUD fits and badges do not overlap at {width}, RTL={rtl}");
+        Assert(rtl ? layout.Avatar.X > layout.Name.X && layout.Name.X > layout.Level.X &&
+            layout.Level.X > layout.Reputation.X :
+            layout.Avatar.X < layout.Name.X && layout.Name.X < layout.Level.X &&
+            layout.Level.X < layout.Reputation.X,
+            $"HUD direction at {width}, RTL={rtl}");
+    }
+}
+try { ProfileHudLayout.Create(279,true); throw new Exception("FAILED: HUD narrow width accepted"); }
+catch (ArgumentOutOfRangeException) { Console.WriteLine("PASS: HUD narrow width rejected"); }
 var game = new HokmGame();
 game.StartRound(0);
 Assert(game.Phase == GamePhase.ChoosingTrump, "20-card preliminary deal");

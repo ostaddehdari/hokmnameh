@@ -1677,7 +1677,8 @@
       "source_refs": [
         "S03-W03-T01 plan revision 1",
         "Owner: continue two Works; phone login deferred; admin policy adjustment later",
-        "S03-W02-T02 independent nickname/avatar/reputation/league version and ETag; S03-W03-T01 preview continuation"
+        "S03-W02-T02 independent nickname/avatar/reputation/league version and ETag; S03-W03-T01 preview continuation",
+        "S03-W02-T03 reusable profile HUD and S03-W03-T01 Academy flow; device RTL acceptance pending"
       ],
       "affected_paths": [
         "backend/src/Hokmnameh.Api/AuthService.cs",
@@ -1689,7 +1690,9 @@
         "unity/Assets/Hokmnameh/Runtime/OnlineClient.cs",
         "unity/Assets/Hokmnameh/Runtime/Launcher.cs",
         "backend/db/migrations/006_profile_domains.sql",
-        "unity/Assets/Hokmnameh/Runtime/StarterAvatarPreview.cs"
+        "unity/Assets/Hokmnameh/Runtime/StarterAvatarPreview.cs",
+        "unity/Assets/Hokmnameh/Runtime/PlayerHeader.cs",
+        "unity/Assets/Hokmnameh/Runtime/ProfileHudLayout.cs"
       ],
       "requirement_ids": [
         "FR-003",
@@ -1751,16 +1754,18 @@
       "acceptance_criteria": [
         "Profile update is authenticated and ETag checked; nickname uniqueness and avatar allowlist enforced",
         "Quick start creates guest on demand before online practice",
-        "Separate nickname and avatar writes advance only their own version; reputation and league read-only to players"
+        "Separate nickname and avatar writes advance only their own version; reputation and league read-only to players",
+        "Academy practice waits for a successful nickname/avatar save; HUD badges consume independent profile/progress/reputation fields"
       ],
       "test_plan": [
         "isolated PostgreSQL/API profile read, update and stale write",
         "Unity device and RTL visual check still pending",
-        "isolated API domain ETag, stale write, and cross-domain independence assertions"
+        "isolated API domain ETag, stale write, and cross-domain independence assertions",
+        "pure C# RTL/LTR geometry across narrow and wide layouts; Unity Android visual test pending"
       ],
       "rollback_plan": "Revert application through reviewed PR; keep forward-only migration and existing accounts.",
       "migration_plan": "Apply migration 006 in isolated CI via checksum verified forward-only migrator; production rollout separate.",
-      "security_review": "Player cannot mutate reputation/league; nickname/avatar require bearer and domain ETag. Procedural avatar previews contain no private Library source assets; Android RTL review remains pending.",
+      "security_review": "Guest is created on demand; failed profile save does not create a practice room. The HUD exposes only the current bearer profile; no private image files or phone challenge are used. Unity device review pending.",
       "emergency": {
         "enabled": false,
         "reason": null,
