@@ -13,6 +13,7 @@
     <Compile Include="../../src/Hokmnameh.Api/MatchAudit.cs" Link="Api/MatchAudit.cs" />
     <Compile Include="../../src/Hokmnameh.Api/PostgresMatchStore.cs" Link="Api/PostgresMatchStore.cs" />
     <Compile Include="../../src/Hokmnameh.Api/MatchReplay.cs" Link="Api/MatchReplay.cs" />
+    <Compile Include="../../../unity/Assets/Hokmnameh/Runtime/ProfileHudLayout.cs" Link="Ui/ProfileHudLayout.cs" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Npgsql" Version="10.0.3" />
   </ItemGroup>

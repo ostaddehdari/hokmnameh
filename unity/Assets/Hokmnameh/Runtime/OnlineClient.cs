@@ -13,6 +13,8 @@ namespace Hokmnameh.Unity
     [Serializable] public sealed class OnlineState { public OnlineRoom room; public GameSnapshot game; public bool isYourTurn; }
     [Serializable] public sealed class OnlineProfile { public string accountId; public string nickname; public string avatarId; public long version; public long nicknameVersion; }
     [Serializable] public sealed class ProfileUpdate { public string nickname; public string avatarId; }
+    [Serializable] public sealed class OnlineProgress { public string accountId; public long xp; public int level; }
+    [Serializable] public sealed class OnlineReputation { public int score; public long version; }
 
     // HTTP-only polling fallback for the first four-device server integration test.
     // Production client should subscribe to /ws/rooms/{roomId} and use HTTP for commands.
@@ -24,8 +26,12 @@ namespace Hokmnameh.Unity
         private string _roomId = "";
         private Coroutine _poller;
         private bool _creatingGuest;
+        private bool _startingPractice;
+        private float _lastHudRefresh = -30f;
         public string Status { get; private set; } = "Not signed in";
         public OnlineProfile Profile { get; private set; }
+        public OnlineProgress Progress { get; private set; }
+        public OnlineReputation Reputation { get; private set; }
         public OnlineState State { get; private set; }
         public string InviteCode { get; private set; } = "";
         public OnlineClient(MonoBehaviour runner, string baseUrl)
@@ -44,6 +50,7 @@ namespace Hokmnameh.Unity
                 _token = guest.accessToken;
                 Status = "Signed in as " + guest.nickname;
                 RefreshProfile();
+                RefreshHud();
                 onReady?.Invoke();
             }, null, () => _creatingGuest = false));
         }
@@ -52,13 +59,33 @@ namespace Hokmnameh.Unity
             if (!string.IsNullOrEmpty(_token)) _runner.StartCoroutine(Request("GET", "/api/v1/profile", null,
                 data => Profile = JsonUtility.FromJson<OnlineProfile>(data)));
         }
-        public void SaveProfile(string nickname, string avatarId)
+        public void SaveProfile(string nickname, string avatarId, Action onSaved = null,
+            Action onFailure = null)
         {
-            if (Profile == null) return;
+            if (Profile == null) { onFailure?.Invoke(); return; }
+            if (Profile.nickname == nickname && Profile.avatarId == avatarId)
+            { onSaved?.Invoke(); return; }
             var update = new ProfileUpdate { nickname = nickname, avatarId = avatarId };
             _runner.StartCoroutine(Request("PUT", "/api/v1/profile", JsonUtility.ToJson(update),
-                data => { Profile = JsonUtility.FromJson<OnlineProfile>(data); Status = "Profile saved"; },
-                "\"" + Profile.version + ":" + Profile.nicknameVersion + "\""));
+                data => { Profile = JsonUtility.FromJson<OnlineProfile>(data); Status = "Profile saved"; onSaved?.Invoke(); },
+                "\"" + Profile.version + ":" + Profile.nicknameVersion + "\"", () =>
+                { RefreshProfile(); onFailure?.Invoke(); }));
+        }
+        public void StartPractice(string nickname, string avatarId)
+        {
+            if (_startingPractice || Profile == null) return;
+            _startingPractice = true;
+            SaveProfile(nickname, avatarId, () => { _startingPractice = false; CreateRoom(true); },
+                () => _startingPractice = false);
+        }
+        public void RefreshHud()
+        {
+            if (string.IsNullOrEmpty(_token)) return;
+            _lastHudRefresh = Time.realtimeSinceStartup;
+            _runner.StartCoroutine(Request("GET", "/api/v1/profile/progress", null,
+                data => Progress = JsonUtility.FromJson<OnlineProgress>(data)));
+            _runner.StartCoroutine(Request("GET", "/api/v1/profile/reputation", null,
+                data => Reputation = JsonUtility.FromJson<OnlineReputation>(data)));
         }
         public void CreateRoom(bool practice)
         {
@@ -99,7 +126,12 @@ namespace Hokmnameh.Unity
         public void Refresh()
         {
             if (!string.IsNullOrEmpty(_roomId))
-                _runner.StartCoroutine(Request("GET", "/api/v1/rooms/" + _roomId, null, data => State = JsonUtility.FromJson<OnlineState>(data)));
+                _runner.StartCoroutine(Request("GET", "/api/v1/rooms/" + _roomId, null, data =>
+                {
+                    State = JsonUtility.FromJson<OnlineState>(data);
+                    if (State?.game != null && State.game.phase is 0 or 3 &&
+                        Time.realtimeSinceStartup - _lastHudRefresh >= 10f) RefreshHud();
+                }));
         }
         private IEnumerator Request(string method, string path, string json, Action<string> onSuccess,
             string ifMatch = null, Action onFailure = null)

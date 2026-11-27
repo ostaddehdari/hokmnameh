@@ -26,6 +26,7 @@ namespace Hokmnameh.Unity
         private long _seenNicknameVersion;
         private GUIStyle _title;
         private GUIStyle _body;
+        private readonly PlayerHeader _playerHeader = new PlayerHeader();
         private Vector2 _scroll;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -69,6 +70,11 @@ namespace Hokmnameh.Unity
             if (_mode == Mode.Menu) DrawMenu();
             else
             {
+                if (_mode == Mode.Online)
+                    _playerHeader.Draw(_online?.Profile?.nickname, _online?.Profile?.avatarId,
+                        _online?.Progress?.level ?? 1, _online?.Reputation?.score ?? 0, true);
+                else if (_mode == Mode.Practice)
+                    _playerHeader.Draw("Guest", "avatar-01", 1, 0, true);
                 if (GUILayout.Button("← Back to menu", GUILayout.Height(46))) ResetAll();
                 if (_mode == Mode.Client) GUILayout.Label(_client?.Status + " | Seat " + _client?.Seat, _body);
                 if (_mode == Mode.Online)
@@ -100,6 +106,7 @@ namespace Hokmnameh.Unity
             {
                 _online = new OnlineClient(this, _onlineUrl);
                 _mode = Mode.Online;
+                _online.CreateGuest();
             }
             GUILayout.Label("Enter host phone's local IPv4 address", _body);
             _hostIp = GUILayout.TextField(_hostIp, GUILayout.Height(48));
@@ -146,10 +153,17 @@ namespace Hokmnameh.Unity
             }
             if (!string.IsNullOrEmpty(_online?.InviteCode))
                 GUILayout.Label("Invite room code: " + _online.InviteCode, _body);
-            if (GUILayout.Button("Create guest identity", GUILayout.Height(44))) _online.CreateGuest();
+            if (profile == null)
+            {
+                GUILayout.Label("Preparing your guest profile...", _body);
+                if (GUILayout.Button("Retry connection", GUILayout.Height(44))) _online.CreateGuest();
+            }
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Create free room", GUILayout.Height(44))) _online.CreateRoom(false);
-            if (GUILayout.Button("Bot practice", GUILayout.Height(44))) _online.CreateRoom(true);
+            GUI.enabled = profile != null;
+            if (GUILayout.Button("Start bot practice", GUILayout.Height(44)))
+                _online.StartPractice(_nickname, "avatar-" + _avatarChoice.ToString("00"));
+            GUI.enabled = true;
             GUILayout.EndHorizontal();
             _inviteCode = GUILayout.TextField(_inviteCode, GUILayout.Height(44));
             if (GUILayout.Button("Join room by code", GUILayout.Height(44))) _online.Join(_inviteCode);
