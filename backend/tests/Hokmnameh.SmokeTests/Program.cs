@@ -475,7 +475,8 @@ sealed class CapturingSocket : WebSocket
 
 sealed class ThrowOnTrumpStore : IMatchEventStore
 {
-    public void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound)
+    public void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound,
+        RoundOutcomeV1? outcome)
     {
         if (command.Kind == "trump-selected")
             throw new InvalidOperationException("Simulated persistent event failure");
@@ -486,7 +487,8 @@ sealed class CapturingCutStore : IMatchEventStore
 {
     public List<MatchEventV1> Events { get; } = new();
     public List<ReplayRoundSecretV1> Proofs { get; } = new();
-    public void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound)
+    public void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound,
+        RoundOutcomeV1? outcome)
     {
         Events.Add(new MatchEventV1(command.Sequence, command.ActionId, command.ActorSeat,
             command.RulesetVersion, command.Timestamp, command.Sequence, command.Kind, publicValue));

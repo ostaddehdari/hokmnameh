@@ -1567,7 +1567,8 @@
       "created_at": "2026-11-26T19:03:53.291276Z",
       "source_refs": [
         "User request to continue two Works 2026-11-26",
-        "S03-W01/W02 plan revision 1; unresolved SMS and XP policy noted in proposal"
+        "S03-W01/W02 plan revision 1; unresolved SMS and XP policy noted in proposal",
+        "Owner 2026-11-27: use provisional XP/Level values now; adjust later in game admin panel"
       ],
       "affected_paths": [
         "backend/db/migrations/004_identity_progress.sql",
@@ -1579,7 +1580,9 @@
         ".github/workflows/backend.yml",
         "backend/src/Hokmnameh.Api/MatchAudit.cs",
         "backend/src/Hokmnameh.Api/PostgresMatchStore.cs",
-        "backend/src/Hokmnameh.Api/Rooms.cs"
+        "backend/src/Hokmnameh.Api/Rooms.cs",
+        "backend/db/migrations/005_xp_policy_onboarding.sql",
+        "backend/src/Hokmnameh.Api/PlayerProfileService.cs"
       ],
       "requirement_ids": [
         "FR-003",
@@ -1587,10 +1590,10 @@
         "SEC-001"
       ],
       "impact": {
-        "player": "Guest logout and read-only progress; phone upgrade and XP policy not active",
-        "compatibility": "Existing guest sessions and gameplay remain valid",
-        "data": "Forward-only migration 004 adds nullable phone and isolated XP records",
-        "operations": "CI only; no production migration or SMS send"
+        "player": "XP for valid free/practice closed rounds under policy v1; ranked remains disabled; no phone sign-in",
+        "compatibility": "Guest room and existing sessions remain valid; immutable migration 004 unchanged",
+        "data": "Forward-only migration 005 adds versioned XP policy and audited outcome; no production migration performed",
+        "operations": "CI only; admin policy editor is later scope"
       },
       "risk_flags": [],
       "approvals": [
@@ -1638,17 +1641,121 @@
         }
       ],
       "acceptance_criteria": [
-        "Synthetic CI verifies revocation and data guard; no unapproved SMS or XP issuance"
+        "Audited round-closed event, eligibility and award commit together; repeat cannot pay again",
+        "Initial caps and thresholds stored in version 1; ranked disabled; no unapproved SMS or coin award"
       ],
       "test_plan": [
         "migration checksum and isolated PostgreSQL",
         "five CI jobs and authenticated API smoke",
         "changed-files gate",
-        "persist real room participants before round start; isolated PostgreSQL checks four seats"
+        "persist real room participants before round start; isolated PostgreSQL checks four seats",
+        "real round integration award/progress/ETag verification",
+        "boundary/day-cap concurrency and production gates remain explicit follow-up"
       ],
       "rollback_plan": "Revert application code via reviewed PR; preserve forward-only schema, revoke unused routes; no destructive rollback.",
-      "migration_plan": "Apply 004 via checksum verified forward-only migrator only in isolated CI; production requires separate approval.",
-      "security_review": "Phone data schema remains unused until provider/retention/consent decisions; OTP MAC only, no codes at rest, no SMS sent; XP source constrained. No independent human production review.",
+      "migration_plan": "Apply migration 005 in isolated CI using checksum verified forward-only migrator; production rollout requires operational review.",
+      "security_review": "Award is private to authenticated match authority; timeout auto played human is excluded; one transaction with audit event and account lock. CI and independent production security review remain pending; no SMS.",
+      "emergency": {
+        "enabled": false,
+        "reason": null,
+        "post_review_due_at": null
+      },
+      "supersedes": null
+    },
+    {
+      "id": "CR-2026-0018",
+      "decision_id": "DEC-2026-0018",
+      "title": "شروع سریع مهمان و ویرایش نسخه‌دار نام و آواتار",
+      "status": "IMPLEMENTING",
+      "category": [
+        "api",
+        "database",
+        "ux"
+      ],
+      "requester": "project-owner",
+      "created_at": "2026-11-27T00:00:00Z",
+      "source_refs": [
+        "S03-W03-T01 plan revision 1",
+        "Owner: continue two Works; phone login deferred; admin policy adjustment later"
+      ],
+      "affected_paths": [
+        "backend/src/Hokmnameh.Api/AuthService.cs",
+        "backend/src/Hokmnameh.Api/PlayerProfileService.cs",
+        "backend/src/Hokmnameh.Api/Program.cs",
+        "backend/db/migrations/005_xp_policy_onboarding.sql",
+        "backend/db/migrations/manifest.json",
+        "docs/API.md",
+        "unity/Assets/Hokmnameh/Runtime/OnlineClient.cs",
+        "unity/Assets/Hokmnameh/Runtime/Launcher.cs"
+      ],
+      "requirement_ids": [
+        "FR-003",
+        "FR-004"
+      ],
+      "impact": {
+        "player": "Guest may open practice without a separate sign-in step and choose nickname/avatar",
+        "compatibility": "Old guest tokens and rooms continue to work",
+        "data": "Existing profiles backfilled with avatar-01 and new guests receive default avatar",
+        "operations": "CI only; no production rollout"
+      },
+      "risk_flags": [
+        "pii"
+      ],
+      "approvals": [
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-27T00:00:00Z",
+          "evidence": "Owner authorized continued implementation; ProjectMaker technical scope review only, not an independent human or production approval"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-27T00:00:00Z",
+          "evidence": "Owner authorized continued implementation; ProjectMaker technical scope review only, not an independent human or production approval"
+        },
+        {
+          "role": "data_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-27T00:00:00Z",
+          "evidence": "Owner authorized continued implementation; ProjectMaker technical scope review only, not an independent human or production approval"
+        },
+        {
+          "role": "operations_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-27T00:00:00Z",
+          "evidence": "Owner authorized continued implementation; ProjectMaker technical scope review only, not an independent human or production approval"
+        },
+        {
+          "role": "product_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-27T00:00:00Z",
+          "evidence": "Owner authorized continued implementation; ProjectMaker technical scope review only, not an independent human or production approval"
+        },
+        {
+          "role": "ux_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-27T00:00:00Z",
+          "evidence": "Owner authorized continued implementation; ProjectMaker technical scope review only, not an independent human or production approval"
+        },
+        {
+          "role": "accessibility_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-27T00:00:00Z",
+          "evidence": "Owner authorized continued implementation; ProjectMaker technical scope review only, not an independent human or production approval"
+        }
+      ],
+      "acceptance_criteria": [
+        "Profile update is authenticated and ETag checked; nickname uniqueness and avatar allowlist enforced",
+        "Quick start creates guest on demand before online practice"
+      ],
+      "test_plan": [
+        "isolated PostgreSQL/API profile read, update and stale write",
+        "Unity device and RTL visual check still pending"
+      ],
+      "rollback_plan": "Revert application through reviewed PR; keep forward-only migration and existing accounts.",
+      "migration_plan": "Apply migration 005 in isolated CI; production only after operational review.",
+      "security_review": "Bearer authorization and If-Match guard; no phone verification or SMS; no independent human production review.",
       "emergency": {
         "enabled": false,
         "reason": null,

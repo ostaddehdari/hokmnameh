@@ -61,7 +61,8 @@ public sealed class PostgresMatchStore : IMatchEventStore, IMatchParticipantStor
         tx.Commit();
     }
 
-    public void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound)
+    public void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound,
+        RoundOutcomeV1? outcome)
     {
         if (roomId == Guid.Empty) throw new GameRuleException("Missing match ID");
         using var connection = new NpgsqlConnection(_connectionString);
@@ -125,6 +126,7 @@ public sealed class PostgresMatchStore : IMatchEventStore, IMatchParticipantStor
             insertCut.ExecuteNonQuery();
         }
         if (preparedRound != null) StoreProof(connection, tx, roomId, preparedRound);
+        if (outcome != null) AwardClosedRound(connection, tx, roomId, command, outcome);
         using (var update = new NpgsqlCommand(
             "UPDATE recorded_matches SET audit_sequence=@version WHERE id=@id", connection, tx))
         {
@@ -133,6 +135,104 @@ public sealed class PostgresMatchStore : IMatchEventStore, IMatchParticipantStor
             update.ExecuteNonQuery();
         }
         tx.Commit();
+    }
+
+    private void AwardClosedRound(NpgsqlConnection c, NpgsqlTransaction tx, Guid matchId,
+        CommandV1 close, RoundOutcomeV1 outcome)
+    {
+        if (close.Kind != "round-closed") throw new GameRuleException("XP requires round closure");
+        using (var result = new NpgsqlCommand("""
+            INSERT INTO round_results_v1(match_id,event_sequence,winning_team,eligible_seats)
+            VALUES (@match,@sequence,@winner,@eligible)
+            """, c, tx))
+        {
+            result.Parameters.AddWithValue("match", matchId);
+            result.Parameters.AddWithValue("sequence", close.Sequence);
+            result.Parameters.AddWithValue("winner", (short)outcome.WinningTeam);
+            result.Parameters.AddWithValue("eligible", (short)outcome.EligibleSeats);
+            result.ExecuteNonQuery();
+        }
+        int version, baseXp, winXp, modeCap, totalCap;
+        DateOnly day;
+        using (var policy = new NpgsqlCommand("""
+            SELECT v.version,m.base_xp,m.win_xp,m.daily_mode_cap,v.daily_total_cap,
+              (@at::timestamptz AT TIME ZONE v.timezone)::date
+            FROM xp_policy_versions_v1 v
+            JOIN xp_policy_modes_v1 m ON m.version=v.version AND m.game_mode=@mode
+            WHERE v.active_from<=@at AND m.enabled
+            ORDER BY v.active_from DESC LIMIT 1
+            """, c, tx))
+        {
+            policy.Parameters.AddWithValue("at", close.Timestamp);
+            policy.Parameters.AddWithValue("mode", _mode);
+            using var reader = policy.ExecuteReader();
+            if (!reader.Read()) return; // Ranked and unknown policy versions issue no XP.
+            version = reader.GetInt32(0); baseXp = reader.GetInt32(1);
+            winXp = reader.GetInt32(2); modeCap = reader.GetInt32(3);
+            totalCap = reader.GetInt32(4); day = reader.GetFieldValue<DateOnly>(5);
+        }
+        var players = new List<(Guid AccountId,int Seat)>();
+        using (var query = new NpgsqlCommand("""
+            SELECT account_id,seat FROM match_participants WHERE match_id=@match
+            ORDER BY account_id
+            """, c, tx))
+        {
+            query.Parameters.AddWithValue("match", matchId);
+            using var reader = query.ExecuteReader();
+            while (reader.Read()) players.Add((reader.GetGuid(0),reader.GetInt16(1)));
+        }
+        foreach (var (accountId,seat) in players)
+        {
+            if ((outcome.EligibleSeats & (1 << seat)) == 0) continue;
+            // Lock each profile in stable account order across simultaneous matches.
+            using (var account = new NpgsqlCommand(
+                "SELECT id FROM accounts WHERE id=@account FOR UPDATE", c, tx))
+            {
+                account.Parameters.AddWithValue("account", accountId);
+                if (account.ExecuteScalar() == null) throw new InvalidOperationException("Missing match participant");
+            }
+            int totalUsed, modeUsed;
+            using (var used = new NpgsqlCommand("""
+                SELECT coalesce(sum(a.amount),0)::int,
+                   coalesce(sum(a.amount) FILTER (WHERE m.game_mode=@mode),0)::int
+                FROM xp_awards_v1 a JOIN recorded_matches m ON m.id=a.match_id
+                WHERE a.account_id=@account AND a.policy_day=@day
+                """, c, tx))
+            {
+                used.Parameters.AddWithValue("account", accountId);
+                used.Parameters.AddWithValue("day", day);
+                used.Parameters.AddWithValue("mode", _mode);
+                using var reader = used.ExecuteReader();
+                reader.Read(); totalUsed = reader.GetInt32(0); modeUsed = reader.GetInt32(1);
+            }
+            var proposed = baseXp + (seat % 2 == outcome.WinningTeam ? winXp : 0);
+            var amount = Math.Min(proposed,Math.Min(totalCap-totalUsed,modeCap-modeUsed));
+            if (amount <= 0) continue;
+            using (var award = new NpgsqlCommand("""
+                INSERT INTO xp_awards_v1(match_id,event_sequence,account_id,amount,policy_version,policy_day)
+                VALUES (@match,@sequence,@account,@amount,@version,@day)
+                ON CONFLICT(match_id,event_sequence,account_id) DO NOTHING
+                """, c, tx))
+            {
+                award.Parameters.AddWithValue("match", matchId);
+                award.Parameters.AddWithValue("sequence", close.Sequence);
+                award.Parameters.AddWithValue("account", accountId);
+                award.Parameters.AddWithValue("amount", amount);
+                award.Parameters.AddWithValue("version", version);
+                award.Parameters.AddWithValue("day", day);
+                if (award.ExecuteNonQuery() != 1) continue;
+            }
+            using var increment = new NpgsqlCommand("""
+                UPDATE profiles SET xp=xp+@amount,level=coalesce((
+                    SELECT max(level) FROM level_thresholds_v1
+                    WHERE version=@version AND cumulative_xp<=profiles.xp+@amount),1)
+                WHERE account_id=@account
+                """, c, tx);
+            increment.Parameters.AddWithValue("amount", amount);
+            increment.Parameters.AddWithValue("version", version);
+            increment.Parameters.AddWithValue("account", accountId);
+            if (increment.ExecuteNonQuery() != 1) throw new InvalidOperationException("Missing player progress");
+        }
     }
 
     private void StoreProof(NpgsqlConnection c, NpgsqlTransaction tx, Guid matchId, E04Round round)

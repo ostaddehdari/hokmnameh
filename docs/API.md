@@ -8,7 +8,8 @@ Public base path: `/hokmnameh` (`https://srun.ir/hokmnameh` AFTER server deploym
 - `GET /api/v1/identity/me` with header `Authorization: Bearer <accessToken>` -> identity.
 - Guest tokens are long-lived (30 days) for the prototype. Store in Android keystore/secure storage in a production client, provide rotation/revocation and abuse controls before launch.
 - `POST /api/v1/identity/logout` revokes the current bearer session (204); a revoked or unknown token returns 401.
-- `GET /api/v1/profile/progress` requires a valid bearer and returns only that account's `accountId`, `xp`, and `level`. XP issuance remains internal and is gated by a recorded round closure and participant. No phone challenge route or level award policy is active yet.
+- `GET /api/v1/profile/progress` requires a valid bearer and returns only that account's `accountId`, `xp`, and `level`. XP is issued in the same transaction as an audited `round-closed` event for eligible human participants. Mode and total daily caps use the Tehran calendar day and the active versioned policy; ranked is disabled. No phone challenge route is active.
+- `GET /api/v1/profile` returns the current nickname, starter avatar ID and optimistic `ETag` (`"1"` etc.) for the bearer. `PUT /api/v1/profile` accepts `{ "nickname": "بازیکن نو", "avatarId": "avatar-03" }` with `If-Match: "1"`; it returns a new ETag, 412 on a stale edit, 428 when missing, 409 for an occupied nickname, and 400 for invalid fields. Avatar IDs are `avatar-01` through `avatar-08`. This changes no XP, currency, league or reputation.
 
 ## Rooms
 

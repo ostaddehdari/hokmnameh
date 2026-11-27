@@ -35,6 +35,7 @@ public sealed class GameRoom
     private readonly object _lock = new();
     private readonly Guid?[] _players = new Guid?[4];
     private readonly bool[] _bots = new bool[4];
+    private readonly bool[] _humanAutoPlayed = new bool[4];
     private readonly ConcurrentDictionary<Guid, ClientSocket> _clients = new();
     private readonly HokmGame _game;
     private readonly MatchAudit _audit;
@@ -158,7 +159,7 @@ public sealed class GameRoom
             EnsureHealthy();
             _game.Play(seat, card); Record(seat, "card-played", card);
             if (_game.Phase == GamePhase.Waiting || _game.Phase == GamePhase.Finished)
-                Record(-1, "round-closed", _game.Round);
+                CloseRound();
             ResetDeadline();
         }
     }
@@ -180,18 +181,20 @@ public sealed class GameRoom
     {
         if (_faulted) throw new InvalidOperationException("Match authority is quarantined after audit failure");
     }
-    private void Record(int seat, string kind, int? value = null, E04Round? proof = null, Guid? actionId = null)
+    private void Record(int seat, string kind, int? value = null, E04Round? proof = null,
+        Guid? actionId = null, RoundOutcomeV1? outcome = null)
     {
         try
         {
             _audit.Append(new CommandV1(_audit.StateVersion + 1, actionId ?? Guid.NewGuid(), seat, RulesetVersion,
-                _timeProvider.GetUtcNow(), _audit.StateVersion, kind), value, proof);
+                _timeProvider.GetUtcNow(), _audit.StateVersion, kind), value, proof, outcome);
         }
         catch { _faulted = true; throw; }
     }
     private void BeginRound(int hakem)
     {
         EnsureHealthy();
+        Array.Fill(_humanAutoPlayed, false);
         try
         {
             for (int seat = 0; seat < 4; seat++)
@@ -215,9 +218,22 @@ public sealed class GameRoom
         }
     }
 
+    private void CloseRound()
+    {
+        var tricks = _game.Tricks;
+        var winner = tricks[0] >= ClassicRules.TricksToWinRound ? 0 :
+            tricks[1] >= ClassicRules.TricksToWinRound ? 1 : -1;
+        if (winner < 0) throw new GameRuleException("Cannot close round without a winner");
+        var eligible = 0;
+        for (int seat = 0; seat < 4; seat++)
+            if (_players[seat].HasValue && !_bots[seat] && !_humanAutoPlayed[seat]) eligible |= 1 << seat;
+        Record(-1, "round-closed", _game.Round, outcome: new RoundOutcomeV1(winner, eligible));
+    }
+
     private void FinalizeCut(int actorSeat, int index, Guid actionId, bool fallback)
     {
         var pending = _pendingCutRound ?? throw new InvalidOperationException("No pending cut");
+        if (fallback && !_bots[CutterSeat(_pendingHakem)]) _humanAutoPlayed[CutterSeat(_pendingHakem)] = true;
         try
         {
             using var prepared = E04Shuffle.Create(Id, pending.RoundNumber, RulesetVersion,
@@ -255,14 +271,16 @@ public sealed class GameRoom
             if (!_bots[seat] && !timerExpired) return false;
             if (_game.Phase == GamePhase.ChoosingTrump)
             { int suit = HokmBot.PickTrump(_game, seat);
+              if (!_bots[seat]) _humanAutoPlayed[seat] = true;
               if (_requireCut) DealTrump(seat, suit, "trump-staged-fallback");
               else { _game.ChooseTrump(seat, suit); Record(seat, "trump-fallback", suit); } }
             else
             {
                 int card = HokmBot.ChooseCard(_game, seat, 1); _game.Play(seat, card);
+                if (!_bots[seat]) _humanAutoPlayed[seat] = true;
                 Record(seat, "card-auto-played", card);
                 if (_game.Phase == GamePhase.Waiting || _game.Phase == GamePhase.Finished)
-                    Record(-1, "round-closed", _game.Round);
+                    CloseRound();
             }
             ResetDeadline(); return true;
         }

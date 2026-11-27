@@ -40,6 +40,8 @@ static RateLimitPartition<string> FixedWindow(string key, int permits, TimeSpan 
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton(sp => new PlayerProfileService(sp.GetRequiredService<IConfiguration>()
+    .GetConnectionString("Postgres") ?? throw new InvalidOperationException("PostgreSQL required")));
 builder.Services.AddSingleton(sp => new XpLedger(sp.GetRequiredService<IConfiguration>()
     .GetConnectionString("Postgres") ?? throw new InvalidOperationException("PostgreSQL required")));
 builder.Services.AddSingleton<RoomDirectory>();
@@ -110,6 +112,39 @@ api.MapGet("/api/v1/profile/progress", async (HttpRequest req, AuthService auth,
     if (identity == null) return Results.Unauthorized();
     var value = await progress.ReadAsync(identity.AccountId, ct);
     return value == null ? Results.NotFound() : Results.Ok(value);
+}).RequireRateLimiting("authenticated-command");
+
+api.MapGet("/api/v1/profile", async (HttpContext context, AuthService auth,
+    PlayerProfileService profiles, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(context.Request, ct);
+    if (identity == null) return Results.Unauthorized();
+    var profile = await profiles.ReadAsync(identity.AccountId, ct);
+    if (profile == null) return Results.NotFound();
+    context.Response.Headers.ETag = $"\"{profile.Version}\"";
+    return Results.Ok(profile);
+}).RequireRateLimiting("authenticated-command");
+
+api.MapPut("/api/v1/profile", async (HttpContext context, UpdatePlayerProfileRequest body,
+    AuthService auth, PlayerProfileService profiles, CancellationToken ct) =>
+{
+    var identity = await auth.ValidateAsync(context.Request, ct);
+    if (identity == null) return Results.Unauthorized();
+    var etag = context.Request.Headers.IfMatch.ToString();
+    if (string.IsNullOrEmpty(etag)) return Results.StatusCode(428);
+    if (etag.Length < 3 || etag[0] != '"' || etag[^1] != '"' ||
+        !long.TryParse(etag[1..^1], out var expected) || expected < 1)
+        return Results.BadRequest(new { error = "invalid_if_match" });
+    try
+    {
+        var result = await profiles.UpdateAsync(identity.AccountId, expected, body, ct);
+        if (result == null) return Results.StatusCode(412);
+        context.Response.Headers.ETag = $"\"{result.Version}\"";
+        return Results.Ok(result);
+    }
+    catch (ArgumentException) { return Results.BadRequest(new { error = "invalid_profile" }); }
+    catch (Npgsql.NpgsqlException e) when (e.SqlState == "23505")
+    { return Results.Conflict(new { error = "nickname_taken" }); }
 }).RequireRateLimiting("authenticated-command");
 
 api.MapPost("/api/v1/rooms", async (HttpRequest req, CreateRoomRequest body, AuthService auth,
