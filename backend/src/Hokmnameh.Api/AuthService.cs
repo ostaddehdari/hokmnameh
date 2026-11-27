@@ -47,6 +47,12 @@ public sealed class AuthService
             cmd.Parameters.AddWithValue("nn", nickname.ToLowerInvariant());
             await cmd.ExecuteNonQueryAsync(ct);
         }
+        await using (var cmd = new NpgsqlCommand(
+            "INSERT INTO player_profiles_v1(account_id,avatar_id) VALUES (@id,'avatar-01')", c, tx))
+        {
+            cmd.Parameters.AddWithValue("id", id);
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
         await using (var cmd = new NpgsqlCommand("INSERT INTO auth_sessions(account_id,token_hash,expires_at) VALUES (@id,@hash,@expires)", c, tx))
         {
             cmd.Parameters.AddWithValue("id", id);

@@ -20,6 +20,9 @@ namespace Hokmnameh.Unity
         private string _inviteCode = "";
         private string _hostIp = "192.168.43.1";
         private string _error = "";
+        private string _nickname = "";
+        private int _avatarChoice = 1;
+        private long _seenProfileVersion;
         private GUIStyle _title;
         private GUIStyle _body;
         private Vector2 _scroll;
@@ -114,6 +117,26 @@ namespace Hokmnameh.Unity
         private void DrawOnlineControls()
         {
             GUILayout.Label(_online?.Status ?? "Offline", _body);
+            var profile = _online?.Profile;
+            if (profile != null)
+            {
+                if (_seenProfileVersion != profile.version)
+                {
+                    _nickname = profile.nickname;
+                    int.TryParse(profile.avatarId.Substring(7), out _avatarChoice);
+                    _avatarChoice = Math.Max(1, Math.Min(8, _avatarChoice));
+                    _seenProfileVersion = profile.version;
+                }
+                GUILayout.Label("Nickname and starter avatar", _body);
+                _nickname = GUILayout.TextField(_nickname, GUILayout.Height(44));
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("◀", GUILayout.Width(60), GUILayout.Height(44))) _avatarChoice = _avatarChoice == 1 ? 8 : _avatarChoice - 1;
+                GUILayout.Label("Avatar " + _avatarChoice.ToString("00"), _body);
+                if (GUILayout.Button("▶", GUILayout.Width(60), GUILayout.Height(44))) _avatarChoice = _avatarChoice == 8 ? 1 : _avatarChoice + 1;
+                GUILayout.EndHorizontal();
+                if (GUILayout.Button("Save profile", GUILayout.Height(44)))
+                    _online.SaveProfile(_nickname, "avatar-" + _avatarChoice.ToString("00"));
+            }
             if (!string.IsNullOrEmpty(_online?.InviteCode))
                 GUILayout.Label("Invite room code: " + _online.InviteCode, _body);
             if (GUILayout.Button("Create guest identity", GUILayout.Height(44))) _online.CreateGuest();
@@ -194,6 +217,7 @@ namespace Hokmnameh.Unity
             _client?.Dispose(); _client = null;
             _online?.Stop(); _online = null;
             _practice = null; _error = ""; _mode = Mode.Menu;
+            _seenProfileVersion = 0;
         }
         private static string LocalIp()
         {

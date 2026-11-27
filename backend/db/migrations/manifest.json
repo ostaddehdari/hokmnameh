@@ -21,6 +21,11 @@
       "version": "004_identity_progress",
       "file": "004_identity_progress.sql",
       "sha256": "c0eda725ce292b0350d3befc5debef72fed6c17332c61e249a131b0130337af0"
+    },
+    {
+      "version": "005_xp_policy_onboarding",
+      "file": "005_xp_policy_onboarding.sql",
+      "sha256": "98bea0045f8b7645579a12419895ea9e75754d6e52811d9a55cd814a72e1cc1e"
     }
   ]
 }

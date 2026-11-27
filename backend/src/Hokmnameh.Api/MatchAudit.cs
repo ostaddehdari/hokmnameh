@@ -17,10 +17,12 @@ public sealed record MatchEventV1(long Sequence, Guid ActionId, int ActorSeat, s
 }
 public sealed record SignedSeatSnapshotV1(Guid RoomId, int Seat, long StateVersion,
     GameSnapshot Snapshot, string Signature);
+public sealed record RoundOutcomeV1(int WinningTeam, int EligibleSeats);
 
 public interface IMatchEventStore
 {
-    void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound);
+    void Append(Guid roomId, CommandV1 command, int? publicValue, E04Round? preparedRound,
+        RoundOutcomeV1? outcome);
 }
 
 public interface IMatchParticipantStore
@@ -42,7 +44,8 @@ public sealed class MatchAudit : IDisposable
     public MatchAudit(Guid roomId, IMatchEventStore? store = null)
     { _roomId = roomId; _store = store; }
 
-    public void Append(CommandV1 command, int? publicValue = null, E04Round? preparedRound = null)
+    public void Append(CommandV1 command, int? publicValue = null, E04Round? preparedRound = null,
+        RoundOutcomeV1? outcome = null)
     {
         if (command.ActionId == Guid.Empty || command.Sequence != StateVersion + 1 ||
             command.StateVersion != StateVersion || command.ActorSeat < -1 || command.ActorSeat > 3 ||
@@ -53,7 +56,10 @@ public sealed class MatchAudit : IDisposable
         if (preparedRound != null && (command.Kind != "round-started" ||
             preparedRound.MatchId != _roomId || preparedRound.RoundNumber != (ulong)publicValue.GetValueOrDefault()))
             throw new GameRuleException("Invalid round proof context");
-        _store?.Append(_roomId, command, publicValue, preparedRound);
+        if (outcome != null && (command.Kind != "round-closed" || publicValue is null or < 1 ||
+            outcome.WinningTeam is < 0 or > 1 || outcome.EligibleSeats is < 0 or > 15))
+            throw new GameRuleException("Invalid round outcome context");
+        _store?.Append(_roomId, command, publicValue, preparedRound, outcome);
         _actions.Add(command.ActionId);
         _events.Add(new MatchEventV1(command.Sequence, command.ActionId, command.ActorSeat,
             command.RulesetVersion, command.Timestamp, command.Sequence, command.Kind, publicValue));

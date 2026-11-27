@@ -145,6 +145,15 @@ assert.ok(matchingLiveState, 'replay and live room must converge at a stable bou
 assert.equal(recovered.closedRounds, 1);
 
 assert.equal(db(`SELECT count(*) FROM match_participants WHERE match_id='${room.id}'`), '4');
+const closeAward = db(`SELECT r.winning_team,a.amount,a.policy_version,a.policy_day,
+  (SELECT count(*) FROM xp_awards_v1 WHERE match_id='${room.id}')
+  FROM round_results_v1 r JOIN xp_awards_v1 a
+    ON a.match_id=r.match_id AND a.event_sequence=r.event_sequence
+  WHERE r.match_id='${room.id}' AND a.account_id='${identities[0].accountId}'`).split('|');
+assert.equal(closeAward.length, 5);
+assert.equal(Number(closeAward[1]), Number(closeAward[0]) === 0 ? 18 : 12);
+assert.equal(closeAward[2], '1');
+assert.equal(Number(closeAward[4]), 4);
 const xpMatch = randomUUID();
 db(`INSERT INTO recorded_matches(id,ruleset_version,game_mode,started_at)
  VALUES ('${xpMatch}','iranian-hokm-classic-v1','practice',now());
@@ -208,8 +217,33 @@ for (let attempt = 0; attempt < 30; attempt++) {
 assert.ok(ready, 'API did not recover after isolated restart');
 const initialProgress = await request('/api/v1/profile/progress', tokens[0]);
 assert.equal(initialProgress.accountId, identities[0].accountId);
-assert.equal(initialProgress.xp, 0);
+assert.equal(initialProgress.xp, Number(closeAward[1]));
 assert.equal(initialProgress.level, 1);
+assert.equal(db(`SELECT base_xp||':'||win_xp||':'||daily_mode_cap FROM xp_policy_modes_v1
+  WHERE version=1 AND game_mode='practice' AND enabled`), '8:4:120');
+assert.equal(db(`SELECT cumulative_xp FROM level_thresholds_v1 WHERE version=1 AND level=8`), '1750');
+assert.equal(db(`SELECT enabled FROM xp_policy_modes_v1 WHERE version=1 AND game_mode='ranked'`), 'f');
+const profileResponse = await fetch(base + '/api/v1/profile', {
+  headers: { authorization: `Bearer ${tokens[0]}` }
+});
+assert.equal(profileResponse.status, 200);
+const original = await profileResponse.json();
+assert.equal(original.avatarId, 'avatar-01');
+const etag = profileResponse.headers.get('etag');
+assert.equal(etag, '"1"');
+const change = await fetch(base + '/api/v1/profile', {
+  method: 'PUT', headers: { authorization: `Bearer ${tokens[0]}`, 'content-type': 'application/json',
+    'if-match': etag }, body: JSON.stringify({ nickname: 'بازیکن نو', avatarId: 'avatar-03' })
+});
+assert.equal(change.status, 200);
+assert.equal(change.headers.get('etag'), '"2"');
+assert.equal((await change.json()).nickname, 'بازیکن نو');
+const stale = await fetch(base + '/api/v1/profile', {
+  method: 'PUT', headers: { authorization: `Bearer ${tokens[0]}`, 'content-type': 'application/json',
+    'if-match': etag }, body: JSON.stringify({ nickname: 'stale', avatarId: 'avatar-04' })
+});
+assert.equal(stale.status, 412);
+assert.equal(db(`SELECT nickname FROM profiles WHERE account_id='${identities[0].accountId}'`), 'بازیکن نو');
 const temporary = await request('/api/v1/identity/guest', null, 'POST');
 const signedOut = await fetch(base + '/api/v1/identity/logout', {
   method: 'POST', headers: { authorization: `Bearer ${temporary.accessToken}` }
