@@ -1,6 +1,12 @@
 # Hokmnameh HTTP / WebSocket API v0.1
 
-Public base path: `/hokmnameh` (`https://srun.ir/hokmnameh` AFTER server deployment). Service currently runs only in local/offline build context.
+Public base path: `/hokmnameh` (`https://srun.ir/hokmnameh` after server deployment).
+When `Hokm:EnableSwagger=true`, the generated OpenAPI document is at
+`/hokmnameh/swagger/v1/swagger.json` and bundled Swagger UI is at
+`/hokmnameh/swagger/`. The document covers the implemented HTTP and WebSocket
+routes only. Use a guest bearer in the `Authorization` header for protected
+operations. The interactive UI is opt-in and should not be treated as evidence
+of server deployment or production readiness.
 
 ## Authentication
 

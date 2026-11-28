@@ -6,7 +6,10 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.12.2" />
     <PackageReference Include="Npgsql" Version="10.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.3.1" />
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/HokmGame.cs" Link="Rules/HokmGame.cs" />
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/E04DealPlan.cs" Link="Rules/E04DealPlan.cs" />
     <Compile Include="../../../unity/Packages/com.hokmnameh.core/Runtime/HokmBot.cs" Link="Rules/HokmBot.cs" />

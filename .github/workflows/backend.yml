@@ -158,6 +158,13 @@ jobs:
             docker compose logs --no-color --tail 120 api
             exit 1
           fi
+      - name: Verify generated OpenAPI and bundled Swagger UI
+        run: |
+          set -euo pipefail
+          curl -fsS http://127.0.0.1:5080/hokmnameh/swagger/v1/swagger.json \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["openapi"].startswith("3."); p=d["paths"]; assert "/hokmnameh/api/v1/identity/guest" in p and "/hokmnameh/api/v2/rooms/{roomId}/cut" in p; print("OpenAPI paths:",len(p))'
+          curl -fsS http://127.0.0.1:5080/hokmnameh/swagger/index.html \
+            | grep -q 'Swagger UI'
       - name: Verify runtime rate limit
         run: |
           set -euo pipefail

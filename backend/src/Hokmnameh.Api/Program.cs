@@ -55,6 +55,7 @@ builder.Services.AddSingleton(sp => new XpLedger(sp.GetRequiredService<IConfigur
 builder.Services.AddSingleton<RoomDirectory>();
 builder.Services.AddHostedService<MatchTicker>();
 builder.Services.AddHealthChecks();
+builder.Services.AddOpenApi("v1");
 builder.Services.ConfigureHttpJsonOptions(opts => opts.SerializerOptions.IncludeFields = true);
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -91,6 +92,15 @@ var app = builder.Build();
 app.UseForwardedHeaders();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(20) });
 app.UseRateLimiter();
+if (app.Configuration.GetValue<bool>("Hokm:EnableSwagger"))
+{
+    app.MapOpenApi("/hokmnameh/swagger/{documentName}/swagger.json");
+    app.UseSwaggerUI(options =>
+    {
+        options.RoutePrefix = "hokmnameh/swagger";
+        options.SwaggerEndpoint("/hokmnameh/swagger/v1/swagger.json", "Hokmnameh API");
+    });
+}
 var api = app.MapGroup("/hokmnameh");
 api.MapGet("/", () => Results.Redirect("/hokmnameh/health/live"));
 api.MapGet("/health/live", () => Results.Ok(new { status = "live", service = "hokmnameh-api", version = "0.1.0" }));

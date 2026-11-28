@@ -1777,6 +1777,53 @@
         "post_review_due_at": null
       },
       "supersedes": null
+    },
+    {
+      "id": "CR-2026-0019",
+      "decision_id": "DEC-2026-0019",
+      "title": "Generated OpenAPI and opt-in Swagger for the Hokmnameh deployment",
+      "status": "IMPLEMENTING",
+      "category": ["api"],
+      "requester": "project-owner",
+      "created_at": "2026-11-28T04:50:25Z",
+      "source_refs": ["Owner request to install backend behind Nginx and expose Swagger, 2026-11-28"],
+      "affected_paths": [
+        "backend/src/Hokmnameh.Api/Program.cs",
+        "backend/src/Hokmnameh.Api/Hokmnameh.Api.csproj",
+        "docs/API.md"
+      ],
+      "requirement_ids": ["FR-003", "SEC-003"],
+      "impact": {
+        "player": "No gameplay behavior change",
+        "compatibility": "Additive documentation URLs under /hokmnameh/swagger",
+        "data": "No database migration",
+        "operations": "Documentation is explicitly enabled in the deployment environment"
+      },
+      "risk_flags": ["production_gateway"],
+      "approvals": [
+        {
+          "role": "architecture_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-28T04:50:25Z",
+          "evidence": "ProjectMaker technical review of additive endpoint; owner explicitly requested deployment and Swagger"
+        },
+        {
+          "role": "api_consumer_owner",
+          "decision": "APPROVE",
+          "at": "2026-11-28T04:50:25Z",
+          "evidence": "Owner explicitly requested the public Swagger URL; no existing API path changes"
+        }
+      ],
+      "acceptance_criteria": [
+        "Generated JSON includes the implemented guest, profile and room routes",
+        "Bundled Swagger UI and OpenAPI JSON respond under /hokmnameh/swagger"
+      ],
+      "test_plan": ["CI .NET build", "CI HTTP smoke against generated OpenAPI and bundled UI", "VPS HTTPS checks after deployment"],
+      "rollback_plan": "Disable Hokm:EnableSwagger or revert application image; Nginx route has a separate reversible include.",
+      "migration_plan": "No database change.",
+      "security_review": "Public API inventory is explicitly requested; no secrets or replay proof are documented. The Swagger endpoint is opt-in and the host rollout is separately gated.",
+      "emergency": {"enabled": false, "reason": null, "post_review_due_at": null},
+      "supersedes": null
     }
   ]
 }

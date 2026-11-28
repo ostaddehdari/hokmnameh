@@ -38,6 +38,7 @@ services:
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-hokmnameh};Username=${POSTGRES_USER:-hokm_app};Password=${POSTGRES_PASSWORD}"
       Hokm__TurnSeconds: "30"
       Hokm__AuditKeyBase64: ${HOKM_AUDIT_KEY_BASE64:-}
+      Hokm__EnableSwagger: "true"
     ports: ["127.0.0.1:5080:8080"]
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
